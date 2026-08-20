@@ -894,50 +894,57 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 uTime: { value: 0.0 },
                 uPulse: { value: 1.0 },
 
-                // World-space coordinates on normalized 4.0 unit model centered at (0,0,0)
+                // Center and scale calculated from geometry
+                uModelCenter: { value: new THREE.Vector3(0, 0, 0) },
+                uModelScale: { value: 1.0 },
+
+                // Anatomical targets in normalized model space (-2.0 to +2.0)
                 uBrainPos: { value: new THREE.Vector3(0.0, 1.62, 0.05) },
                 uBrainIntensity: { value: 0.0 },
-                uBrainRadius: { value: 0.55 },
+                uBrainRadius: { value: 0.65 },
 
                 uHeartPos: { value: new THREE.Vector3(-0.16, 0.98, 0.22) },
                 uHeartIntensity: { value: 0.0 },
-                uHeartRadius: { value: 0.48 },
+                uHeartRadius: { value: 0.55 },
 
                 uLungsPos: { value: new THREE.Vector3(0.0, 0.94, 0.18) },
                 uLungsIntensity: { value: 0.0 },
-                uLungsRadius: { value: 0.58 },
+                uLungsRadius: { value: 0.65 },
 
                 uLiverPos: { value: new THREE.Vector3(0.22, 0.48, 0.20) },
                 uLiverIntensity: { value: 0.0 },
-                uLiverRadius: { value: 0.52 },
+                uLiverRadius: { value: 0.60 },
 
                 uStomachPos: { value: new THREE.Vector3(-0.20, 0.46, 0.22) },
                 uStomachIntensity: { value: 0.0 },
-                uStomachRadius: { value: 0.50 },
+                uStomachRadius: { value: 0.58 },
 
                 uKidneyPos: { value: new THREE.Vector3(0.18, 0.26, -0.16) },
                 uKidneyIntensity: { value: 0.0 },
-                uKidneyRadius: { value: 0.48 },
+                uKidneyRadius: { value: 0.55 },
 
                 uIntestinesPos: { value: new THREE.Vector3(0.0, 0.05, 0.20) },
                 uIntestinesIntensity: { value: 0.0 },
-                uIntestinesRadius: { value: 0.56 },
+                uIntestinesRadius: { value: 0.65 },
 
                 uNervousPos: { value: new THREE.Vector3(0.0, 0.60, -0.18) },
                 uNervousIntensity: { value: 0.0 },
-                uNervousRadius: { value: 0.54 },
+                uNervousRadius: { value: 0.60 },
             },
             vertexShader: `
-                varying vec3 vWorldPosition;
+                uniform vec3 uModelCenter;
+                uniform float uModelScale;
+
+                varying vec3 vNormalizedPos;
                 varying vec3 vNormal;
                 varying vec3 vViewDir;
 
                 void main() {
-                    vNormal = normalize(mat3(modelMatrix) * normal);
-                    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-                    vWorldPosition = worldPosition.xyz;
-                    vViewDir = normalize(cameraPosition - worldPosition.xyz);
-                    gl_Position = projectionMatrix * viewMatrix * worldPosition;
+                    vNormalizedPos = (position - uModelCenter) * uModelScale;
+                    vNormal = normalize(normalMatrix * normal);
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    vViewDir = normalize(-mvPosition.xyz);
+                    gl_Position = projectionMatrix * mvPosition;
                 }
             `,
             fragmentShader: `
@@ -956,15 +963,15 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 uniform vec3 uIntestinesPos; uniform float uIntestinesIntensity; uniform float uIntestinesRadius;
                 uniform vec3 uNervousPos; uniform float uNervousIntensity; uniform float uNervousRadius;
 
-                varying vec3 vWorldPosition;
+                varying vec3 vNormalizedPos;
                 varying vec3 vNormal;
                 varying vec3 vViewDir;
 
                 vec3 calculateHeatMapColor(float heat) {
-                    vec3 colLow = vec3(0.0, 0.82, 1.0);    // 🔵 Low impact (<0.33)
-                    vec3 colMod = vec3(0.06, 0.78, 0.45);  // 🟢 Moderate (0.33 - 0.66)
-                    vec3 colSig = vec3(0.96, 0.75, 0.04);  // 🟡 Significant (0.66 - 0.85)
-                    vec3 colHigh = vec3(0.95, 0.15, 0.20); // 🔴 High impact (>0.85)
+                    vec3 colLow = vec3(0.0, 0.85, 1.0);    // 🔵 Low impact (<0.33)
+                    vec3 colMod = vec3(0.08, 0.92, 0.45);  // 🟢 Moderate (0.33 - 0.66)
+                    vec3 colSig = vec3(0.98, 0.78, 0.05);  // 🟡 Significant (0.66 - 0.85)
+                    vec3 colHigh = vec3(0.98, 0.15, 0.20); // 🔴 High impact (>0.85)
 
                     if (heat < 0.33) {
                         return mix(colLow, colMod, heat / 0.33);
@@ -979,44 +986,47 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                     vec3 N = normalize(vNormal);
                     vec3 V = normalize(vViewDir);
 
-                    // Dynamic 3D distance heat calculations in World Space
-                    float brainHeat = smoothstep(uBrainRadius, 0.0, distance(vWorldPosition, uBrainPos)) * uBrainIntensity;
-                    float heartHeat = smoothstep(uHeartRadius, 0.0, distance(vWorldPosition, uHeartPos)) * uHeartIntensity;
-                    float lungsHeat = smoothstep(uLungsRadius, 0.0, distance(vWorldPosition, uLungsPos)) * uLungsIntensity;
-                    float liverHeat = smoothstep(uLiverRadius, 0.0, distance(vWorldPosition, uLiverPos)) * uLiverIntensity;
-                    float stomachHeat = smoothstep(uStomachRadius, 0.0, distance(vWorldPosition, uStomachPos)) * uStomachIntensity;
-                    float kidneyHeat = smoothstep(uKidneyRadius, 0.0, distance(vWorldPosition, uKidneyPos)) * uKidneyIntensity;
-                    float intestinesHeat = smoothstep(uIntestinesRadius, 0.0, distance(vWorldPosition, uIntestinesPos)) * uIntestinesIntensity;
-                    float nervousHeat = smoothstep(uNervousRadius, 0.0, distance(vWorldPosition, uNervousPos)) * uNervousIntensity;
+                    // Robust Anatomical Heat Calculations in model local space
+                    float brainHeat = smoothstep(uBrainRadius, 0.0, distance(vNormalizedPos, uBrainPos)) * uBrainIntensity;
+                    float heartHeat = smoothstep(uHeartRadius, 0.0, distance(vNormalizedPos, uHeartPos)) * uHeartIntensity;
+                    float lungsHeat = smoothstep(uLungsRadius, 0.0, distance(vNormalizedPos, uLungsPos)) * uLungsIntensity;
+                    float liverHeat = smoothstep(uLiverRadius, 0.0, distance(vNormalizedPos, uLiverPos)) * uLiverIntensity;
+                    float stomachHeat = smoothstep(uStomachRadius, 0.0, distance(vNormalizedPos, uStomachPos)) * uStomachIntensity;
+                    float kidneyHeat = max(
+                        smoothstep(uKidneyRadius, 0.0, distance(vNormalizedPos, uKidneyPos)),
+                        smoothstep(uKidneyRadius, 0.0, distance(vNormalizedPos, vec3(-uKidneyPos.x, uKidneyPos.y, uKidneyPos.z)))
+                    ) * uKidneyIntensity;
+                    float intestinesHeat = smoothstep(uIntestinesRadius, 0.0, distance(vNormalizedPos, uIntestinesPos)) * uIntestinesIntensity;
+                    float nervousHeat = smoothstep(uNervousRadius, 0.0, distance(vNormalizedPos, uNervousPos)) * uNervousIntensity;
 
                     float maxHeat = max(max(max(brainHeat, heartHeat), max(lungsHeat, liverHeat)),
                                         max(max(stomachHeat, kidneyHeat), max(intestinesHeat, nervousHeat)));
 
-                    // Realistic anatomical lighting components
-                    vec3 lightDir1 = normalize(vec3(1.2, 2.0, 2.5));
-                    vec3 lightDir2 = normalize(vec3(-1.2, 0.8, -1.8));
+                    // Lighting
+                    vec3 lightDir1 = normalize(vec3(1.2, 1.8, 2.2));
+                    vec3 lightDir2 = normalize(vec3(-1.2, 0.6, -1.2));
                     float diff1 = max(dot(N, lightDir1), 0.0);
                     float diff2 = max(dot(N, lightDir2), 0.0) * 0.35;
-                    float ambient = 0.38;
+                    float ambient = 0.45;
                     float fresnel = pow(1.0 - max(dot(N, V), 0.0), 2.2);
 
-                    vec3 baseColor = uBaseColor * (ambient + diff1 * 0.65 + diff2) + vec3(1.0) * fresnel * 0.2;
+                    vec3 baseColor = uBaseColor * (ambient + diff1 * 0.55 + diff2) + vec3(1.0) * fresnel * 0.25;
 
                     if (uIsGlassMode > 0.5) {
                         vec3 holoGlow = uGlowColor * fresnel * 1.8;
-                        if (maxHeat > 0.01) {
+                        if (maxHeat > 0.005) {
                             vec3 heatColor = calculateHeatMapColor(maxHeat);
-                            holoGlow = mix(holoGlow, heatColor * 2.5, smoothstep(0.01, 0.6, maxHeat));
+                            holoGlow = mix(holoGlow, heatColor * 2.5, smoothstep(0.005, 0.5, maxHeat));
                         }
                         float alpha = clamp(fresnel * 0.75 + 0.15 + maxHeat * 0.5, 0.0, 1.0);
                         gl_FragColor = vec4(holoGlow, alpha);
                     } else {
                         vec3 finalColor = baseColor;
-                        if (maxHeat > 0.01) {
+                        if (maxHeat > 0.005) {
                             vec3 heatColor = calculateHeatMapColor(maxHeat);
-                            float blendWeight = smoothstep(0.01, 0.6, maxHeat);
-                            finalColor = mix(finalColor, heatColor * (0.75 + 0.45 * diff1), blendWeight * 0.92);
-                            finalColor += heatColor * (maxHeat * 2.0 + pow(maxHeat, 2.0) * 1.5);
+                            float blendWeight = smoothstep(0.005, 0.45, maxHeat);
+                            finalColor = mix(finalColor, heatColor * (0.85 + 0.35 * diff1), blendWeight * 0.95);
+                            finalColor += heatColor * (maxHeat * 2.2 + pow(maxHeat, 2.0) * 1.8);
                         }
                         gl_FragColor = vec4(finalColor, 1.0);
                     }
@@ -1036,6 +1046,7 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
             mesh.name = "outer-body-skin";
             mesh.userData.isOuterBody = true;
             mesh.material = mat;
+            mesh.material.needsUpdate = true;
             mesh.castShadow = true;
             mesh.receiveShadow = true;
         });
@@ -1057,11 +1068,17 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
         obj.position.set(-center.x * s, -center.y * s, -center.z * s);
         obj.updateMatrixWorld(true);
 
+        // Feed geometry center and scale to shader uniforms
+        if (mat && mat.uniforms) {
+            mat.uniforms.uModelCenter.value.copy(center);
+            mat.uniforms.uModelScale.value = s;
+        }
+
         // Expose the outer body group for landmark projection
         if (outerBodyGroupRef && groupRef.current) {
             outerBodyGroupRef.current = groupRef.current;
         }
-    }, [obj, outerBodyGroupRef]);
+    }, [obj, mat, outerBodyGroupRef]);
 
     useFrame((state) => {
         const time = state.clock.elapsedTime;
@@ -1073,23 +1090,30 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
 
         effects.forEach(e => {
             const name = (e.structure_name || '').toLowerCase();
-            const intensity = e.intensity !== undefined ? Number(e.intensity) : 0.8;
-            if (intensity > 0.05) {
-                if (name.includes('brain') || name.includes('cns') || name.includes('skull') || name.includes('head') || name.includes('neuro') || name.includes('synap')) {
+            const intensity = e.intensity !== undefined && e.intensity !== null ? Number(e.intensity) : 0.8;
+            if (intensity > 0.01) {
+                if (name.includes('brain') || name.includes('cns') || name.includes('skull') || name.includes('head') || name.includes('neuro') || name.includes('synap') || name.includes('central nervous') || name.includes('cerebr')) {
                     intensities.Brain = Math.max(intensities.Brain, intensity);
-                } else if (name.includes('heart') || name.includes('cardiac') || name.includes('cardio') || name.includes('vascular')) {
+                }
+                if (name.includes('heart') || name.includes('cardiac') || name.includes('cardio') || name.includes('vascular') || name.includes('arter') || name.includes('blood pressure') || name.includes('circulat')) {
                     intensities.Heart = Math.max(intensities.Heart, intensity);
-                } else if (name.includes('lung') || name.includes('pulmonary') || name.includes('ribs') || name.includes('respiratory')) {
+                }
+                if (name.includes('lung') || name.includes('pulmonary') || name.includes('ribs') || name.includes('respiratory') || name.includes('bronch') || name.includes('alveol') || name.includes('breath') || name.includes('airway')) {
                     intensities.Lungs = Math.max(intensities.Lungs, intensity);
-                } else if (name.includes('liver') || name.includes('hepatic') || name.includes('metabol')) {
+                }
+                if (name.includes('liver') || name.includes('hepatic') || name.includes('metabol') || name.includes('first-pass') || name.includes('clearance') || name.includes('cyp') || name.includes('bile')) {
                     intensities.Liver = Math.max(intensities.Liver, intensity);
-                } else if (name.includes('stomach') || name.includes('gastric') || name.includes('digest')) {
+                }
+                if (name.includes('stomach') || name.includes('gastric') || name.includes('digest') || name.includes('acid') || name.includes('ulcer') || name.includes('peptic') || name.includes('mucosa') || name.includes('gi')) {
                     intensities.Stomach = Math.max(intensities.Stomach, intensity);
-                } else if (name.includes('kidney') || name.includes('renal')) {
+                }
+                if (name.includes('kidney') || name.includes('renal') || name.includes('nephr') || name.includes('filtration') || name.includes('glomerul') || name.includes('urinar') || name.includes('excret')) {
                     intensities.Kidney = Math.max(intensities.Kidney, intensity);
-                } else if (name.includes('intestine') || name.includes('colon') || name.includes('gut') || name.includes('bowel')) {
+                }
+                if (name.includes('intestine') || name.includes('colon') || name.includes('gut') || name.includes('bowel') || name.includes('enteric') || name.includes('absorp') || name.includes('microbio')) {
                     intensities.Intestines = Math.max(intensities.Intestines, intensity);
-                } else if (name.includes('spine') || name.includes('nervous') || name.includes('spinal')) {
+                }
+                if (name.includes('spine') || name.includes('nervous') || name.includes('spinal') || name.includes('vertebra') || name.includes('back') || name.includes('cord')) {
                     intensities.Nervous = Math.max(intensities.Nervous, intensity);
                 }
             }
