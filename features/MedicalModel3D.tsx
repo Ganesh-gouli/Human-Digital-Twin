@@ -35,7 +35,7 @@ const HumanModel = (props: any) => {
     // Smooth rotation
     useFrame(() => {
         if (meshRef.current) {
-            meshRef.current.rotation.y += 0.10;
+            meshRef.current.rotation.y += 0.005;
         }
     });
 

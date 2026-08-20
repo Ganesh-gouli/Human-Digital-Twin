@@ -96,8 +96,28 @@ const QuantumPulse: React.FC = () => {
         setError('');
       } catch (err) {
         if (!isMounted) return;
-        console.error("Error fetching QuantumPulse Hybrid data:", err);
-        setError('Ensure the Hybrid Camera+WiFi Backend (quantum_hybrid.py) is running on port 5004.');
+        // Fallback: Generate real-time synthetic biometric wave data so UI is interactive
+        const t = Date.now() / 1000;
+        const pulseWave = Array.from({ length: 30 }, (_, i) => Math.sin((i + t * 4) * 0.4) * 1.5 + (Math.random() - 0.5) * 0.1);
+        const respWave = Array.from({ length: 30 }, (_, i) => Math.cos((i + t * 2) * 0.2) * 2.0 + (Math.random() - 0.5) * 0.1);
+        
+        setData({
+          heart_rate: Math.floor(72 + Math.sin(t * 0.5) * 4),
+          respiratory_rate: Math.floor(16 + Math.cos(t * 0.3) * 2),
+          stress_level: 24,
+          fatigue_level: 15,
+          wifi_activity: "Simulated RF Sensing",
+          wifi_rssi: -58,
+          confidence: 94,
+          presence_detected: true,
+          no_breathing_alert: false,
+          tachycardia_alert: false,
+          bradycardia_alert: false,
+          facial_expression: "Normal",
+          pulse_wave: pulseWave,
+          resp_wave: respWave
+        });
+        setError('Demo Mode (Live Simulation active). Start quantum_hybrid.py on port 5004 for hardware camera + RF sensing.');
       }
     };
     
