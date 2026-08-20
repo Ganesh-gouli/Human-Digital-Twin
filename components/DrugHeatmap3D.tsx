@@ -934,29 +934,42 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                     uniform vec3 uIntestinesPos; uniform float uIntestinesIntensity;
                     uniform vec3 uNervousPos; uniform float uNervousIntensity;
 
+                    vec3 calculateHeatMapColor(float heat) {
+                        vec3 colLow = vec3(0.0, 0.82, 1.0);    // 🔵 Low impact
+                        vec3 colMod = vec3(0.06, 0.78, 0.45);  // 🟢 Moderate
+                        vec3 colSig = vec3(0.96, 0.75, 0.04);  // 🟡 Significant
+                        vec3 colHigh = vec3(0.95, 0.15, 0.20); // 🔴 High impact
+
+                        if (heat < 0.33) {
+                            return mix(colLow, colMod, heat / 0.33);
+                        } else if (heat < 0.66) {
+                            return mix(colMod, colSig, (heat - 0.33) / 0.33);
+                        } else {
+                            return mix(colSig, colHigh, clamp((heat - 0.66) / 0.34, 0.0, 1.0));
+                        }
+                    }
+
                     void main() {
                         vec3 finalGlow = glowColor * intensity * 1.5;
                         
-                        float brainGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uBrainPos));
-                        float heartGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uHeartPos));
-                        float lungsGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uLungsPos));
-                        float liverGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uLiverPos));
-                        float stomachGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uStomachPos));
-                        float kidneyGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uKidneyPos));
-                        float intestinesGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uIntestinesPos));
-                        float nervousGlow = smoothstep(0.4, 0.0, distance(vLocalPosition, uNervousPos));
+                        float brainGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uBrainPos)) * uBrainIntensity;
+                        float heartGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uHeartPos)) * uHeartIntensity;
+                        float lungsGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uLungsPos)) * uLungsIntensity;
+                        float liverGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uLiverPos)) * uLiverIntensity;
+                        float stomachGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uStomachPos)) * uStomachIntensity;
+                        float kidneyGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uKidneyPos)) * uKidneyIntensity;
+                        float intestinesGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uIntestinesPos)) * uIntestinesIntensity;
+                        float nervousGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uNervousPos)) * uNervousIntensity;
 
-                        vec3 redGlow = vec3(1.0, 0.18, 0.18);
-                        finalGlow += redGlow * brainGlow * uBrainIntensity * 1.2;
-                        finalGlow += redGlow * heartGlow * uHeartIntensity * 1.2;
-                        finalGlow += redGlow * lungsGlow * uLungsIntensity * 1.2;
-                        finalGlow += redGlow * liverGlow * uLiverIntensity * 1.2;
-                        finalGlow += redGlow * stomachGlow * uStomachIntensity * 1.2;
-                        finalGlow += redGlow * kidneyGlow * uKidneyIntensity * 1.2;
-                        finalGlow += redGlow * intestinesGlow * uIntestinesIntensity * 1.2;
-                        finalGlow += redGlow * nervousGlow * uNervousIntensity * 1.2;
+                        float maxHeat = max(max(max(brainGlow, heartGlow), max(lungsGlow, liverGlow)),
+                                            max(max(stomachGlow, kidneyGlow), max(intestinesGlow, nervousGlow)));
 
-                        gl_FragColor = vec4(finalGlow, intensity * 0.8 + 0.1);
+                        if (maxHeat > 0.01) {
+                            vec3 heatColor = calculateHeatMapColor(maxHeat);
+                            finalGlow = mix(finalGlow, heatColor * 2.2, smoothstep(0.01, 0.7, maxHeat));
+                        }
+
+                        gl_FragColor = vec4(finalGlow, clamp(intensity * 0.8 + 0.1 + maxHeat * 0.4, 0.0, 1.0));
                     }
                 `,
                 side: THREE.BackSide,
@@ -1016,30 +1029,44 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                  uniform vec3 uStomachPos; uniform float uStomachIntensity;
                  uniform vec3 uKidneyPos; uniform float uKidneyIntensity;
                  uniform vec3 uIntestinesPos; uniform float uIntestinesIntensity;
-                 uniform vec3 uNervousPos; uniform float uNervousIntensity;`
+                 uniform vec3 uNervousPos; uniform float uNervousIntensity;
+
+                 vec3 calculateHeatMapColor(float heat) {
+                     vec3 colLow = vec3(0.0, 0.82, 1.0);    // 🔵 Low impact
+                     vec3 colMod = vec3(0.06, 0.78, 0.45);  // 🟢 Moderate
+                     vec3 colSig = vec3(0.96, 0.75, 0.04);  // 🟡 Significant
+                     vec3 colHigh = vec3(0.95, 0.15, 0.20); // 🔴 High impact
+
+                     if (heat < 0.33) {
+                         return mix(colLow, colMod, heat / 0.33);
+                     } else if (heat < 0.66) {
+                         return mix(colMod, colSig, (heat - 0.33) / 0.33);
+                     } else {
+                         return mix(colSig, colHigh, clamp((heat - 0.66) / 0.34, 0.0, 1.0));
+                     }
+                 }`
             );
 
             shader.fragmentShader = shader.fragmentShader.replace(
                 '#include <emissivemap_fragment>',
                 `#include <emissivemap_fragment>
-                 float brainGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uBrainPos));
-                 float heartGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uHeartPos));
-                 float lungsGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uLungsPos));
-                 float liverGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uLiverPos));
-                 float stomachGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uStomachPos));
-                 float kidneyGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uKidneyPos));
-                 float intestinesGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uIntestinesPos));
-                 float nervousGlow = smoothstep(0.45, 0.0, distance(vLocalPosition, uNervousPos));
+                 float brainGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uBrainPos)) * uBrainIntensity;
+                 float heartGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uHeartPos)) * uHeartIntensity;
+                 float lungsGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uLungsPos)) * uLungsIntensity;
+                 float liverGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uLiverPos)) * uLiverIntensity;
+                 float stomachGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uStomachPos)) * uStomachIntensity;
+                 float kidneyGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uKidneyPos)) * uKidneyIntensity;
+                 float intestinesGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uIntestinesPos)) * uIntestinesIntensity;
+                 float nervousGlow = smoothstep(0.48, 0.0, distance(vLocalPosition, uNervousPos)) * uNervousIntensity;
 
-                 vec3 redColor = vec3(1.0, 0.18, 0.18);
-                 totalEmissiveRadiance += redColor * brainGlow * uBrainIntensity * 4.0;
-                 totalEmissiveRadiance += redColor * heartGlow * uHeartIntensity * 4.0;
-                 totalEmissiveRadiance += redColor * lungsGlow * uLungsIntensity * 4.0;
-                 totalEmissiveRadiance += redColor * liverGlow * uLiverIntensity * 4.0;
-                 totalEmissiveRadiance += redColor * stomachGlow * uStomachIntensity * 4.0;
-                 totalEmissiveRadiance += redColor * kidneyGlow * uKidneyIntensity * 4.0;
-                 totalEmissiveRadiance += redColor * intestinesGlow * uIntestinesIntensity * 4.0;
-                 totalEmissiveRadiance += redColor * nervousGlow * uNervousIntensity * 4.0;`
+                 float maxHeat = max(max(max(brainGlow, heartGlow), max(lungsGlow, liverGlow)),
+                                     max(max(stomachGlow, kidneyGlow), max(intestinesGlow, nervousGlow)));
+
+                 if (maxHeat > 0.01) {
+                     vec3 heatColor = calculateHeatMapColor(maxHeat);
+                     diffuseColor.rgb = mix(diffuseColor.rgb, heatColor, smoothstep(0.01, 0.7, maxHeat) * 0.85);
+                     totalEmissiveRadiance += heatColor * (maxHeat * 3.0 + pow(maxHeat, 2.0) * 2.0);
+                 }`
             );
 
             physicalMat.userData.shaderUniforms = shader.uniforms;
@@ -1885,21 +1912,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                         )}
                     </React.Suspense>
 
-                    {/* ── OUTER BODY: Landmark-based anatomically accurate indicators ── */}
-                    {(showBody || showMuscles) && (
-                        <LandmarkIndicators
-                            effects={effects}
-                            outerBodyRef={outerBodyGroupRef}
-                            debugMode={debugMode}
-                        />
-                    )}
-
-                    {/* ── INTERNAL VIEW: Traditional raycasted indicators ── */}
-                    {!showBody && !showMuscles && (
-                        <DamageIndicators effects={effects} debugMode={debugMode} />
-                    )}
-
-                    {/* ── Calibration tool: click outer body to get landmark coords ── */}
+                    {/* Calibration tool: active only when calibrationMode is enabled */}
                     {calibrationMode && (
                         <CalibrationMode active={calibrationMode} outerBodyRef={outerBodyGroupRef} />
                     )}
@@ -1932,6 +1945,34 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 />
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>
+
+            {/* ── 4-Tier Surface Heat-Map Impact Legend ───────────────────── */}
+            {effects.length > 0 && (
+                <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px]">
+                    <div className="flex items-center gap-2 font-bold text-white/90 text-[11px] uppercase tracking-wider border-b border-white/10 pb-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        Surface Impact Heat-Map
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#00d2ff] shadow-[0_0_8px_#00d2ff]" />
+                            <span className="text-slate-300">🔵 Low Impact</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
+                            <span className="text-slate-300">🟢 Moderate</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]" />
+                            <span className="text-slate-300">🟡 Significant</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] shadow-[0_0_8px_#ef4444]" />
+                            <span className="text-slate-300">🔴 High Impact</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ── Hover tooltip ─────────────────────────────────────────── */}
             {hoveredOrgan && hoveredEffect && (() => {
