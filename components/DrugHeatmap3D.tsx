@@ -1386,34 +1386,20 @@ const getMeshOnlyBoundingBox = (object: THREE.Object3D) => {
     return { box, hasMesh };
 };
 
-const normalizeModel = (model: THREE.Object3D, referenceModel: THREE.Object3D) => {
+const normalizeModel = (model: THREE.Object3D) => {
     // 1. Reset target model transforms before measuring
     model.position.set(0, 0, 0);
     model.rotation.set(0, 0, 0);
     model.scale.setScalar(1);
     model.updateMatrixWorld(true);
 
-    // Clone the reference model to safely inspect it without disrupting its active transforms
-    const refClone = referenceModel.clone();
-    refClone.position.set(0, 0, 0);
-    refClone.rotation.set(0, 0, 0);
-    refClone.scale.setScalar(1);
-    refClone.updateMatrixWorld(true);
+    const targetHeight = 4.0; // Standard Anatomy visual height
 
-    // Compute the reference model (Anatomy) bounding box using mesh-only bounds
-    const refBoxResult = getMeshOnlyBoundingBox(refClone);
-    const refSize = refBoxResult.box.getSize(new THREE.Vector3());
-    const refMaxDim = Math.max(refSize.x, refSize.y, refSize.z);
-    
-    // Scale factor used by HumanModel
-    const refScale = 4.0 / (refMaxDim || 1);
-    const targetHeight = refSize.y * refScale; // Typically exactly 4.0
-
-    // Compute target model (Muscles) bounding box using mesh-only bounds
+    // Compute target model bounding box using mesh-only bounds
     const modelBoxResult = getMeshOnlyBoundingBox(model);
     const modelSize = modelBoxResult.box.getSize(new THREE.Vector3());
 
-    // Scale target model to match the reference model visual height
+    // Scale target model to match the reference visual height
     const modelScale = targetHeight / (modelSize.y || 1);
     model.scale.setScalar(modelScale);
 
@@ -1432,27 +1418,22 @@ const normalizeModel = (model: THREE.Object3D, referenceModel: THREE.Object3D) =
 
 const MusclesModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick }) => {
     const { scene: gltfScene } = useGLTF('/human_anatomy_by_tripo.glb');
-    const refObj = useLoader(OBJLoader, '/Human.obj');
     const groupRef = useRef<THREE.Group>(null);
-    const { camera, gl, raycaster, scene } = useThree();
+    const { camera, gl, raycaster } = useThree();
 
-    const clonedScene = useMemo(() => SkeletonUtils.clone(gltfScene), [gltfScene]);
-    const registry = useAnatomyHighlighter(clonedScene, effects, isGlassMode);
-
-    useMemo(() => {
-        clonedScene.traverse(child => {
+    const clonedScene = useMemo(() => {
+        const cloned = SkeletonUtils.clone(gltfScene);
+        cloned.traverse(child => {
             if ((child as THREE.Mesh).isMesh) {
                 child.name = "outer-body-muscles";
                 child.userData.isOuterBody = true;
             }
         });
-    }, [clonedScene]);
+        normalizeModel(cloned);
+        return cloned;
+    }, [gltfScene]);
 
-    useEffect(() => {
-        if (clonedScene && refObj) {
-            normalizeModel(clonedScene, refObj);
-        }
-    }, [clonedScene, refObj]);
+    const registry = useAnatomyHighlighter(clonedScene, effects, isGlassMode);
 
     const getOrgan = useCallback((e: PointerEvent): string | null => {
         const rect = gl.domElement.getBoundingClientRect();
@@ -1506,7 +1487,6 @@ const MusclesModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGl
 // ---------------------------------------------------------------------------
 const NervousGLBModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick }) => {
     const { scene } = useGLTF('/nervous.glb');
-    const refObj = useLoader(OBJLoader, '/Human.obj');
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
 
@@ -1519,16 +1499,11 @@ const NervousGLBModel: React.FC<HumanModelProps> = React.memo(({ effects = [], i
                 mesh.receiveShadow = true;
             }
         });
+        normalizeModel(cloned);
         return cloned;
     }, [scene]);
 
     const registry = useAnatomyHighlighter(clonedScene, effects, isGlassMode);
-
-    useEffect(() => {
-        if (clonedScene && refObj) {
-            normalizeModel(clonedScene, refObj);
-        }
-    }, [clonedScene, refObj]);
 
     const getOrgan = useCallback((e: PointerEvent): string | null => {
         const rect = gl.domElement.getBoundingClientRect();
