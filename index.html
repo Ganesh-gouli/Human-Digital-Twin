@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Hub AI</title>
+  <!-- Add Google Fonts (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'pulse-slower': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'slide-in-left': 'slideInLeft 0.8s ease-out forwards',
+            'wave': 'wave 2s infinite',
+            'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+            'zoom-slow': 'zoomSlow 20s infinite alternate',
+            'float': 'float 6s ease-in-out infinite',
+            'enter': 'enterDoor 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+            'exit': 'exitDoor 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+            'pan-slow': 'panSlow 20s ease-in-out infinite alternate',
+            'glitch': 'glitch 0.5s ease-in-out forwards',
+            'float-sphere': 'floatSphere 8s ease-in-out infinite',
+            'glass-shimmer': 'glassShimmer 5s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            floatSphere: {
+              '0%, 100%': { transform: 'translateY(0) scale(1)' },
+              '50%': { transform: 'translateY(-20px) scale(1.02)' },
+            },
+            glassShimmer: {
+              '0%': { opacity: '0.8', transform: 'translateY(0)' },
+              '100%': { opacity: '1', transform: 'translateY(-5px)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            slideInLeft: {
+              '0%': { opacity: '0', transform: 'translateX(-50px)' },
+              '100%': { opacity: '1', transform: 'translateX(0)' },
+            },
+            wave: {
+              '0%, 100%': { transform: 'rotate(0deg)' },
+              '50%': { transform: 'rotate(15deg)' },
+            },
+            shake: {
+              '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+              '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+              '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+              '40%, 60%': { transform: 'translate3d(4px, 0, 0)' },
+            },
+            zoomSlow: {
+              '0%': { transform: 'scale(1)' },
+              '100%': { transform: 'scale(1.1)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            enterDoor: {
+              '0%': { transform: 'scale(1) translateY(0)', opacity: '1' },
+              '100%': { transform: 'scale(0.8) translateY(-20px)', opacity: '0' },
+            },
+            exitDoor: {
+              '0%': { transform: 'scale(0.8) translateY(-20px)', opacity: '0' },
+              '100%': { transform: 'scale(1) translateY(0)', opacity: '1' },
+            },
+            panSlow: {
+              '0%': { backgroundPosition: '0% 50%' },
+              '100%': { backgroundPosition: '100% 50%' },
+            },
+            glitch: {
+              '0%': { transform: 'translate(0)' },
+              '20%': { transform: 'translate(-2px, 2px)' },
+              '40%': { transform: 'translate(-2px, -2px)' },
+              '60%': { transform: 'translate(2px, 2px)' },
+              '80%': { transform: 'translate(2px, -2px)' },
+              '100%': { transform: 'translate(0)' },
+            },
+            scan: {
+              '0%': { top: '0%', opacity: '0' },
+              '10%': { opacity: '1' },
+              '90%': { opacity: '1' },
+              '100%': { top: '100%', opacity: '0' },
+            },
+          }
+        }
+      }
+    }
+  </script>
+
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-950 antialiased selection:bg-green-200 dark:selection:bg-green-900">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

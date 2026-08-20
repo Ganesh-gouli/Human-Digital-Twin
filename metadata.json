@@ -1,0 +1,8 @@
+{
+  "name": "Health Hub AI",
+  "description": "An AI-powered health and fitness assistant that provides personalized diet plans, medical report analysis, calorie tracking, and customized exercise routines to help you achieve your wellness goals.",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ]
+}

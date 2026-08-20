@@ -1,0 +1,26 @@
+[36mvite v6.4.1 [32mbuilding for production...[36m[39m
+
+/index.css doesn't exist at build time, it will remain unchanged to be resolved at runtime
+transforming...
+[32m✓[39m 1286 modules transformed.
+[31m✗[39m Build failed in 6.27s
+[31merror during build:
+[31mfeatures/Dashboard.tsx (8:26): "calculateMaintenanceCalories" is not exported by "utils/helpers.ts", imported by "features/Dashboard.tsx".[31m
+file: [36mC:/Users/lenovo/OneDrive/Desktop/Hackthon project 1/features/Dashboard.tsx:8:26[31m
+[33m
+6: import { Page } from '../types';
+7: import { generateHealthTip } from '../services/geminiService';
+8: import { getErrorMessage, calculateMaintenanceCalories } from '../utils/helpers';
+                             ^
+9: import { sendDailyReport } from '../services/emailService';
+[31m
+    at getRollupError (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
+    at error (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/parseAst.js:398:42)
+    at Module.error (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:17040:16)
+    at Module.traceVariable (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:17452:29)
+    at ModuleScope.findVariable (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:15070:39)
+    at ReturnValueScope.findVariable (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at FunctionBodyScope.findVariable (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at ReturnValueScope.findVariable (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at FunctionBodyScope.findVariable (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at Identifier.bind (file:///C:/Users/lenovo/OneDrive/Desktop/Hackthon%20project%201/node_modules/rollup/dist/es/shared/node-entry.js:5447:40)[39m
