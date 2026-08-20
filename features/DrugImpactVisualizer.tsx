@@ -479,6 +479,22 @@ export const DrugImpactVisualizer = () => {
 
     const [viewMode, setViewMode] = useState<'BODY' | 'SKELETON' | 'ORGANS' | 'MUSCLES' | 'NERVOUS_GLB'>('BODY');
 
+    const VIEW_MODE_CYCLE: ('BODY' | 'MUSCLES' | 'NERVOUS_GLB' | 'SKELETON' | 'ORGANS')[] = [
+        'BODY',
+        'MUSCLES',
+        'NERVOUS_GLB',
+        'SKELETON',
+        'ORGANS'
+    ];
+
+    const cycleNextViewMode = () => {
+        setViewMode(current => {
+            const idx = VIEW_MODE_CYCLE.indexOf(current);
+            const nextIdx = (idx + 1) % VIEW_MODE_CYCLE.length;
+            return VIEW_MODE_CYCLE[nextIdx];
+        });
+    };
+
     // Multi-Drug / Food / Disease Interaction checker state variables
     const [interactionDrugs, setInteractionDrugs] = useState<string[]>(['Ibuprofen']);
     const [interactionFoods, setInteractionFoods] = useState<string[]>(['Grapefruit juice']);
@@ -1579,7 +1595,7 @@ This document is a simulated educational clinical report.
                                     setHandZoomDelta(0);
                                     setCameraResetFlag(v => v + 1);
                                 }}
-                                onToggleView={() => setViewMode(v => v === 'BODY' ? 'SKELETON' : 'BODY')}
+                                onToggleView={cycleNextViewMode}
                             />
 
                             {/* Organ Pathology Diagnostics HUD Overlay */}
@@ -2978,7 +2994,7 @@ This document is a simulated educational clinical report.
                                             setHandZoomDelta(0);
                                             setCameraResetFlag(v => v + 1);
                                         }}
-                                        onToggleView={() => setViewMode(v => v === 'BODY' ? 'SKELETON' : 'BODY')}
+                                        onToggleView={cycleNextViewMode}
                                     />
                                 </div>
 

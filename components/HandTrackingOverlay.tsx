@@ -347,16 +347,14 @@ const HandTrackingOverlay: React.FC<HandTrackingOverlayProps> = ({
             </div>
 
             <div className="text-[10px] font-mono text-white/40 mt-2 text-center leading-tight">
-
                 Pinch to Zoom 🤏 <br />
                 Move 1 Finger to Rotate ☝️ <br />
                 Open Palm to Reset 🖐️ <br />
-                Peace Sign to Toggle ✌️ <br />
+                Peace Sign to Switch 3D Model ✌️ <br />
 
                 <span className="text-yellow-400 font-bold mt-1 block">
                     Active: {currentGestureName}
                 </span>
-
             </div>
 
         </div>
