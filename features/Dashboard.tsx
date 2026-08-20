@@ -7,7 +7,6 @@ import { Page } from '../types';
 import { generateHealthTip } from '../services/geminiService';
 import { getErrorMessage } from '../utils/helpers';
 import { calculateMaintenanceCalories } from '../services/helpers';
-import { sendDailyReport } from '../services/emailService';
 import { Hyperspeed, hyperspeedPresets } from '../components/MagicBento/ui/Hyperspeed';
 
 interface FeatureCardProps {
@@ -87,8 +86,6 @@ const Dashboard: React.FC = () => {
     const { user, dailyLog, logHistory, navigateTo, isDarkMode, healthTipData, setHealthTipData, language, setLanguage } = useAppContext();
     const [tipError, setTipError] = useState('');
     const [isTipLoading, setIsTipLoading] = useState(false);
-    const [isSendingEmail, setIsSendingEmail] = useState(false);
-    const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     const t = TRANSLATIONS[language] || TRANSLATIONS['English'];
 
@@ -168,7 +165,6 @@ const Dashboard: React.FC = () => {
     };
 
     const features: FeatureCardProps[] = [
-        { title: "QuantumPulse AI", description: "Contactless ambient health monitoring via WiFi & EM waves.", icon: ICONS.wifi, page: 'QUANTUM_PULSE', colorClass: 'bg-cyan-500', gradient: 'from-cyan-400 to-blue-600' },
         { title: "Drug Impact Visualizer", description: "Analyze how a drug affects the human body.", icon: ICONS.diet, page: 'DRUG_VISUALIZER', colorClass: 'bg-rose-500', gradient: 'from-rose-400 to-red-600' },
         { title: "Medical Imaging AI", description: "Upload X-Ray, MRI or CT scans for AI-powered diagnostic analysis.", icon: ICONS.report, page: 'MEDICAL_IMAGING', colorClass: 'bg-sky-500', gradient: 'from-sky-400 to-indigo-600' },
         { title: "Skin AI Lab", description: "AI-powered dermatological analysis and specialist finder.", icon: ICONS.diet, page: 'SKIN_DETECTION', colorClass: 'bg-emerald-500', gradient: 'from-emerald-400 to-cyan-600' },
@@ -182,9 +178,9 @@ const Dashboard: React.FC = () => {
         { title: t.features.calorie_counter.title, description: t.features.calorie_counter.desc, icon: ICONS.flame, page: 'CALORIE_COUNTER', colorClass: 'bg-orange-500', gradient: 'from-orange-400 to-red-600' },
         { title: t.features.diet_plan.title, description: t.features.diet_plan.desc, icon: ICONS.diet, page: 'DIET_PLANNER', colorClass: 'bg-emerald-500', gradient: 'from-emerald-400 to-teal-600' },
         { title: t.features.health_services.title, description: t.features.health_services.desc, icon: ICONS.mapPin, page: 'LOCATION_TRACKER', colorClass: 'bg-rose-500', gradient: 'from-rose-400 to-red-600' },
-        // Appending the remaining modules not explicitly listed in the prompt
         { title: "Diabetes Risk Predictor", description: "AI-driven assessment for early diabetes detection.", icon: ICONS.report, page: 'DIABETES_PREDICTION', colorClass: 'bg-cyan-500', gradient: 'from-cyan-400 to-blue-600' },
         { title: t.features.todays_goal.title, description: t.features.todays_goal.desc, icon: ICONS.goal, page: 'TODAYS_GOAL', colorClass: 'bg-indigo-500', gradient: 'from-indigo-400 to-violet-600' },
+        { title: "QuantumPulse AI", description: "Contactless ambient health monitoring via WiFi & EM waves.", icon: ICONS.wifi, page: 'QUANTUM_PULSE', colorClass: 'bg-cyan-500', gradient: 'from-cyan-400 to-blue-600' },
     ];
 
     // Memoized Calculations
@@ -272,38 +268,7 @@ const Dashboard: React.FC = () => {
                         <p className="text-lg text-blue-100/70 font-medium">{t.subtitle}</p>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={handleSendReport}
-                            disabled={isSendingEmail || emailStatus === 'success'}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-lg border border-white/10 backdrop-blur-md ${emailStatus === 'success'
-                                ? 'bg-green-500/20 text-green-200 border-green-500/30'
-                                : emailStatus === 'error'
-                                    ? 'bg-red-500/20 text-red-200 border-red-500/30 hover:bg-red-500/30'
-                                    : 'bg-white/10 text-white hover:bg-white/20'
-                                }`}
-                        >
-                            {isSendingEmail ? (
-                                <>
-                                    <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <span>Sending...</span>
-                                </>
-                            ) : emailStatus === 'success' ? (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                    <span>Sent!</span>
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                    <span>Report</span>
-                                </>
-                            )}
-                        </button>
-
+                    <div className="flex items-center gap-3 font-sans">
                         <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 shadow-lg">
                             <div className="px-4 py-2 rounded-xl bg-white/10 text-xs font-bold text-white uppercase tracking-wider">
                                 {t.language}

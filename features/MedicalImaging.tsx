@@ -134,7 +134,12 @@ const MedicalImaging: React.FC = () => {
         });
 
     const processFile = useCallback((file: File) => {
-        if (!file.type.startsWith('image/')) return;
+        if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+            setErrorMsg('Unsupported file format. Please upload a valid medical image (JPEG, PNG, WEBP) or PDF scan.');
+            setPhase('error');
+            setAiResult(null);
+            return;
+        }
         const url = URL.createObjectURL(file);
         setImageUrl(url);
         setPhase('scanning');
@@ -755,6 +760,12 @@ const MedicalImaging: React.FC = () => {
                             </div>
                         )}
                     </div>
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3 text-xs text-amber-200 mt-6">
+                    <Shield className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <p>
+                        <strong>Medical Safety Notice:</strong> AI-generated analysis for informational purposes only. This result should not replace evaluation by a qualified healthcare professional.
+                    </p>
                 </div>
                 <NearbyDoctors searchType="radiology" title="Nearby Radiology Centers & Imaging Clinics" />
             </div>

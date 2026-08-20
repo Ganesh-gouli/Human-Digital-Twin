@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
-import { OrbitControls, Environment, Sparkles, ContactShadows, useGLTF, Html } from '@react-three/drei';
+import { OrbitControls, Environment, Sparkles, ContactShadows, useGLTF, Html, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
 import { OBJLoader, SkeletonUtils } from 'three-stdlib';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
@@ -8,14 +8,31 @@ import { HeatmapEffect } from '../types';
 import gsap from 'gsap';
 import { LandmarkIndicators, CalibrationMode } from './LandmarkIndicator';
 
-const CanvasLoaderFallback: React.FC = () => (
-    <Html center>
-        <div className="flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md rounded-2xl border border-white/10 text-center shadow-2xl min-w-[200px] pointer-events-none select-none">
-            <div className="w-8 h-8 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin mb-2" />
-            <span className="text-[10px] font-black text-rose-300 uppercase tracking-widest">Loading 3D Anatomy Model...</span>
-        </div>
-    </Html>
-);
+// Preload GLB models globally to prevent reloading on component re-mount
+try {
+    useGLTF.preload('/Inner organs.glb');
+    useGLTF.preload('/human_anatomy_by_tripo.glb');
+    useGLTF.preload('/nervous.glb');
+} catch (e) {
+    console.warn("GLTF preloading warning:", e);
+}
+
+const CanvasLoaderFallback: React.FC = () => {
+    const { progress } = useProgress();
+    return (
+        <Html center>
+            <div className="flex flex-col items-center justify-center p-5 bg-slate-950/85 backdrop-blur-xl rounded-2xl border border-white/15 text-center shadow-2xl min-w-[220px] pointer-events-none select-none">
+                <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin mb-3" />
+                <span className="text-xs font-black text-emerald-300 uppercase tracking-widest">
+                    Loading 3D Anatomy... {Math.round(progress)}%
+                </span>
+                <div className="w-full bg-white/10 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-400 to-cyan-400 h-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                </div>
+            </div>
+        </Html>
+    );
+};
 
 // ─── Base color (matches Iron Man Hologram) ───────────────────────────────────
 const BASE_COLOR = new THREE.Color('#00ffff');
@@ -861,7 +878,7 @@ const SceneRotator: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     return <group ref={groupRef} name="scene-rotator-group">{children}</group>;
 };
 
-const HumanModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, onOrganHover, onOrganClick, isExploded, outerBodyGroupRef }) => {
+const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, isExploded, outerBodyGroupRef }) => {
     const obj = useLoader(OBJLoader, '/Human.obj');
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster, scene } = useThree();
@@ -1029,7 +1046,7 @@ const HumanModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, onOr
         };
 
         return physicalMat;
-    }, [isGlassMode, camera.position]);
+    }, [isGlassMode]);
 
     useMemo(() => {
         obj.traverse(child => {
@@ -1158,9 +1175,9 @@ const HumanModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, onOr
     }, [gl, getOrgan, onOrganHover, onOrganClick]);
 
     return <group ref={groupRef}><primitive object={obj} /></group>;
-};
+});
 
-const SkeletonModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, onOrganHover, onOrganClick, visible = true }) => {
+const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, visible = true }) => {
     const obj = useLoader(OBJLoader, '/skeleton.obj');
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
@@ -1247,9 +1264,9 @@ const SkeletonModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, o
     }, [gl, getOrgan, onOrganHover, onOrganClick]);
 
     return <group ref={groupRef} visible={visible}><primitive object={obj} /></group>;
-};
+});
 
-const InnerOrgansModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, onOrganHover, onOrganClick, visible = true }) => {
+const InnerOrgansModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, visible = true }) => {
     const { scene } = useGLTF('/Inner organs.glb');
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
@@ -1314,7 +1331,7 @@ const InnerOrgansModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode
     }, [gl, getOrgan, onOrganHover, onOrganClick]);
 
     return <group ref={groupRef} visible={visible}><primitive object={clonedScene} /></group>;
-};
+});
 
 const getMeshOnlyBoundingBox = (object: THREE.Object3D) => {
     const box = new THREE.Box3();
@@ -1413,7 +1430,7 @@ const normalizeModel = (model: THREE.Object3D, referenceModel: THREE.Object3D) =
     model.updateMatrixWorld(true);
 };
 
-const MusclesModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, onOrganHover, onOrganClick }) => {
+const MusclesModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick }) => {
     const { scene: gltfScene } = useGLTF('/human_anatomy_by_tripo.glb');
     const refObj = useLoader(OBJLoader, '/Human.obj');
     const groupRef = useRef<THREE.Group>(null);
@@ -1478,7 +1495,7 @@ const MusclesModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, on
     }, [gl, getOrgan, onOrganHover, onOrganClick]);
 
     return <group ref={groupRef}><primitive object={clonedScene} /></group>;
-};
+});
 
 
 // ---------------------------------------------------------------------------
@@ -1487,7 +1504,7 @@ const MusclesModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, on
 // metalness, emissive, alpha and vertex-colors are kept exactly as authored.
 // Only scale + position are normalised so the model fits the shared camera.
 // ---------------------------------------------------------------------------
-const NervousGLBModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode, onOrganHover, onOrganClick }) => {
+const NervousGLBModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick }) => {
     const { scene } = useGLTF('/nervous.glb');
     const refObj = useLoader(OBJLoader, '/Human.obj');
     const groupRef = useRef<THREE.Group>(null);
@@ -1554,7 +1571,7 @@ const NervousGLBModel: React.FC<HumanModelProps> = ({ effects = [], isGlassMode,
     }, [gl, getOrgan, onOrganHover, onOrganClick]);
 
     return <group ref={groupRef}><primitive object={clonedScene} /></group>;
-};
+});
 
 export interface DrugHeatmap3DProps {
     effects: HeatmapEffect[];

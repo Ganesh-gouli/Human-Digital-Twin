@@ -83,7 +83,6 @@ const QuantumPulse: React.FC = () => {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({
-                 email: 'Ganeshgouli204@gmail.com', // Demo Target
                  condition: msg,
                  heart_rate: json.heart_rate,
                  respiratory_rate: json.respiratory_rate

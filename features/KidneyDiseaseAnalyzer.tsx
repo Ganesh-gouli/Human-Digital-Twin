@@ -75,6 +75,8 @@ const KidneyDiseaseAnalyzer: React.FC = () => {
             return;
         }
 
+        setResult(null);
+        setErrorMsg('');
         setFiles(prev => [...prev, ...validFiles]);
         const urls = validFiles.map(f => URL.createObjectURL(f));
         setPreviewUrls(prev => [...prev, ...urls]);
@@ -632,7 +634,13 @@ const KidneyDiseaseAnalyzer: React.FC = () => {
                         </div>
                     )}
                 </div>
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-5xl mx-auto space-y-4">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3 text-xs text-amber-200">
+                        <Info className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                        <p>
+                            <strong>Medical Safety Notice:</strong> AI-generated analysis for informational purposes only. This result should not replace evaluation by a qualified healthcare professional.
+                        </p>
+                    </div>
                     <NearbyDoctors searchType="general" title="Nearby Kidney Specialists & Hospitals" />
                 </div>
             </div>

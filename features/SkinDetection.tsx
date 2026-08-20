@@ -499,6 +499,12 @@ import { Shield, Activity, Droplets } from 'lucide-react';const SkinDetection: R
                     animation: shake 0.4s ease-in-out;
                 }
             `}</style>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3 text-xs text-amber-200 mt-6">
+                        <Shield className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                        <p>
+                            <strong>Medical Safety Notice:</strong> AI-generated analysis for informational purposes only. This result should not replace evaluation by a qualified healthcare professional.
+                        </p>
+                    </div>
                 </div>
             </div>
             <NearbyDoctors searchType="general" title="Nearby Dermatologists & Skin Clinics" />

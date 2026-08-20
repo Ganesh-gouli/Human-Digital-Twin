@@ -673,6 +673,12 @@ const CancerDetection: React.FC = () => {
                     </div>
                 </div>
 
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3 text-xs text-amber-200 mt-6">
+                    <Info className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <p>
+                        <strong>Medical Safety Notice:</strong> AI-generated analysis for informational purposes only. This result should not replace evaluation by a qualified healthcare professional.
+                    </p>
+                </div>
             </div>
             <NearbyDoctors searchType="oncology" title="Nearby Oncology Centers & Cancer Hospitals" />
         </div>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { sendDailyReport } from '../services/emailService';
 import { EQUIPMENT_LIST, EXERCISE_CATALOG } from '../components/constants/exercises';
 import { CatalogExercise } from '../types';
 

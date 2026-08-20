@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { IdentifiedFood, CalorieAnalysisResult } from '../types';
 import { identifyFoodInImage, getNutritionalInfoAndAccuracy } from '../services/geminiService';
-import { sendDailyReport } from '../services/emailService';
 import { getErrorMessage } from '../utils/helpers';
 import { fileToBase64 } from '../services/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';

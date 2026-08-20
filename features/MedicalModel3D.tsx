@@ -5,7 +5,7 @@ import * as THREE from 'three';
 // @ts-ignore
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 
-const HumanModel = (props: any) => {
+const HumanModel = React.memo((props: any) => {
     const obj = useLoader(OBJLoader, '/Human.obj');
     const meshRef = useRef<THREE.Group>(null);
     const { camera } = useThree();
@@ -77,9 +77,9 @@ const HumanModel = (props: any) => {
             <primitive object={obj} />
         </group>
     );
-};
+});
 
-const MedicalModel3D = () => {
+const MedicalModel3D = React.memo(() => {
     return (
         <div className="w-full h-full min-h-[400px] relative transition-all duration-500 hover:scale-[1.01] overflow-visible">
             <Canvas shadows dpr={[1, 2]} style={{ background: 'transparent' }}>
