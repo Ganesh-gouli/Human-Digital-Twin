@@ -241,13 +241,13 @@ const RadialProgress: React.FC<{ value: number; color: string; label: string; si
     return (
         <div className="flex flex-col items-center gap-1.5">
             <svg width={size} height={size}>
-                <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={6} />
-                <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={6}
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={6} />
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={6}
                     strokeDasharray={circ} strokeDashoffset={offset}
-                    strokeLinecap="round" transform={`rotate(-90 ${size/2} ${size/2})`}
+                    strokeLinecap="round" transform={`rotate(-90 ${size / 2} ${size / 2})`}
                     style={{ transition: 'stroke-dashoffset 1.2s ease' }}
                 />
-                <text x={size/2} y={size/2 + 5} textAnchor="middle" fill="white" fontSize={size < 70 ? 11 : 14} fontWeight="bold">{value}%</text>
+                <text x={size / 2} y={size / 2 + 5} textAnchor="middle" fill="white" fontSize={size < 70 ? 11 : 14} fontWeight="bold">{value}%</text>
             </svg>
             <span className="text-[10px] text-white/50 text-center leading-tight">{label}</span>
         </div>
@@ -274,7 +274,7 @@ const checkIsOrganInfected = (organName: string, activeSet: Set<string> | string
 
     for (const [key, list] of Object.entries(synonyms)) {
         if (name.includes(key.toLowerCase()) || key.toLowerCase().includes(name)) {
-            if (activeArr.some(org => 
+            if (activeArr.some(org =>
                 list.some(syn => org.includes(syn) || syn.includes(org))
             )) {
                 return true;
@@ -298,7 +298,7 @@ export const DrugImpactVisualizer = () => {
     const [diseaseResult, setDiseaseResult] = useState<DiseaseSimulationResult | null>(null);
     const [diseaseLoading, setDiseaseLoading] = useState(false);
     const [diseaseError, setDiseaseError] = useState<string | null>(null);
-    
+
     // Multi-Drug / Cocktail state variables
     const [selectedMedsForCocktail, setSelectedMedsForCocktail] = useState<string[]>([]);
     const [injectedDrugs, setInjectedDrugs] = useState<string[]>([]);
@@ -314,7 +314,7 @@ export const DrugImpactVisualizer = () => {
     const [mutatorImmuneStrength, setMutatorImmuneStrength] = useState<number>(100);
     const [timelineStepIndex, setTimelineStepIndex] = useState<number>(0);
     const [isAutoplayActive, setIsAutoplayActive] = useState<boolean>(false);
-    
+
     // File upload & Vaccine states
     const [diseaseFile, setDiseaseFile] = useState<File | null>(null);
     const [isUploadingDiseaseFile, setIsUploadingDiseaseFile] = useState(false);
@@ -338,7 +338,7 @@ export const DrugImpactVisualizer = () => {
 
     // State
     const [isLoading, setIsLoading] = useState(false);
-    const [result, setResult] = useState<DrugAnalysisResult | null>(null);
+    const [result, setResult] = useState<DrugAnalysisResult | null>(() => PRESET_PHARMA_CACHE['Ibuprofen'] || null);
     const [error, setError] = useState<string | null>(null);
     const [selectedOrgan, setSelectedOrgan] = useState<string | null>(null);
 
@@ -571,16 +571,26 @@ export const DrugImpactVisualizer = () => {
         }
     };
 
-    const handleAnalyze = async () => {
+    const handleAnalyze = async (overrideDrugName?: string) => {
+        const targetDrug = (overrideDrugName || drugName).trim();
         if (analysisMode === 'text') {
-            if (!drugName.trim()) return;
+            if (!targetDrug) return;
+            
+            // Check instant pre-computed cache first (0ms latency)
+            const cached = PRESET_PHARMA_CACHE[targetDrug];
+            if (cached) {
+                setResult(cached);
+                setError(null);
+                setSelectedOrgan(null);
+                return;
+            }
+
             setIsLoading(true);
-            setResult(null);
             setError(null);
             setSelectedOrgan(null);
             try {
                 const res = await analyzeDrugImpact(
-                    drugName,
+                    targetDrug,
                     `${dosage}mg`,
                     age || undefined,
                     route,
@@ -599,7 +609,6 @@ export const DrugImpactVisualizer = () => {
         } else {
             if (!imagePreview) return;
             setIsLoading(true);
-            setResult(null);
             setError(null);
             setSelectedOrgan(null);
             try {
@@ -700,7 +709,7 @@ export const DrugImpactVisualizer = () => {
         setCureProgress(0);
         setInjectionLog([]);
         setVaccineInfo(null);
-        
+
         try {
             const reader = new FileReader();
             reader.onloadend = async () => {
@@ -743,7 +752,7 @@ export const DrugImpactVisualizer = () => {
         const types = meds.map(m => m.type);
         const uniqueTypes = new Set(types);
         const hasClash = types.length !== uniqueTypes.size;
-        
+
         let product = 1;
         meds.forEach(m => { product *= (1 - m.baseEff); });
         let combinedEfficacy = 1 - product;
@@ -765,7 +774,7 @@ export const DrugImpactVisualizer = () => {
 
         const steps: string[] = [];
         steps.push(`Absorption Phase: Compounds distributed into systemic circulation.`);
-        
+
         if (types.includes('Vaccine')) {
             steps.push(`Vaccine component: Active antigens mapped by helper T-cells.`);
         }
@@ -794,7 +803,7 @@ export const DrugImpactVisualizer = () => {
             const progress = Math.round(((i + 1) / steps.length) * targetCure);
             setCureProgress(progress);
         }
-        
+
         setInjectionLog(prev => [...prev, `✅ Therapy Cycle complete. Clearance level: ${targetCure}% achieved.`]);
         setInjecting(false);
     }, [diseaseResult, vaccineInfo, injecting]);
@@ -809,7 +818,7 @@ export const DrugImpactVisualizer = () => {
     };
 
     const toggleMedSelection = (name: string) => {
-        setSelectedMedsForCocktail(prev => 
+        setSelectedMedsForCocktail(prev =>
             prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name]
         );
     };
@@ -843,7 +852,7 @@ export const DrugImpactVisualizer = () => {
         const types = meds.map(m => m.type);
         const uniqueTypes = new Set(types);
         const hasClash = types.length !== uniqueTypes.size;
-        
+
         let clashWarning = '';
         if (hasClash) {
             const duplicates = types.filter((t, index) => types.indexOf(t) !== index);
@@ -887,7 +896,7 @@ export const DrugImpactVisualizer = () => {
 
         const dataPoints = [];
         const steps = 8;
-        
+
         for (let i = 0; i < steps; i++) {
             const timeLabel = `T+${Math.round(i * (14 / (steps - 1)))}d`;
             let pathogen = 0;
@@ -952,9 +961,9 @@ export const DrugImpactVisualizer = () => {
         } else if (Array.isArray((diseaseResult as any).effects)) {
             effectsArray = (diseaseResult as any).effects;
         }
-        
+
         const mult = diseaseSeverity === 'mild' ? 0.5 : diseaseSeverity === 'moderate' ? 0.8 : 1.0;
-        
+
         const timeline = diseaseResult.body_impact.timeline;
         if (!timeline || timeline.length === 0) {
             return effectsArray.map(e => ({ ...e, intensity: Math.min((e.intensity || 0) * mult, 1) }));
@@ -999,25 +1008,25 @@ export const DrugImpactVisualizer = () => {
     // ─── Live Patient Vitals dynamic calculation ─────────────────────
     const patientVitals = useMemo(() => {
         if (!diseaseResult) return { temperature: 37.0, bpm: 75, respiration: 16 };
-        
+
         let temp = 37.0;
         let bpm = 75;
         let resp = 16;
-        
+
         const currentEntry = diseaseResult.body_impact.timeline[timelineStepIndex];
         const currentDataPoint = biometricChartData[Math.min(timelineStepIndex, biometricChartData.length - 1)];
         const pathogenLoad = currentDataPoint ? currentDataPoint.pathogen : 50;
         const stress = currentDataPoint ? currentDataPoint.stress : 50;
-        
+
         temp += (pathogenLoad / 100) * 3.2;
         bpm += (pathogenLoad / 100) * 45;
-        
+
         const hasPulmonaryInvolvement = diseaseResult.disease_injection.affected_organs.some(o => o.toLowerCase().includes('lung')) || (currentEntry?.organs_active.some(o => o.toLowerCase().includes('lung')));
         resp += (stress / 100) * 10;
         if (hasPulmonaryInvolvement) {
             resp += (pathogenLoad / 100) * 8;
         }
-        
+
         const activeAntipyretic = injectedDrugs.some(d => d.toLowerCase().includes('paracetamol') || d.toLowerCase().includes('ibuprofen') || d.toLowerCase().includes('aspirin'));
         if (activeAntipyretic && cureProgress > 0) {
             const reliefFactor = cureProgress / 100;
@@ -1025,7 +1034,7 @@ export const DrugImpactVisualizer = () => {
             bpm = bpm - (bpm - 75) * reliefFactor * 0.75;
             resp = resp - (resp - 16) * reliefFactor * 0.5;
         }
-        
+
         if (cureProgress > 0) {
             const reliefFactor = cureProgress / 100;
             temp = temp - (temp - 37.0) * reliefFactor * 0.5;
@@ -1049,7 +1058,7 @@ export const DrugImpactVisualizer = () => {
         const organ = diseaseSelectedOrgan.toLowerCase();
         const currentEntry = diseaseResult.body_impact.timeline[timelineStepIndex];
         const isCurrentlyInfected = currentEntry ? checkIsOrganInfected(diseaseSelectedOrgan, currentEntry.organs_active) : false;
-        
+
         let wasInfectedInPast = false;
         for (let i = 0; i < timelineStepIndex; i++) {
             const entry = diseaseResult.body_impact.timeline[i];
@@ -1065,10 +1074,10 @@ export const DrugImpactVisualizer = () => {
         } else if (wasInfectedInPast) {
             baseSat = 35 + (diseaseSeverity === 'mild' ? 0 : diseaseSeverity === 'moderate' ? 10 : 20);
         }
-        
+
         const saturation = Math.round(baseSat * (1 - cureProgress / 100));
         const tdiPercent = Math.round(baseSat * 0.8 * (1 - cureProgress / 140));
-        
+
         let tdiLevel = 'Healthy / Normal';
         if (tdiPercent > 0) {
             if (tdiPercent < 25) tdiLevel = 'Mild localized inflammatory response';
@@ -1122,7 +1131,7 @@ export const DrugImpactVisualizer = () => {
 
         const dateStr = new Date().toISOString().split('T')[0];
         const timeStr = new Date().toLocaleTimeString();
-        
+
         let report = `======================================================================
 CLINICAL PATHOLOGY DIAGNOSTIC REPORT
 ======================================================================
@@ -1150,9 +1159,9 @@ THERAPEUTIC ADMINISTRATION INTERVENTION:
 - Injected Compounds: ${injectedDrugs.length > 0 ? injectedDrugs.join(' + ') : 'None (No active intervention)'}
 - Combined Therapy Efficacy: ${cureProgress}% Achieved
 - Clinical Response Log:
-${injectionLog.length > 0 
-    ? injectionLog.map((log, idx) => `  [${idx + 1}] ${log}`).join('\n') 
-    : '  No active treatment cycles logged.'}
+${injectionLog.length > 0
+                ? injectionLog.map((log, idx) => `  [${idx + 1}] ${log}`).join('\n')
+                : '  No active treatment cycles logged.'}
 
 ----------------------------------------------------------------------
 SIMULATION OUTCOMES:
@@ -1197,7 +1206,7 @@ This document is a simulated educational clinical report.
                     border-b border-white/10 bg-slate-950/40 backdrop-blur-xl shadow-2xl relative">
                     {/* Glowing bottom edge line */}
                     <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-                    
+
                     <div className="flex items-center gap-4">
                         <button onClick={() => navigateTo('DASHBOARD')}
                             className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
@@ -1263,7 +1272,7 @@ This document is a simulated educational clinical report.
                                         placeholder="Enter disease (e.g. COVID-19)..."
                                         className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40 placeholder:text-white/20 text-sm transition-all shadow-inner focus:border-emerald-500/30"
                                     />
-                                    
+
                                     {/* Glassmorphic Dropzone Uploader */}
                                     <div className="relative mt-3 group">
                                         <input
@@ -1274,8 +1283,8 @@ This document is a simulated educational clinical report.
                                             disabled={isUploadingDiseaseFile}
                                         />
                                         <div className={`w-full flex flex-col items-center justify-center gap-1.5 rounded-2xl p-4 text-xs font-bold transition-all border border-dashed shadow-inner
-                                            ${isUploadingDiseaseFile 
-                                                ? 'bg-emerald-900/10 border-emerald-500/20 text-emerald-500/50 cursor-not-allowed' 
+                                            ${isUploadingDiseaseFile
+                                                ? 'bg-emerald-900/10 border-emerald-500/20 text-emerald-500/50 cursor-not-allowed'
                                                 : 'bg-white/[0.02] border-white/10 text-emerald-300/80 hover:bg-white/[0.05] hover:border-emerald-500/30 group-hover:scale-[1.01]'}`}>
                                             {isUploadingDiseaseFile ? (
                                                 <div className="flex items-center gap-2">
@@ -1327,15 +1336,15 @@ This document is a simulated educational clinical report.
                                 <div>
                                     <label className="block text-[10px] font-bold text-blue-300/60 uppercase tracking-widest mb-2.5">Pathogen Severity</label>
                                     <div className="grid grid-cols-3 gap-1.5">
-                                        {(['mild','moderate','severe'] as const).map(s => (
+                                        {(['mild', 'moderate', 'severe'] as const).map(s => (
                                             <button
                                                 key={s}
                                                 onClick={() => setDiseaseSeverity(s)}
                                                 className={`py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all
                                                     ${diseaseSeverity === s
                                                         ? s === 'mild' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.1)]'
-                                                          : s === 'moderate' ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.1)]'
-                                                          : 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-[0_0_10px_rgba(244,63,94,0.1)]'
+                                                            : s === 'moderate' ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.1)]'
+                                                                : 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-[0_0_10px_rgba(244,63,94,0.1)]'
                                                         : 'bg-white/[0.02] border-white/10 text-white/40 hover:text-white hover:border-white/20'}`}>
                                                 {s}
                                             </button>
@@ -1430,7 +1439,7 @@ This document is a simulated educational clinical report.
                                     resetCameraFlag={cameraResetFlag}
                                 />
                             </ErrorBoundary>
-                            
+
                             <HandTrackingOverlay
                                 isActive={isHandTrackingActive}
                                 onRotate={(x, y) => setHandRotationDelta({ x, y })}
@@ -1452,14 +1461,14 @@ This document is a simulated educational clinical report.
                                             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
                                             {diseaseSelectedOrgan} Diagnostics HUD
                                         </span>
-                                        <button 
+                                        <button
                                             onClick={() => setDiseaseSelectedOrgan(null)}
                                             className="text-white/40 hover:text-white text-xs font-bold transition-colors"
                                         >
                                             ✕
                                         </button>
                                     </div>
-                                    
+
                                     {/* Local Saturation */}
                                     <div className="space-y-1">
                                         <div className="flex items-center justify-between text-[10px]">
@@ -1467,8 +1476,8 @@ This document is a simulated educational clinical report.
                                             <span className="font-mono font-bold text-rose-400">{organDiagnostics.saturation}%</span>
                                         </div>
                                         <div className="w-full bg-white/5 rounded-full h-1.5 border border-white/5">
-                                            <div 
-                                                className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500 transition-all duration-500" 
+                                            <div
+                                                className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500 transition-all duration-500"
                                                 style={{ width: `${organDiagnostics.saturation}%` }}
                                             />
                                         </div>
@@ -1481,8 +1490,8 @@ This document is a simulated educational clinical report.
                                             <span className="font-mono font-bold text-yellow-400">{organDiagnostics.tdiPercent}%</span>
                                         </div>
                                         <div className="w-full bg-white/5 rounded-full h-1.5 border border-white/5">
-                                            <div 
-                                                className="h-full rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-500" 
+                                            <div
+                                                className="h-full rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-500"
                                                 style={{ width: `${organDiagnostics.tdiPercent}%` }}
                                             />
                                         </div>
@@ -1605,7 +1614,7 @@ This document is a simulated educational clinical report.
                                             {diseaseResult.body_impact.timeline[timelineStepIndex]?.time || 'Day 1'}
                                         </span>
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => setIsAutoplayActive(v => !v)}
@@ -1614,7 +1623,7 @@ This document is a simulated educational clinical report.
                                         >
                                             {isAutoplayActive ? '⏸' : '▶'}
                                         </button>
-                                        
+
                                         <input
                                             type="range"
                                             min={0}
@@ -1845,7 +1854,7 @@ This document is a simulated educational clinical report.
                                                                             </div>
                                                                             <p className="text-xs text-white/60 mt-2.5 leading-normal">{med.purpose}</p>
                                                                         </div>
-                                                                        
+
                                                                         <div className="flex flex-col gap-2">
                                                                             <button
                                                                                 onClick={() => toggleMedSelection(med.name)}
@@ -1856,7 +1865,7 @@ This document is a simulated educational clinical report.
                                                                             >
                                                                                 {isSelected ? '✓ Selected' : '+ Select'}
                                                                             </button>
-                                                                            
+
                                                                             <button
                                                                                 onClick={() => handleInjectDrug(med.name)}
                                                                                 disabled={injecting}
@@ -1883,7 +1892,7 @@ This document is a simulated educational clinical report.
                                                     <h4 className="text-[10px] font-black text-purple-300 uppercase tracking-widest flex items-center gap-1.5">
                                                         <span>🧬</span> mRNA Vaccine Synthesizer Console
                                                     </h4>
-                                                    
+
                                                     {/* Codon Targeting Grid */}
                                                     <div className="space-y-2">
                                                         <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider block">Codon Target Matrix</span>
@@ -1899,9 +1908,9 @@ This document is a simulated educational clinical report.
                                                                     <button
                                                                         key={codon.id}
                                                                         onClick={() => {
-                                                                            setSelectedVaccineCodons(prev => 
-                                                                                prev.includes(codon.label) 
-                                                                                    ? prev.filter(x => x !== codon.label) 
+                                                                            setSelectedVaccineCodons(prev =>
+                                                                                prev.includes(codon.label)
+                                                                                    ? prev.filter(x => x !== codon.label)
                                                                                     : [...prev, codon.label]
                                                                             );
                                                                         }}
@@ -1927,7 +1936,7 @@ This document is a simulated educational clinical report.
                                                     {/* Custom Vaccine Name */}
                                                     <div className="space-y-1">
                                                         <label className="text-[9px] text-white/50 font-bold uppercase tracking-wider block">Vaccine Protocol Name</label>
-                                                        <input 
+                                                        <input
                                                             type="text"
                                                             value={customVaccineName}
                                                             onChange={e => setCustomVaccineName(e.target.value)}
@@ -1999,7 +2008,7 @@ This document is a simulated educational clinical report.
                                                         >
                                                             ⚡ Synthesize
                                                         </button>
-                                                        
+
                                                         {vaccineInfo && (
                                                             <button
                                                                 onClick={() => toggleMedSelection(vaccineInfo.vaccineName)}
@@ -2041,7 +2050,7 @@ This document is a simulated educational clinical report.
                                                                 {selectedMedsForCocktail.length} Selected
                                                             </span>
                                                         </div>
-                                                        
+
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {selectedMedsForCocktail.map(med => (
                                                                 <span key={med} className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-lg font-bold flex items-center gap-1">
@@ -2135,7 +2144,7 @@ This document is a simulated educational clinical report.
                                                                 <Line type="monotone" name="Pathogen Load" dataKey="pathogen" stroke="#f43f5e" strokeWidth={2} dot={false} />
                                                                 <Line type="monotone" name="Immune Activation" dataKey="immune" stroke="#3b82f6" strokeWidth={2} dot={false} />
                                                                 <Line type="monotone" name="Organ Stress" dataKey="stress" stroke="#f59e0b" strokeWidth={2} dot={false} />
-                                                                
+
                                                                 {diseaseResult.body_impact.timeline.length > 0 && (
                                                                     <ReferenceLine
                                                                         x={biometricChartData[Math.min(timelineStepIndex, biometricChartData.length - 1)]?.name}
@@ -2166,9 +2175,9 @@ This document is a simulated educational clinical report.
                                                     <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/[0.02] border border-white/5 relative overflow-hidden">
                                                         <span className="text-[8px] font-bold text-white/40 uppercase tracking-wider mb-1">Heart Rate</span>
                                                         <div className="flex items-center gap-1 justify-center">
-                                                            <Heart 
-                                                                size={10} 
-                                                                className="text-rose-500 fill-rose-500 animate-heartbeat flex-shrink-0" 
+                                                            <Heart
+                                                                size={10}
+                                                                className="text-rose-500 fill-rose-500 animate-heartbeat flex-shrink-0"
                                                                 style={{ animationDuration: `${Math.max(0.3, Math.min(1.5, 60 / patientVitals.bpm))}s` }}
                                                             />
                                                             <span className={`text-xs font-mono font-black ${patientVitals.bpm >= 100 ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.3)]' : 'text-emerald-400'}`}>
@@ -2558,7 +2567,10 @@ This document is a simulated educational clinical report.
                                                 {DRUG_PRESETS.map(p => (
                                                     <button
                                                         key={p.name}
-                                                        onClick={() => setDrugName(p.name)}
+                                                        onClick={() => {
+                                                            setDrugName(p.name);
+                                                            handleAnalyze(p.name);
+                                                        }}
                                                         className={`flex flex-col items-center py-2 px-1 rounded-xl text-[9px] font-black tracking-tight border transition-all hover:scale-[1.03] active:scale-95 relative overflow-hidden group
                                                             ${drugName === p.name
                                                                 ? 'bg-rose-500/10 border-rose-500/40 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
@@ -2967,7 +2979,7 @@ This document is a simulated educational clinical report.
             {(isLoading || isLoading2) && (
                 <div className="fixed inset-0 z-[150] pointer-events-auto overflow-hidden flex flex-col items-center justify-center">
                     <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md transition-all duration-500" />
-                    
+
                     {/* Glowing spinner graphic */}
                     <div className="relative z-10 flex flex-col items-center max-w-[320px]">
                         <div className="relative w-48 h-48 mb-6">
@@ -3053,7 +3065,7 @@ This document is a simulated educational clinical report.
                     div[class*="z-0"] { display: none !important; }
                 }
             `}</style>
-            </div>
+        </div>
     );
 };
 

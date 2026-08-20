@@ -883,8 +883,6 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster, scene } = useThree();
 
-    const registry = useAnatomyHighlighter(obj, effects, isGlassMode);
-
     const mat = useMemo(() => {
         return new THREE.ShaderMaterial({
             uniforms: {
@@ -1144,15 +1142,16 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
         obj.traverse(c => { if ((c as THREE.Mesh).isMesh) hits.push(...raycaster.intersectObject(c, false)); });
         if (!hits.length) return null;
         hits.sort((a, b) => a.distance - b.distance);
-        const hitMesh = hits[0].object;
+        const p = hits[0].point;
 
-        for (const [organName, parts] of Object.entries(registry.current)) {
-            if (parts.some(p => p.mesh === hitMesh || p.mesh.uuid === hitMesh.uuid)) {
-                return organName;
-            }
-        }
+        // Instant normalized anatomical height determination
+        if (p.y > 1.35) return 'Brain';
+        if (p.y > 0.75 && p.y <= 1.35) return p.x < 0 ? 'Heart' : 'Lungs';
+        if (p.y > 0.35 && p.y <= 0.75) return p.x > 0 ? 'Liver' : 'Stomach';
+        if (p.y > 0.10 && p.y <= 0.35) return p.z < 0 ? 'Kidney' : 'Liver';
+        if (p.y > -0.30 && p.y <= 0.10) return 'Intestines';
         return null;
-    }, [obj, camera, raycaster, gl, registry]);
+    }, [obj, camera, raycaster, gl]);
 
     useEffect(() => {
         const el = gl.domElement;
