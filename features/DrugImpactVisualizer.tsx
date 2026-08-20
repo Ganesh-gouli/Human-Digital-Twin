@@ -37,6 +37,135 @@ const DRUG_PRESETS = [
     { name: 'Caffeine', icon: '☕' },
 ];
 
+const PRESET_PHARMA_CACHE: Record<string, DrugAnalysisResult> = {
+    'Ibuprofen': {
+        drug_name: 'Ibuprofen',
+        risk_level: 'low',
+        primary_mechanism: 'Non-selective reversible inhibition of cyclooxygenase (COX-1 and COX-2) enzymes reducing prostaglandin synthesis.',
+        molecular_weight: '206.29 g/mol',
+        half_life: '1.8 - 2.0 hours',
+        bioavailability: '80 - 100% (Oral)',
+        peak_concentration_time: '1 - 2 hours',
+        system_wide_risk_score: 0.28,
+        effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'CNS Impact', effect_type: 'Primary Therapeutic', mechanism: 'Inhibition of central pain receptors & thermal regulation in hypothalamus.', intensity: 0.54, risk_level: 'low', confidence_score: 0.95, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Metabolism', mechanism: 'Hepatic CYP2C9 and CYP2C8 first-pass oxidation and clearance.', intensity: 0.36, risk_level: 'low', confidence_score: 0.92, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.4 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Stomach', effect_type: 'Adverse Effect Risk', mechanism: 'Suppression of protective gastric prostaglandins causing mucosal sensitivity.', intensity: 0.62, risk_level: 'moderate', confidence_score: 0.88, toxic_threshold: false, accumulation_factor: 0.3, dose_dependency_factor: 0.7 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Kidney', effect_type: 'Excretion', mechanism: 'Renal hemodynamic modulation and metabolite clearance.', intensity: 0.48, risk_level: 'moderate', confidence_score: 0.85, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.5 }
+        ],
+        heatmap_effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'CNS Impact', effect_type: 'Therapeutic', mechanism: 'Central pain inhibition', intensity: 0.54, risk_level: 'low', confidence_score: 0.95, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Metabolism', mechanism: 'CYP2C9 clearance', intensity: 0.36, risk_level: 'low', confidence_score: 0.92, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.4 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Stomach', effect_type: 'Side Effect', mechanism: 'Gastric acid sensitivity', intensity: 0.62, risk_level: 'moderate', confidence_score: 0.88, toxic_threshold: false, accumulation_factor: 0.3, dose_dependency_factor: 0.7 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Kidney', effect_type: 'Clearance', mechanism: 'Renal excretion', intensity: 0.48, risk_level: 'moderate', confidence_score: 0.85, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.5 }
+        ],
+        time_based_intensity: { '0 min': 0.1, 'onset': 0.5, 'peak': 1.0, 'mid duration': 0.7, 'end duration': 0.2 }
+    },
+    'Aspirin': {
+        drug_name: 'Aspirin',
+        risk_level: 'low',
+        primary_mechanism: 'Irreversible acetylation of platelet cyclooxygenase-1 (COX-1) suppressing thromboxane A2.',
+        molecular_weight: '180.16 g/mol',
+        half_life: '15 - 20 minutes (Salicylate: 2-3 hours)',
+        bioavailability: '50 - 75% (Oral)',
+        peak_concentration_time: '1 - 2 hours',
+        system_wide_risk_score: 0.35,
+        effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Heart', effect_type: 'Primary Therapeutic', mechanism: 'Inhibition of platelet aggregation and cardioprotective antithrombotic action.', intensity: 0.78, risk_level: 'low', confidence_score: 0.96, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.8 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Stomach', effect_type: 'Side Effect', mechanism: 'Direct irritation of mucosal barrier and inhibition of protective prostanoids.', intensity: 0.58, risk_level: 'moderate', confidence_score: 0.90, toxic_threshold: false, accumulation_factor: 0.3, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Clearance', mechanism: 'Hepatic conjugation to salicyluric acid.', intensity: 0.35, risk_level: 'low', confidence_score: 0.89, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.4 }
+        ],
+        heatmap_effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Heart', effect_type: 'Cardiovascular', mechanism: 'Antiplatelet effect', intensity: 0.78, risk_level: 'low', confidence_score: 0.96, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.8 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Stomach', effect_type: 'Gastric Effect', mechanism: 'Mucosal irritation', intensity: 0.58, risk_level: 'moderate', confidence_score: 0.90, toxic_threshold: false, accumulation_factor: 0.3, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Hepatic', mechanism: 'Salicylate metabolism', intensity: 0.35, risk_level: 'low', confidence_score: 0.89, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.4 }
+        ],
+        time_based_intensity: { '0 min': 0.15, 'onset': 0.6, 'peak': 1.0, 'mid duration': 0.65, 'end duration': 0.25 }
+    },
+    'Paracetamol': {
+        drug_name: 'Paracetamol',
+        risk_level: 'low',
+        primary_mechanism: 'Central nervous system prostaglandin synthase inhibition and active metabolite AM404 cannabinoid interaction.',
+        molecular_weight: '151.16 g/mol',
+        half_life: '2.0 - 3.0 hours',
+        bioavailability: '70 - 90%',
+        peak_concentration_time: '30 - 60 minutes',
+        system_wide_risk_score: 0.25,
+        effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Brain', effect_type: 'Primary Therapeutic', mechanism: 'Hypothalamic heat-regulation center modulation and central analgesia.', intensity: 0.72, risk_level: 'low', confidence_score: 0.95, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Metabolism', mechanism: 'Hepatic glucuronidation and CYP2E1 reactive metabolite (NAPQI) glutathione clearance.', intensity: 0.68, risk_level: 'moderate', confidence_score: 0.93, toxic_threshold: false, accumulation_factor: 0.4, dose_dependency_factor: 0.8 }
+        ],
+        heatmap_effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Brain', effect_type: 'Analgesia', mechanism: 'Central pain relief', intensity: 0.72, risk_level: 'low', confidence_score: 0.95, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Hepatic Clearance', mechanism: 'CYP2E1 glutathione conjugation', intensity: 0.68, risk_level: 'moderate', confidence_score: 0.93, toxic_threshold: false, accumulation_factor: 0.4, dose_dependency_factor: 0.8 }
+        ],
+        time_based_intensity: { '0 min': 0.1, 'onset': 0.6, 'peak': 1.0, 'mid duration': 0.7, 'end duration': 0.2 }
+    },
+    'Metformin': {
+        drug_name: 'Metformin',
+        risk_level: 'low',
+        primary_mechanism: 'Activation of AMP-activated protein kinase (AMPK) reducing hepatic glucose output and increasing insulin sensitivity.',
+        molecular_weight: '129.16 g/mol',
+        half_life: '4.0 - 8.7 hours',
+        bioavailability: '50 - 60%',
+        peak_concentration_time: '2 - 3 hours',
+        system_wide_risk_score: 0.22,
+        effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Primary Therapeutic', mechanism: 'Suppression of gluconeogenesis genes and mitochondrial respiratory chain complex I.', intensity: 0.84, risk_level: 'low', confidence_score: 0.96, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.7 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Intestines', effect_type: 'Therapeutic / Side Effect', mechanism: 'Increased glucose utilization and GLP-1 hormone stimulation in intestinal enterocytes.', intensity: 0.62, risk_level: 'low', confidence_score: 0.90, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.5 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Kidney', effect_type: 'Excretion', mechanism: 'Active tubular secretion without hepatic modification.', intensity: 0.45, risk_level: 'moderate', confidence_score: 0.91, toxic_threshold: false, accumulation_factor: 0.3, dose_dependency_factor: 0.6 }
+        ],
+        heatmap_effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Glycemic Control', mechanism: 'AMPK activation', intensity: 0.84, risk_level: 'low', confidence_score: 0.96, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.7 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Intestines', effect_type: 'GLP-1 Modulation', mechanism: 'Gut glucose uptake', intensity: 0.62, risk_level: 'low', confidence_score: 0.90, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.5 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Kidney', effect_type: 'Tubular Secretion', mechanism: 'Renal elimination', intensity: 0.45, risk_level: 'moderate', confidence_score: 0.91, toxic_threshold: false, accumulation_factor: 0.3, dose_dependency_factor: 0.6 }
+        ],
+        time_based_intensity: { '0 min': 0.1, 'onset': 0.4, 'peak': 1.0, 'mid duration': 0.8, 'end duration': 0.3 }
+    },
+    'Alcohol': {
+        drug_name: 'Alcohol (Ethanol)',
+        risk_level: 'high',
+        primary_mechanism: 'Positive allosteric modulation of GABA-A receptors and inhibition of NMDA glutamate receptors.',
+        molecular_weight: '46.07 g/mol',
+        half_life: 'Zero-order elimination (7-10 g/hr)',
+        bioavailability: '80 - 100%',
+        peak_concentration_time: '30 - 90 minutes',
+        system_wide_risk_score: 0.75,
+        effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Brain', effect_type: 'Neurodepression', mechanism: 'Cerebral cortex disinhibition, cerebellar ataxia, and hippocampal memory disruption.', intensity: 0.88, risk_level: 'high', confidence_score: 0.98, toxic_threshold: true, accumulation_factor: 0.6, dose_dependency_factor: 0.9 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Hepatic Burden', mechanism: 'Enzymatic oxidation via Alcohol Dehydrogenase producing toxic acetaldehyde.', intensity: 0.92, risk_level: 'severe', confidence_score: 0.98, toxic_threshold: true, accumulation_factor: 0.8, dose_dependency_factor: 0.9 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Stomach', effect_type: 'Gastric Irritation', mechanism: 'Gastric acid hypersecretion and mucosal inflammation.', intensity: 0.65, risk_level: 'moderate', confidence_score: 0.90, toxic_threshold: false, accumulation_factor: 0.4, dose_dependency_factor: 0.7 }
+        ],
+        heatmap_effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Brain', effect_type: 'CNS Depression', mechanism: 'GABA-A enhancement', intensity: 0.88, risk_level: 'high', confidence_score: 0.98, toxic_threshold: true, accumulation_factor: 0.6, dose_dependency_factor: 0.9 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Liver', effect_type: 'Oxidative Stress', mechanism: 'Acetaldehyde generation', intensity: 0.92, risk_level: 'severe', confidence_score: 0.98, toxic_threshold: true, accumulation_factor: 0.8, dose_dependency_factor: 0.9 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Stomach', effect_type: 'Irritation', mechanism: 'Gastritis potential', intensity: 0.65, risk_level: 'moderate', confidence_score: 0.90, toxic_threshold: false, accumulation_factor: 0.4, dose_dependency_factor: 0.7 }
+        ],
+        time_based_intensity: { '0 min': 0.2, 'onset': 0.7, 'peak': 1.0, 'mid duration': 0.7, 'end duration': 0.3 }
+    },
+    'Caffeine': {
+        drug_name: 'Caffeine',
+        risk_level: 'low',
+        primary_mechanism: 'Non-selective competitive antagonism of A1 and A2A adenosine receptors stimulating dopaminergic neurotransmission.',
+        molecular_weight: '194.19 g/mol',
+        half_life: '3.0 - 5.0 hours',
+        bioavailability: '99% (Rapid)',
+        peak_concentration_time: '30 - 60 minutes',
+        system_wide_risk_score: 0.20,
+        effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Brain', effect_type: 'CNS Stimulation', mechanism: 'Blockade of drowsiness-inducing adenosine and increased alertness.', intensity: 0.86, risk_level: 'low', confidence_score: 0.96, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.7 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Heart', effect_type: 'Cardiovascular Stimulation', mechanism: 'Increased intracellular cAMP via phosphodiesterase inhibition elevating heart rate.', intensity: 0.64, risk_level: 'moderate', confidence_score: 0.92, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Kidney', effect_type: 'Mild Diuresis', mechanism: 'Adenosine receptor blockade in proximal tubules enhancing sodium clearance.', intensity: 0.38, risk_level: 'low', confidence_score: 0.85, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.4 }
+        ],
+        heatmap_effects: [
+            { layer: 'ORGAN_VIEW', structure_name: 'Brain', effect_type: 'Alertness', mechanism: 'Adenosine antagonism', intensity: 0.86, risk_level: 'low', confidence_score: 0.96, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.7 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Heart', effect_type: 'Tachycardia Risk', mechanism: 'cAMP elevation', intensity: 0.64, risk_level: 'moderate', confidence_score: 0.92, toxic_threshold: false, accumulation_factor: 0.2, dose_dependency_factor: 0.6 },
+            { layer: 'ORGAN_VIEW', structure_name: 'Kidney', effect_type: 'Diuretic Effect', mechanism: 'Renal blood flow increase', intensity: 0.38, risk_level: 'low', confidence_score: 0.85, toxic_threshold: false, accumulation_factor: 0.1, dose_dependency_factor: 0.4 }
+        ],
+        time_based_intensity: { '0 min': 0.2, 'onset': 0.8, 'peak': 1.0, 'mid duration': 0.7, 'end duration': 0.3 }
+    }
+};
+
 const ROUTES = ['Oral', 'Intravenous (IV)', 'Intramuscular (IM)', 'Topical', 'Inhalation', 'Sublingual'];
 
 // ─── Disease presets ────────────────────────────────────────────────────────────
