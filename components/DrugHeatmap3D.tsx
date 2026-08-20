@@ -897,37 +897,45 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 uModelScale: { value: 1.0 },
 
                 // Anatomical targets in normalized model space (-2.0 to +2.0)
-                uBrainPos: { value: new THREE.Vector3(0.0, 1.62, 0.05) },
+                // Brain / Cranium: Top cranial hemisphere strictly above eyebrows
+                uBrainPos: { value: new THREE.Vector3(0.0, 1.76, -0.02) },
                 uBrainIntensity: { value: 0.0 },
-                uBrainRadius: { value: 0.65 },
+                uBrainRadius: { value: 0.26 },
 
-                uHeartPos: { value: new THREE.Vector3(-0.16, 0.98, 0.22) },
+                // Heart: Left mid-thorax anterior
+                uHeartPos: { value: new THREE.Vector3(-0.14, 0.94, 0.16) },
                 uHeartIntensity: { value: 0.0 },
-                uHeartRadius: { value: 0.55 },
+                uHeartRadius: { value: 0.24 },
 
-                uLungsPos: { value: new THREE.Vector3(0.0, 0.94, 0.18) },
+                // Lungs: Bilateral chest lobes
+                uLungsPos: { value: new THREE.Vector3(0.24, 0.95, 0.10) },
                 uLungsIntensity: { value: 0.0 },
-                uLungsRadius: { value: 0.65 },
+                uLungsRadius: { value: 0.25 },
 
-                uLiverPos: { value: new THREE.Vector3(0.22, 0.48, 0.20) },
+                // Liver: Right upper quadrant under ribs
+                uLiverPos: { value: new THREE.Vector3(0.22, 0.50, 0.15) },
                 uLiverIntensity: { value: 0.0 },
-                uLiverRadius: { value: 0.60 },
+                uLiverRadius: { value: 0.26 },
 
-                uStomachPos: { value: new THREE.Vector3(-0.20, 0.46, 0.22) },
+                // Stomach: Left upper quadrant
+                uStomachPos: { value: new THREE.Vector3(-0.18, 0.50, 0.15) },
                 uStomachIntensity: { value: 0.0 },
-                uStomachRadius: { value: 0.58 },
+                uStomachRadius: { value: 0.24 },
 
-                uKidneyPos: { value: new THREE.Vector3(0.18, 0.26, -0.16) },
+                // Kidneys: Posterior lumbar flanks
+                uKidneyPos: { value: new THREE.Vector3(0.20, 0.28, -0.14) },
                 uKidneyIntensity: { value: 0.0 },
-                uKidneyRadius: { value: 0.55 },
+                uKidneyRadius: { value: 0.20 },
 
-                uIntestinesPos: { value: new THREE.Vector3(0.0, 0.05, 0.20) },
+                // Intestines: Lower central abdomen / umbilical
+                uIntestinesPos: { value: new THREE.Vector3(0.0, 0.04, 0.16) },
                 uIntestinesIntensity: { value: 0.0 },
-                uIntestinesRadius: { value: 0.65 },
+                uIntestinesRadius: { value: 0.28 },
 
-                uNervousPos: { value: new THREE.Vector3(0.0, 0.60, -0.18) },
+                // Nervous System: Dorsal spinal cord
+                uNervousPos: { value: new THREE.Vector3(0.0, 0.65, -0.16) },
                 uNervousIntensity: { value: 0.0 },
-                uNervousRadius: { value: 0.60 },
+                uNervousRadius: { value: 0.20 },
             },
             vertexShader: `
                 uniform vec3 uModelCenter;
@@ -984,10 +992,13 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                     vec3 N = normalize(vNormal);
                     vec3 V = normalize(vViewDir);
 
-                    // Robust Anatomical Heat Calculations in model local space
+                    // Accurate Anatomical Heat Calculations in model local space
                     float brainHeat = smoothstep(uBrainRadius, 0.0, distance(vNormalizedPos, uBrainPos)) * uBrainIntensity;
                     float heartHeat = smoothstep(uHeartRadius, 0.0, distance(vNormalizedPos, uHeartPos)) * uHeartIntensity;
-                    float lungsHeat = smoothstep(uLungsRadius, 0.0, distance(vNormalizedPos, uLungsPos)) * uLungsIntensity;
+                    float lungsHeat = max(
+                        smoothstep(uLungsRadius, 0.0, distance(vNormalizedPos, uLungsPos)),
+                        smoothstep(uLungsRadius, 0.0, distance(vNormalizedPos, vec3(-uLungsPos.x, uLungsPos.y, uLungsPos.z)))
+                    ) * uLungsIntensity;
                     float liverHeat = smoothstep(uLiverRadius, 0.0, distance(vNormalizedPos, uLiverPos)) * uLiverIntensity;
                     float stomachHeat = smoothstep(uStomachRadius, 0.0, distance(vNormalizedPos, uStomachPos)) * uStomachIntensity;
                     float kidneyHeat = max(
