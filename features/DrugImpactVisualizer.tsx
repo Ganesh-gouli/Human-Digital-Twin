@@ -2967,6 +2967,19 @@ This document is a simulated educational clinical report.
                                             calibrationMode={calibrationMode}
                                         />
                                     </ErrorBoundary>
+
+                                    <HandTrackingOverlay
+                                        isActive={isHandTrackingActive}
+                                        onRotate={(x, y) => setHandRotationDelta({ x, y })}
+                                        onZoom={(delta) => setHandZoomDelta(delta)}
+                                        onResetView={() => {
+                                            setHandRotationDelta({ x: 0, y: 0 });
+                                            setHandDragDelta(undefined);
+                                            setHandZoomDelta(0);
+                                            setCameraResetFlag(v => v + 1);
+                                        }}
+                                        onToggleView={() => setViewMode(v => v === 'BODY' ? 'SKELETON' : 'BODY')}
+                                    />
                                 </div>
 
                                 {/* Compare view */}

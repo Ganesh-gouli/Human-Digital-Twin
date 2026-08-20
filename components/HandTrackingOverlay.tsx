@@ -204,42 +204,32 @@ const HandTrackingOverlay: React.FC<HandTrackingOverlayProps> = ({
 
 
         const init = async () => {
-
             try {
-
                 hands = new Hands({
-                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
                 });
 
                 const options: Options = {
-
                     maxNumHands: 1,
                     modelComplexity: 1,
-                    minDetectionConfidence: 0.6,
-                    minTrackingConfidence: 0.6
-
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
                 };
 
                 hands.setOptions(options);
 
                 hands.onResults((results: Results) => {
-
                     ctx.save();
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-
                         setStatus("active");
-
                         const landmarks = results.multiHandLandmarks[0];
-
                         const detectedGesture = detectGesture(landmarks);
 
                         if (detectedGesture === currentGesture) {
                             gestureFrames++;
-                        }
-
-                        else {
+                        } else {
                             currentGesture = detectedGesture;
                             gestureFrames = 1;
                         }
@@ -248,61 +238,74 @@ const HandTrackingOverlay: React.FC<HandTrackingOverlayProps> = ({
 
                         if (gestureFrames >= requiredFrames) {
                             executeGesture(currentGesture, landmarks, pinchDist);
-                        }
-
-                        else if (currentGesture !== "rotation") {
+                        } else if (currentGesture !== "rotation") {
                             lastHandPosRef.current = null;
                         }
 
-                        ctx.fillStyle = "#00ffff";
-
+                        ctx.fillStyle = "#00f0ff";
                         landmarks.forEach((lm: any) => {
                             ctx.beginPath();
-                            ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 3, 0, Math.PI * 2);
+                            ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 3.5, 0, Math.PI * 2);
                             ctx.fill();
                         });
-
-                    }
-
-                    else {
-
+                    } else {
                         lastHandPosRef.current = null;
                         lastPinchDist = 0;
-
                     }
 
                     ctx.restore();
-
                 });
 
+                // Standard WebRTC camera stream
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 320, height: 240, facingMode: 'user' }
+                    });
+                    video.srcObject = stream;
+                    await video.play();
 
-                camera = new Camera(video, {
-                    onFrame: async () => {
-                        if (hands) await hands.send({ image: video });
-                    },
-                    width: 320,
-                    height: 240
-                });
-
-                await camera.start();
-
-            }
-
-            catch (e) {
-
-                console.error(e);
+                    let isRunning = true;
+                    const processFrame = async () => {
+                        if (!isRunning || !videoRef.current) return;
+                        if (video.readyState >= 2 && hands) {
+                            try {
+                                await hands.send({ image: video });
+                            } catch (err) {
+                                // Frame dropped
+                            }
+                        }
+                        if (videoRef.current) {
+                            requestAnimationFrame(processFrame);
+                        }
+                    };
+                    requestAnimationFrame(processFrame);
+                    setStatus("active");
+                } else {
+                    camera = new Camera(video, {
+                        onFrame: async () => {
+                            if (hands) await hands.send({ image: video });
+                        },
+                        width: 320,
+                        height: 240
+                    });
+                    await camera.start();
+                }
+            } catch (e) {
+                console.error("Hand tracking camera initialization error:", e);
                 setStatus("error");
-
             }
-
         };
 
         init();
 
         return () => {
             if (camera) camera.stop();
+            if (video && video.srcObject) {
+                const stream = video.srcObject as MediaStream;
+                stream.getTracks().forEach(t => t.stop());
+            }
             if (hands) hands.close();
-        }
+        };
 
     }, [isActive]);
 
