@@ -3219,13 +3219,13 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* CENTER — 3D Viewer(s) */}
-                        <div className={`flex-1 flex flex-col ${compareMode ? 'divide-x divide-white/10' : ''} overflow-hidden relative`}>
+                        <div className={`overflow-hidden relative ${compareMode ? 'divide-x divide-white/10' : ''} ${mobileTab === 'VIEWPORT' ? 'flex-1 flex flex-col w-full h-full' : 'hidden lg:flex lg:flex-1 lg:flex-col'}`}>
                             {/* View selectors */}
-                            <div className="absolute top-1 right-6 left-auto z-30 flex gap-3 no-print">
-                                <div className="flex bg-slate-950/80 rounded-2xl p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl">
+                            <div className="absolute top-2 left-2 right-2 sm:left-auto sm:right-6 z-30 flex justify-center sm:justify-end no-print">
+                                <div className="flex bg-slate-950/85 rounded-2xl p-1 border border-white/10 backdrop-blur-xl shadow-2xl max-w-full overflow-x-auto custom-scrollbar">
                                     <button
                                         onClick={() => setViewMode('BODY')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'BODY'
                                                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3233,7 +3233,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('MUSCLES')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'MUSCLES'
                                                 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3241,7 +3241,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('NERVOUS_GLB')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'NERVOUS_GLB'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3249,7 +3249,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('SKELETON')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'SKELETON'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3257,7 +3257,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('ORGANS')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'ORGANS'
                                                 ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3268,7 +3268,7 @@ This document is a simulated educational clinical report.
 
                             {/* Temporal Scrubbing Control */}
                             {result && result.time_based_intensity && (
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-full">
+                                <div className="absolute bottom-16 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-3 sm:p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-[calc(100%-2rem)]">
                                     <label className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
                                         <span>⏱ Temporal Scrubbing (4D)</span>
                                         <span className="text-white font-mono text-[10px] bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">{timePhase.toUpperCase()}</span>
@@ -3289,6 +3289,26 @@ This document is a simulated educational clinical report.
                                         <span>MID</span>
                                         <span>END</span>
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Mobile Selected Organ Notification Toast */}
+                            {selectedOrgan && (
+                                <div className="lg:hidden absolute top-14 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-slate-950/95 border border-teal-500/40 px-3 py-1.5 rounded-full backdrop-blur-xl shadow-2xl text-xs whitespace-nowrap animate-fade-in">
+                                    <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                                    <span className="font-bold text-white text-[11px]">{selectedOrgan}</span>
+                                    <button
+                                        onClick={() => setMobileTab('TELEMETRY')}
+                                        className="text-teal-300 font-bold hover:text-white underline text-[10px] ml-0.5"
+                                    >
+                                        View Telemetry →
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedOrgan(null)}
+                                        className="text-white/40 hover:text-white ml-0.5 text-xs"
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
                             )}
 
@@ -3335,17 +3355,17 @@ This document is a simulated educational clinical report.
                                     />
 
                                     {/* Floating Deconstruction & Understanding Pill */}
-                                    <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-auto no-print">
+                                    <div className="absolute bottom-16 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                         <button
                                             onClick={() => setIsExplainerOpen(true)}
-                                            className="px-3.5 py-2 rounded-xl bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 text-xs font-bold cursor-pointer"
+                                            className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer"
                                         >
                                             <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
                                             <span>💡 Deconstruct This Simulation</span>
                                         </button>
                                         <button
                                             onClick={() => openGuide('layers')}
-                                            className="px-2.5 py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-xs font-mono cursor-pointer flex items-center gap-1"
+                                            className="px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-[11px] sm:text-xs font-mono cursor-pointer flex items-center gap-1"
                                             title="What does each 3D anatomical layer reveal?"
                                         >
                                             <span>3D Layers Guide</span>
