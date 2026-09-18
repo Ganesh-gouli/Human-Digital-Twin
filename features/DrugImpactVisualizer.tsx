@@ -3172,13 +3172,13 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* CENTER — 3D Viewer(s) */}
-                        <div className={`flex-1 flex flex-col ${compareMode ? 'divide-x divide-white/10' : ''} overflow-hidden relative`}>
+                        <div className={`flex-1 flex flex-col ${compareMode ? 'divide-x divide-white/10' : ''} overflow-hidden relative ${mobileViewTab === 'model' ? 'flex' : 'hidden lg:flex'}`}>
                             {/* View selectors */}
-                            <div className="absolute top-1 right-6 left-auto z-30 flex gap-3 no-print">
-                                <div className="flex bg-slate-950/80 rounded-2xl p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl">
+                            <div className="absolute top-1 right-2 sm:right-6 left-auto z-30 flex gap-1.5 sm:gap-3 no-print max-w-[95vw] overflow-x-auto">
+                                <div className="flex bg-slate-950/80 rounded-2xl p-1 sm:p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl scale-90 sm:scale-100 origin-top-right overflow-x-auto custom-scrollbar">
                                     <button
                                         onClick={() => setViewMode('BODY')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'BODY'
                                                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3186,7 +3186,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('MUSCLES')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'MUSCLES'
                                                 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3194,15 +3194,15 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('NERVOUS_GLB')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'NERVOUS_GLB'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
-                                        💜 Nerve (GLB)
+                                        💜 Nerve
                                     </button>
                                     <button
                                         onClick={() => setViewMode('SKELETON')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'SKELETON'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3210,7 +3210,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('ORGANS')}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
                                             ${viewMode === 'ORGANS'
                                                 ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
