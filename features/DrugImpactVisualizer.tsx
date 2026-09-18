@@ -2739,7 +2739,7 @@ This document is a simulated educational clinical report.
                     ═══════════════════════════════════════════════════════════ */
                     <div className="flex flex-1 overflow-hidden relative">
                         {/* LEFT PANEL — Inputs */}
-                        <div className={`w-full md:w-76 flex-shrink-0 flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileViewTab === 'controls' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className={`w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] flex-shrink-0 flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileViewTab === 'controls' ? 'flex' : 'hidden md:flex'}`}>
                             {isInteractionMode ? (
                                 <div className="p-5 space-y-6">
                                     <div>
