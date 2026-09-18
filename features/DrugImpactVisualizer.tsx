@@ -1495,34 +1495,35 @@ This document is a simulated educational clinical report.
 
             <div className="relative z-10 flex flex-col h-full">
                 {/* ── Top Command Bar ──────────────────────────────────────────────── */}
-                <div className="flex-shrink-0 flex items-center justify-between px-6 py-4
+                <div className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-4
                     border-b border-white/10 bg-slate-950/40 backdrop-blur-xl shadow-2xl relative">
                     {/* Glowing bottom edge line */}
                     <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <button onClick={() => navigateTo('DASHBOARD')}
-                            className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
-                                transition-all group flex items-center justify-center shadow-lg">
+                            className="p-2 sm:p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
+                                transition-all group flex items-center justify-center shadow-lg flex-shrink-0">
                             <span className="group-hover:-translate-x-0.5 block transition-transform text-white/80 group-hover:text-white">
                                 {ICONS.arrowLeft}
                             </span>
                         </button>
-                        <div>
-                            <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
-                                <Brain className="text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)] animate-pulse" size={20} />
-                                <span>{activeTab === 'drug' ? 'Pharmacological Twin' : 'Emerging Pathogen'}</span>{' '}
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-blue-400 font-extrabold">
+                        <div className="min-w-0">
+                            <h1 className="text-sm sm:text-xl font-black tracking-tight flex items-center gap-1.5 sm:gap-2 truncate">
+                                <Brain className="text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)] animate-pulse flex-shrink-0" size={18} />
+                                <span className="truncate">{activeTab === 'drug' ? 'Pharmacological Twin' : 'Emerging Pathogen'}</span>{' '}
+                                <span className="hidden sm:inline text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-blue-400 font-extrabold">
                                     {activeTab === 'drug' ? 'In-Silico Visualizer' : 'Computational Lab'}
                                 </span>
                             </h1>
-                            <p className="text-[10px] text-teal-300/60 uppercase tracking-widest font-mono font-bold mt-0.5">
+                            <p className="text-[9px] sm:text-[10px] text-teal-300/60 uppercase tracking-widest font-mono font-bold mt-0.5 truncate hidden xs:block">
                                 {activeTab === 'drug' ? 'Virtual Human 3D ADME & Multi-Organ Toxicity Model' : 'Safe Emerging Disease & Antiviral/Vaccine Screening Model'}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 no-print">
+                    {/* Desktop Command Bar Buttons (Identical layout preserved on screens >= lg) */}
+                    <div className="hidden lg:flex items-center gap-3 no-print">
                         {/* Instant Simulation Deconstruction & Guide */}
                         <button
                             onClick={() => setIsExplainerOpen(true)}
@@ -1575,6 +1576,88 @@ This document is a simulated educational clinical report.
                             <span>📄</span> PDF
                         </button>
                     </div>
+
+                    {/* Mobile Quick Action Buttons (< lg screens) */}
+                    <div className="flex lg:hidden items-center gap-1.5 no-print">
+                        <button
+                            onClick={() => setIsExplainerOpen(true)}
+                            className="px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-teal-500/25 border border-teal-400/50 text-teal-200 flex items-center gap-1 cursor-pointer shadow-md active:scale-95"
+                            title="Deconstruct simulation"
+                        >
+                            <span>💡</span>
+                            <span>Deconstruct</span>
+                        </button>
+
+                        <button
+                            onClick={() => setIsMobileMenuOpen(v => !v)}
+                            className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                                isMobileMenuOpen ? 'bg-teal-500/30 border-teal-400 text-white' : 'bg-white/[0.05] border-white/15 text-gray-200'
+                            }`}
+                            aria-label="Actions menu"
+                        >
+                            <span>⋯</span>
+                            <span className="text-[10px] font-mono">Tools</span>
+                        </button>
+                    </div>
+
+                    {/* Mobile Actions Drawer Dropdown */}
+                    {isMobileMenuOpen && (
+                        <div className="lg:hidden absolute top-full right-3 mt-1.5 w-64 bg-slate-950/95 rounded-2xl shadow-2xl border border-teal-500/30 p-2.5 z-50 backdrop-blur-2xl animate-fade-in space-y-1">
+                            <div className="text-[9px] font-mono font-bold uppercase tracking-wider text-teal-400 px-2 py-1 border-b border-white/10 flex items-center justify-between">
+                                <span>Lab Quick Tools</span>
+                                <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-white">✕</button>
+                            </div>
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); openGuide('overview'); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-gray-200 hover:bg-teal-500/15 hover:text-teal-300 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>📖</span>
+                                <span>How BioTwin Works Guide</span>
+                            </button>
+
+                            {activeTab === 'drug' && (
+                                <button
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        setCompareMode(v => !v);
+                                        setResult2(null);
+                                        setDrugName2('');
+                                    }}
+                                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
+                                        compareMode ? 'bg-purple-500/20 text-purple-300' : 'text-gray-200 hover:bg-white/10'
+                                    }`}
+                                >
+                                    <span>⚖️</span>
+                                    <span>{compareMode ? 'Exit Dual-Drug Comparison' : 'Compare 2 Drugs'}</span>
+                                </button>
+                            )}
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); setIsSaveModalOpen(true); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-teal-300 hover:bg-teal-500/15 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>💾</span>
+                                <span>Save Experiment Dossier</span>
+                            </button>
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); setIsDossierDrawerOpen(true); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-gray-200 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>📁</span>
+                                <span>View Saved Dossiers ({savedExperiments.length})</span>
+                            </button>
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); window.print(); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>📄</span>
+                                <span>Export Report (PDF)</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* ── Main Layout ──────────────────────────────────────────── */}
