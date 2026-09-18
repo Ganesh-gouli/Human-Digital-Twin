@@ -431,6 +431,7 @@ export const DrugImpactVisualizer = () => {
     // Enables clean 1-tap switching on mobile phones between 3D Twin, Lab Setup, and Telemetry
     const [mobileTab, setMobileTab] = useState<'VIEWPORT' | 'CONTROLS' | 'TELEMETRY'>('VIEWPORT');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
 
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
@@ -2044,65 +2045,84 @@ This document is a simulated educational clinical report.
                                 </div>
                             )}
 
-                            {/* Pathogen Timeline Scrubber (float bottom center) */}
+                            {/* Pathogen Timeline Scrubber (slid down to bottom edge so feet remain unobstructed) */}
                             {diseaseResult && !diseaseLoading && (
-                                <div className="absolute bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-3 lg:p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[420px] w-[calc(100%-2rem)] lg:w-full no-print">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                                            <Clock size={11} /> Pathogen Spread Timeline
-                                        </span>
-                                        <span className="text-white font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                                            {diseaseResult.body_impact.timeline[timelineStepIndex]?.time || 'Day 1'}
-                                        </span>
-                                    </div>
+                                isScrubberCollapsed ? (
+                                    <button
+                                        onClick={() => setIsScrubberCollapsed(false)}
+                                        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 border border-emerald-500/40 text-emerald-300 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md shadow-xl flex items-center gap-1.5 cursor-pointer hover:bg-slate-900 transition-all no-print"
+                                    >
+                                        <span><Clock size={11} className="inline mr-1" /> Pathogen Timeline: {diseaseResult.body_impact.timeline[timelineStepIndex]?.time || 'Day 1'}</span>
+                                        <span className="text-xs text-emerald-400">▲</span>
+                                    </button>
+                                ) : (
+                                    <div className="absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[420px] w-[calc(100%-1.5rem)] sm:w-full no-print">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                                                <Clock size={11} /> Pathogen Spread Timeline
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-white font-mono text-[9px] sm:text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                                                    {diseaseResult.body_impact.timeline[timelineStepIndex]?.time || 'Day 1'}
+                                                </span>
+                                                <button
+                                                    onClick={() => setIsScrubberCollapsed(true)}
+                                                    className="text-white/40 hover:text-white text-xs px-1 hover:bg-white/10 rounded transition-all cursor-pointer"
+                                                    title="Slide down to hide"
+                                                >
+                                                    ▼
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => setIsAutoplayActive(v => !v)}
-                                            className={`p-2 rounded-xl border transition-all duration-300 ${isAutoplayActive ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 animate-pulse' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'}`}
-                                            title={isAutoplayActive ? "Pause Autoplay" : "Play Autoplay"}
-                                        >
-                                            {isAutoplayActive ? '⏸' : '▶'}
-                                        </button>
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <button
+                                                onClick={() => setIsAutoplayActive(v => !v)}
+                                                className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-300 text-xs ${isAutoplayActive ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 animate-pulse' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'}`}
+                                                title={isAutoplayActive ? "Pause Autoplay" : "Play Autoplay"}
+                                            >
+                                                {isAutoplayActive ? '⏸' : '▶'}
+                                            </button>
 
-                                        <input
-                                            type="range"
-                                            min={0}
-                                            max={diseaseResult.body_impact.timeline.length - 1}
-                                            step={1}
-                                            value={timelineStepIndex}
-                                            onChange={e => {
-                                                setTimelineStepIndex(Number(e.target.value));
-                                                setIsAutoplayActive(false);
-                                            }}
-                                            className="flex-grow accent-emerald-500 cursor-pointer h-1.5 bg-white/5 rounded-full"
-                                        />
-                                    </div>
-
-                                    <div className="flex justify-between text-[8px] font-mono text-white/30 mt-1.5 px-1">
-                                        {diseaseResult.body_impact.timeline.map((entry, idx) => (
-                                            <span
-                                                key={idx}
-                                                onClick={() => {
-                                                    setTimelineStepIndex(idx);
+                                            <input
+                                                type="range"
+                                                min={0}
+                                                max={diseaseResult.body_impact.timeline.length - 1}
+                                                step={1}
+                                                value={timelineStepIndex}
+                                                onChange={e => {
+                                                    setTimelineStepIndex(Number(e.target.value));
                                                     setIsAutoplayActive(false);
                                                 }}
-                                                className={`cursor-pointer transition-all hover:text-emerald-400 ${idx === timelineStepIndex ? 'text-emerald-400 font-bold' : ''}`}
-                                            >
-                                                {entry.time.split(' ')[1] || entry.time}
-                                            </span>
-                                        ))}
-                                    </div>
+                                                className="flex-grow accent-emerald-500 cursor-pointer h-1.5 bg-white/5 rounded-full"
+                                            />
+                                        </div>
 
-                                    <p className="text-[9px] text-white/70 mt-2 border-t border-white/5 pt-1.5 italic font-medium leading-tight truncate">
-                                        Spread front: {diseaseResult.body_impact.timeline[timelineStepIndex]?.organs_active.join(', ') || 'None'} - {diseaseResult.body_impact.timeline[timelineStepIndex]?.description}
-                                    </p>
-                                </div>
+                                        <div className="flex justify-between text-[8px] font-mono text-white/30 mt-1 px-1">
+                                            {diseaseResult.body_impact.timeline.map((entry, idx) => (
+                                                <span
+                                                    key={idx}
+                                                    onClick={() => {
+                                                        setTimelineStepIndex(idx);
+                                                        setIsAutoplayActive(false);
+                                                    }}
+                                                    className={`cursor-pointer transition-all hover:text-emerald-400 ${idx === timelineStepIndex ? 'text-emerald-400 font-bold' : ''}`}
+                                                >
+                                                    {entry.time.split(' ')[1] || entry.time}
+                                                </span>
+                                            ))}
+                                        </div>
+
+                                        <p className="text-[9px] text-white/70 mt-1.5 border-t border-white/5 pt-1 italic font-medium leading-tight truncate hidden sm:block">
+                                            Spread front: {diseaseResult.body_impact.timeline[timelineStepIndex]?.organs_active.join(', ') || 'None'} - {diseaseResult.body_impact.timeline[timelineStepIndex]?.description}
+                                        </p>
+                                    </div>
+                                )
                             )}
 
-                            {/* Affected organs floating badges */}
+                            {/* Affected organs floating badges (hidden on mobile to prevent cluttering 3D view) */}
                             {diseaseResult && !diseaseLoading && (
-                                <div className="absolute bottom-32 left-6 z-20 flex flex-wrap gap-2 max-w-[240px]">
+                                <div className="absolute bottom-28 left-6 z-20 hidden lg:flex flex-wrap gap-2 max-w-[240px]">
                                     {diseaseResult.disease_injection.affected_organs.map((organ, i) => (
                                         <button
                                             key={i}
@@ -3266,30 +3286,49 @@ This document is a simulated educational clinical report.
                                 </div>
                             </div>
 
-                            {/* Temporal Scrubbing Control */}
+                            {/* Temporal Scrubbing Control (slid down to bottom edge so feet remain unobstructed) */}
                             {result && result.time_based_intensity && (
-                                <div className="absolute bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-3 sm:p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-[calc(100%-2rem)]">
-                                    <label className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
-                                        <span>⏱ Temporal Scrubbing (4D)</span>
-                                        <span className="text-white font-mono text-[10px] bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">{timePhase.toUpperCase()}</span>
-                                    </label>
-                                    <input
-                                        type="range" min={0} max={4} step={1}
-                                        value={['0 min', 'onset', 'peak', 'mid duration', 'end duration'].indexOf(timePhase)}
-                                        onChange={e => {
-                                            const phases = ['0 min', 'onset', 'peak', 'mid duration', 'end duration'] as const;
-                                            setTimePhase(phases[Number(e.target.value)]);
-                                        }}
-                                        className="w-full accent-sky-500 cursor-pointer h-1.5 bg-white/5 rounded-full mt-2"
-                                    />
-                                    <div className="flex justify-between text-[8px] font-mono text-white/30 mt-2">
-                                        <span>T+0</span>
-                                        <span>ONSET</span>
-                                        <span>PEAK</span>
-                                        <span>MID</span>
-                                        <span>END</span>
+                                isScrubberCollapsed ? (
+                                    <button
+                                        onClick={() => setIsScrubberCollapsed(false)}
+                                        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 border border-sky-500/40 text-sky-300 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md shadow-xl flex items-center gap-1.5 cursor-pointer hover:bg-slate-900 transition-all no-print"
+                                    >
+                                        <span>⏱ 4D Timeline: {timePhase.toUpperCase()}</span>
+                                        <span className="text-xs text-sky-400">▲</span>
+                                    </button>
+                                ) : (
+                                    <div className="absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-[calc(100%-1.5rem)]">
+                                        <div className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-1 flex items-center justify-between">
+                                            <span>⏱ Temporal Scrubbing (4D)</span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-white font-mono text-[9px] bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">{timePhase.toUpperCase()}</span>
+                                                <button
+                                                    onClick={() => setIsScrubberCollapsed(true)}
+                                                    className="text-white/40 hover:text-white text-xs px-1 hover:bg-white/10 rounded transition-all cursor-pointer"
+                                                    title="Slide down to hide"
+                                                >
+                                                    ▼
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="range" min={0} max={4} step={1}
+                                            value={['0 min', 'onset', 'peak', 'mid duration', 'end duration'].indexOf(timePhase)}
+                                            onChange={e => {
+                                                const phases = ['0 min', 'onset', 'peak', 'mid duration', 'end duration'] as const;
+                                                setTimePhase(phases[Number(e.target.value)]);
+                                            }}
+                                            className="w-full accent-sky-500 cursor-pointer h-1.5 bg-white/5 rounded-full mt-1.5"
+                                        />
+                                        <div className="flex justify-between text-[8px] font-mono text-white/30 mt-1.5">
+                                            <span>T+0</span>
+                                            <span>ONSET</span>
+                                            <span>PEAK</span>
+                                            <span>MID</span>
+                                            <span>END</span>
+                                        </div>
                                     </div>
-                                </div>
+                                )
                             )}
 
                             {/* Mobile Selected Organ Notification Toast */}
@@ -3354,18 +3393,18 @@ This document is a simulated educational clinical report.
                                         onToggleView={cycleNextViewMode}
                                     />
 
-                                    {/* Floating Deconstruction & Understanding Pill */}
-                                    <div className="absolute bottom-20 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
+                                    {/* Floating Deconstruction & Understanding Pill — positioned to keep feet fully visible */}
+                                    <div className="absolute top-12 sm:top-auto sm:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                         <button
                                             onClick={() => setIsExplainerOpen(true)}
-                                            className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer"
+                                            className="px-2.5 sm:px-3.5 py-1 sm:py-2 rounded-xl bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold cursor-pointer"
                                         >
                                             <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
-                                            <span>💡 Deconstruct This Simulation</span>
+                                            <span>💡 Deconstruct Simulation</span>
                                         </button>
                                         <button
                                             onClick={() => openGuide('layers')}
-                                            className="px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-[11px] sm:text-xs font-mono cursor-pointer flex items-center gap-1"
+                                            className="hidden sm:flex px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-[11px] sm:text-xs font-mono cursor-pointer items-center gap-1"
                                             title="What does each 3D anatomical layer reveal?"
                                         >
                                             <span>3D Layers Guide</span>
