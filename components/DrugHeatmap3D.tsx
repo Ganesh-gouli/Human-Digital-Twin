@@ -859,16 +859,27 @@ interface HumanModelProps {
     outerBodyGroupRef?: React.MutableRefObject<THREE.Group | null>;
 }
 
-const CameraSetup: React.FC<{ resetCameraFlag?: number }> = ({ resetCameraFlag }) => {
-    const { camera } = useThree();
+const CameraSetup: React.FC<{ resetCameraFlag?: number; orbitRef?: React.RefObject<any> }> = ({ resetCameraFlag, orbitRef }) => {
+    const { camera, size } = useThree();
     useEffect(() => {
         const perspectiveCamera = camera as THREE.PerspectiveCamera;
         const fov = perspectiveCamera.fov * (Math.PI / 180);
-        const distance = 4.0 / (2 * Math.tan(fov / 2));
-        camera.position.set(0, 0, distance * 1.15);
-        camera.lookAt(0, 0, 0);
+        const isMobile = size.width < 768;
+        // 1.48 zoom margin on mobile gives generous breathing room for the full model from head to toes
+        const zoomMargin = isMobile ? 1.48 : 1.25;
+        const distance = (4.0 / (2 * Math.tan(fov / 2))) * zoomMargin;
+        // Offset target downwards so the 3D model appears slightly higher in the viewport,
+        // leaving the foot side completely free from bottom overlays!
+        const targetY = isMobile ? -0.20 : 0;
+        camera.position.set(0, targetY, distance);
+        camera.lookAt(0, targetY, 0);
         camera.updateProjectionMatrix();
-    }, [camera, resetCameraFlag]);
+
+        if (orbitRef?.current) {
+            orbitRef.current.target.set(0, targetY, 0);
+            orbitRef.current.update();
+        }
+    }, [camera, size.width, size.height, resetCameraFlag, orbitRef]);
     return null;
 };
 
@@ -1811,8 +1822,15 @@ const GestureController = ({ orbitRef, rotationDelta, zoomDelta, dragDelta, rese
         if (!orbitRef.current || !resetFlag) return;
         const controls = orbitRef.current;
         controls.reset();
-        camera.position.set(0, 0, 5);
-        controls.target.set(0, 0, 0);
+        const perspectiveCamera = camera as THREE.PerspectiveCamera;
+        const fov = perspectiveCamera.fov * (Math.PI / 180);
+        const isMobile = window.innerWidth < 768;
+        const zoomMargin = isMobile ? 1.48 : 1.25;
+        const distance = (4.0 / (2 * Math.tan(fov / 2))) * zoomMargin;
+        const targetY = isMobile ? -0.20 : 0;
+        camera.position.set(0, targetY, distance);
+        controls.target.set(0, targetY, 0);
+        camera.updateProjectionMatrix();
         controls.update();
     }, [resetFlag, camera, orbitRef]);
 
@@ -1845,7 +1863,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     return (
         <div className="relative w-full h-full select-none">
             {/* ── Three.js Canvas ── */}
-            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
+            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.2, 6.6], fov: 45 }}>
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
                 {/* Lighting — exact match to MedicalModel3D */}
@@ -1855,7 +1873,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 <pointLight position={[-10, 0, -10]} intensity={1.5} color="#3b82f6" />
                 <spotLight position={[0, 5, -5]} intensity={2} color="#06b6d4" />
 
-                <CameraSetup resetCameraFlag={resetCameraFlag} />
+                <CameraSetup resetCameraFlag={resetCameraFlag} orbitRef={orbitRef} />
                 <SceneRotator>
                     <React.Suspense fallback={<CanvasLoaderFallback />}>
                         {(showBody || (!showOrgans && !showSkeleton && !showMuscles && !showNervousGLB)) && (
@@ -1933,6 +1951,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                     autoRotateSpeed={0.8}
                     enableDamping
                     dampingFactor={0.08}
+                    target={[0, -0.2, 0]}
                 />
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>
@@ -1999,14 +2018,14 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 );
             })()}
 
-            {/* ── Bottom controls ───────────────────────────────────────── */}
-            {effects.length > 0 && (
-                <div className="absolute bottom-14 lg:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+            {/* ── Selected Organ Clear control (anchored to top right, away from model feet) ── */}
+            {selectedOrgan && (
+                <div className="absolute top-14 sm:top-auto sm:bottom-4 right-4 z-20 flex items-center gap-2">
                     <button
                         onClick={() => onOrganSelect('')}
-                        className="px-3 py-1.5 rounded-xl text-[11px] font-bold border border-white/15
-                            bg-black/40 text-white/50 hover:text-white hover:border-white/35 transition-all backdrop-blur-sm">
-                        ↺ Reset View
+                        className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-[11px] font-bold border border-white/20
+                            bg-black/60 text-white/80 hover:text-white hover:border-white/40 transition-all backdrop-blur-md shadow-lg flex items-center gap-1.5 cursor-pointer">
+                        <span>✕</span> Clear Selection
                     </button>
                 </div>
             )}
@@ -2032,9 +2051,9 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 </div>
             )}
 
-            {/* ── Idle hint ─────────────────────────────────────────────── */}
+            {/* ── Idle hint (hidden on mobile to keep foot area 100% clear) ── */}
             {effects.length === 0 && !isAnalyzing && (
-                <div className="absolute bottom-14 lg:bottom-6 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-none z-10 hidden sm:block">
                     <p className="text-white/15 text-[10px] font-mono uppercase tracking-[0.2em] animate-pulse">
                         Select a drug · run analysis
                     </p>
