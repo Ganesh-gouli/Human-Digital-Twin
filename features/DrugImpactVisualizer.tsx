@@ -1478,7 +1478,7 @@ This document is a simulated educational clinical report.
     }, [diseaseResult, diseaseAge, diseaseSeverity, mutatorInfectivity, mutatorIncubationSpeed, mutatorImmuneStrength, injectedDrugs, cureProgress, injectionLog]);
 
     return (
-        <div className="drug-impact-container fixed top-[62px] sm:top-[66px] left-0 right-0 bottom-0 pb-16 md:pb-0 z-20 flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
+        <div className="drug-impact-container fixed top-12 left-0 right-0 bottom-0 pb-16 md:pb-0 z-20 flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
             {/* Holographic Glowing Background Layer */}
             <div className="absolute inset-0 z-0">
                 {/* Space Grid Overlay */}
