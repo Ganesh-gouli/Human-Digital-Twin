@@ -956,6 +956,7 @@ export const DrugImpactVisualizer = () => {
     // ─── Disease simulation handler ───────────────────────────────────
     const handleDiseaseSimulate = async () => {
         if (!diseaseName.trim()) return;
+        setMobileViewTab('model');
         setDiseaseLoading(true);
         setDiseaseResult(null);
         setDiseaseError(null);
