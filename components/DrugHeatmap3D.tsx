@@ -1939,7 +1939,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
             {/* ── 4-Tier Surface Heat-Map Impact Legend ───────────────────── */}
             {effects.length > 0 && (
-                <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px]">
+                <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px] hidden lg:block">
                     <div className="flex items-center gap-2 font-bold text-white/90 text-[11px] uppercase tracking-wider border-b border-white/10 pb-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                         Surface Impact Heat-Map
@@ -2001,7 +2001,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
             {/* ── Bottom controls ───────────────────────────────────────── */}
             {effects.length > 0 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+                <div className="absolute bottom-14 lg:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
                     <button
                         onClick={() => onOrganSelect('')}
                         className="px-3 py-1.5 rounded-xl text-[11px] font-bold border border-white/15
