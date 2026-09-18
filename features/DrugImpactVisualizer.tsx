@@ -849,6 +849,7 @@ export const DrugImpactVisualizer = () => {
 
     const handleAnalyze = async (overrideDrugName?: string) => {
         const targetDrug = (overrideDrugName || drugName).trim();
+        setMobileViewTab('model');
         if (analysisMode === 'text') {
             if (!targetDrug) return;
             
