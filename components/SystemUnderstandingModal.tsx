@@ -295,7 +295,7 @@ const SystemUnderstandingModal: React.FC = () => {
                         <div className="min-w-0">
                             <div className="flex items-center gap-2">
                                 <h2 className="text-base sm:text-2xl font-black tracking-tight text-white truncate">
-                                    BioTwin System Architecture
+                                    BioTwin System Architecture & Understanding Guide
                                 </h2>
                                 <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[10px] font-mono font-bold uppercase tracking-wider hidden sm:inline-block">
                                     In-Silico Core v2.4
