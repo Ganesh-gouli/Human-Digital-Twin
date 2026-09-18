@@ -1877,7 +1877,7 @@ This document is a simulated educational clinical report.
                             />
 
                             {/* Floating Deconstruction & Understanding Pill */}
-                            <div className="absolute bottom-16 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
+                            <div className="absolute bottom-20 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                 <button
                                     onClick={() => setIsExplainerOpen(true)}
                                     className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-emerald-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer"
@@ -2008,7 +2008,7 @@ This document is a simulated educational clinical report.
 
                             {/* Disease info card overlay (top-left) */}
                             {diseaseResult && (
-                                <div className="absolute top-6 left-6 z-20 space-y-3 max-w-[280px]">
+                                <div className="absolute top-6 left-6 z-20 space-y-3 max-w-[280px] hidden lg:block">
                                     <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 backdrop-blur-md shadow-2xl relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-2xl -mr-12 -mt-12 pointer-events-none" />
                                         <div className="flex items-start gap-3">
@@ -2046,7 +2046,7 @@ This document is a simulated educational clinical report.
 
                             {/* Pathogen Timeline Scrubber (float bottom center) */}
                             {diseaseResult && !diseaseLoading && (
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[420px] w-full no-print">
+                                <div className="absolute bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-3 lg:p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[420px] w-[calc(100%-2rem)] lg:w-full no-print">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
                                             <Clock size={11} /> Pathogen Spread Timeline
@@ -3268,7 +3268,7 @@ This document is a simulated educational clinical report.
 
                             {/* Temporal Scrubbing Control */}
                             {result && result.time_based_intensity && (
-                                <div className="absolute bottom-16 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-3 sm:p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-[calc(100%-2rem)]">
+                                <div className="absolute bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-3 sm:p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-[calc(100%-2rem)]">
                                     <label className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
                                         <span>⏱ Temporal Scrubbing (4D)</span>
                                         <span className="text-white font-mono text-[10px] bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">{timePhase.toUpperCase()}</span>
@@ -3355,7 +3355,7 @@ This document is a simulated educational clinical report.
                                     />
 
                                     {/* Floating Deconstruction & Understanding Pill */}
-                                    <div className="absolute bottom-16 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
+                                    <div className="absolute bottom-20 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                         <button
                                             onClick={() => setIsExplainerOpen(true)}
                                             className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer"
