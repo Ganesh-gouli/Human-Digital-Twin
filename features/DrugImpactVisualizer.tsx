@@ -1797,7 +1797,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* CENTER — 3D Body View */}
-                        <div className={`flex-1 relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black ${mobileViewTab === 'model' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'}`}>
+                        <div className={`flex-1 relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black ${mobileViewTab === 'model' ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
                             <ErrorBoundary fallbackTitle="Disease View 3D Error" onReset={() => setViewMode('BODY')}>
                                 <DrugHeatmap3D
                                     effects={cureProgress > 0 ? treatedHeatmapEffects : diseaseHeatmapEffects}
