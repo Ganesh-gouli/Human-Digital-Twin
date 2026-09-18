@@ -478,6 +478,7 @@ export const DrugImpactVisualizer = () => {
 
     // Detail Tabs for Drug Visualizer Console
     const [drugDetailTab, setDrugDetailTab] = useState<'biomap' | 'synthesis' | 'interaction'>('biomap');
+    const [mobileViewTab, setMobileViewTab] = useState<'model' | 'controls' | 'results'>('model');
 
     // State
     const [isLoading, setIsLoading] = useState(false);
