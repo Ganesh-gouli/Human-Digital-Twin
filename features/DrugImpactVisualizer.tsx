@@ -3533,8 +3533,44 @@ This document is a simulated educational clinical report.
                                 </div>
                             )}
                         </div>
-                    </div>
                 )}
+
+                {/* Mobile Navigation Switcher Dock (Only visible on screens < lg) */}
+                <div className="lg:hidden flex-shrink-0 bg-slate-950/95 border-t border-white/10 backdrop-blur-xl px-2.5 py-2 z-30 flex items-center justify-around gap-1.5 no-print shadow-[0_-8px_20px_rgba(0,0,0,0.6)]">
+                    <button
+                        onClick={() => setMobileTab('VIEWPORT')}
+                        className={`flex-1 py-2 px-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                            mobileTab === 'VIEWPORT'
+                                ? 'bg-teal-500/25 text-teal-300 border border-teal-400/50 shadow-[0_0_12px_rgba(20,184,166,0.25)]'
+                                : 'text-gray-400 hover:text-white border border-transparent'
+                        }`}
+                    >
+                        <span className="text-sm">🧍</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider">3D Twin</span>
+                    </button>
+                    <button
+                        onClick={() => setMobileTab('CONTROLS')}
+                        className={`flex-1 py-2 px-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                            mobileTab === 'CONTROLS'
+                                ? 'bg-teal-500/25 text-teal-300 border border-teal-400/50 shadow-[0_0_12px_rgba(20,184,166,0.25)]'
+                                : 'text-gray-400 hover:text-white border border-transparent'
+                        }`}
+                    >
+                        <span className="text-sm">⚙️</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider">{activeTab === 'drug' ? 'Lab Setup' : 'Pathogen'}</span>
+                    </button>
+                    <button
+                        onClick={() => setMobileTab('TELEMETRY')}
+                        className={`flex-1 py-2 px-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                            mobileTab === 'TELEMETRY'
+                                ? 'bg-teal-500/25 text-teal-300 border border-teal-400/50 shadow-[0_0_12px_rgba(20,184,166,0.25)]'
+                                : 'text-gray-400 hover:text-white border border-transparent'
+                        }`}
+                    >
+                        <span className="text-sm">📊</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider">{activeTab === 'drug' ? 'Telemetry' : 'Pathology'}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Immersive Scan holographic animation overlay */}
