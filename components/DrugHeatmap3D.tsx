@@ -1843,9 +1843,13 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     const skeletonEffects = useMemo(() => effects.filter(e => e.layer === 'SKELETON_VIEW'), [effects]);
 
     return (
-        <div className="relative w-full h-full select-none">
+        <div className="relative w-full h-full select-none touch-none">
             {/* ── Three.js Canvas ── */}
-            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
+            <Canvas
+                shadows
+                dpr={typeof window !== 'undefined' && window.innerWidth < 768 ? [1, 1.5] : [1, 2]}
+                camera={{ position: [0, 0, 5], fov: 45 }}
+            >
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
                 {/* Lighting — exact match to MedicalModel3D */}
@@ -1933,13 +1937,14 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                     autoRotateSpeed={0.8}
                     enableDamping
                     dampingFactor={0.08}
+                    touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
                 />
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>
 
             {/* ── 4-Tier Surface Heat-Map Impact Legend ───────────────────── */}
             {effects.length > 0 && (
-                <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px]">
+                <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px] hidden sm:block">
                     <div className="flex items-center gap-2 font-bold text-white/90 text-[11px] uppercase tracking-wider border-b border-white/10 pb-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                         Surface Impact Heat-Map
@@ -1969,9 +1974,9 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
             {hoveredOrgan && hoveredEffect && (() => {
                 const { text, hex } = heatLabelColor(hoveredEffect.intensity);
                 return (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none
-                        bg-black/85 backdrop-blur-xl border border-white/20 rounded-2xl px-5 py-3.5
-                        shadow-2xl min-w-[210px] text-center">
+                    <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none
+                        bg-black/85 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5
+                        shadow-2xl max-w-[90vw] min-w-[180px] sm:min-w-[210px] text-center">
                         <p className="text-base font-black text-white flex items-center justify-center gap-2">
                             <span>{ORGAN_ICONS[hoveredOrgan] ?? '🫀'}</span> {hoveredOrgan}
                         </p>
