@@ -478,7 +478,6 @@ export const DrugImpactVisualizer = () => {
 
     // Detail Tabs for Drug Visualizer Console
     const [drugDetailTab, setDrugDetailTab] = useState<'biomap' | 'synthesis' | 'interaction'>('biomap');
-    const [mobileViewTab, setMobileViewTab] = useState<'model' | 'controls' | 'results'>('model');
 
     // State
     const [isLoading, setIsLoading] = useState(false);
@@ -849,7 +848,6 @@ export const DrugImpactVisualizer = () => {
 
     const handleAnalyze = async (overrideDrugName?: string) => {
         const targetDrug = (overrideDrugName || drugName).trim();
-        setMobileViewTab('model');
         if (analysisMode === 'text') {
             if (!targetDrug) return;
             
@@ -956,7 +954,6 @@ export const DrugImpactVisualizer = () => {
     // ─── Disease simulation handler ───────────────────────────────────
     const handleDiseaseSimulate = async () => {
         if (!diseaseName.trim()) return;
-        setMobileViewTab('model');
         setDiseaseLoading(true);
         setDiseaseResult(null);
         setDiseaseError(null);
@@ -1478,7 +1475,7 @@ This document is a simulated educational clinical report.
     }, [diseaseResult, diseaseAge, diseaseSeverity, mutatorInfectivity, mutatorIncubationSpeed, mutatorImmuneStrength, injectedDrugs, cureProgress, injectionLog]);
 
     return (
-        <div className="drug-impact-container fixed top-12 left-0 right-0 bottom-0 pb-16 md:pb-0 z-20 flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
+        <div className="drug-impact-container fixed inset-0 z-[100] flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
             {/* Holographic Glowing Background Layer */}
             <div className="absolute inset-0 z-0">
                 {/* Space Grid Overlay */}
@@ -1492,144 +1489,101 @@ This document is a simulated educational clinical report.
             </div>
 
             <div className="relative z-10 flex flex-col h-full">
-                {/* ── Top Command Bar (Compact to maximize 3D canvas) ── */}
-                <div className="flex-shrink-0 flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-2
-                    border-b border-white/10 bg-slate-950/60 backdrop-blur-xl shadow-lg relative">
+                {/* ── Top Command Bar ──────────────────────────────────────────────── */}
+                <div className="flex-shrink-0 flex items-center justify-between px-6 py-4
+                    border-b border-white/10 bg-slate-950/40 backdrop-blur-xl shadow-2xl relative">
                     {/* Glowing bottom edge line */}
                     <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="flex items-center gap-4">
                         <button onClick={() => navigateTo('DASHBOARD')}
-                            className="p-1.5 sm:p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
-                                transition-all group flex items-center justify-center shadow-md flex-shrink-0"
-                            title="Back to Executive Hub"
-                        >
+                            className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
+                                transition-all group flex items-center justify-center shadow-lg">
                             <span className="group-hover:-translate-x-0.5 block transition-transform text-white/80 group-hover:text-white">
                                 {ICONS.arrowLeft}
                             </span>
                         </button>
-                        <div className="min-w-0">
-                            <h1 className="text-xs sm:text-sm font-black tracking-tight flex items-center gap-1.5">
-                                <Brain className="text-teal-400 drop-shadow-[0_0_6px_rgba(45,212,191,0.5)] animate-pulse flex-shrink-0" size={16} />
+                        <div>
+                            <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
+                                <Brain className="text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)] animate-pulse" size={20} />
                                 <span>{activeTab === 'drug' ? 'Pharmacological Twin' : 'Emerging Pathogen'}</span>{' '}
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-blue-400 font-extrabold">
                                     {activeTab === 'drug' ? 'In-Silico Visualizer' : 'Computational Lab'}
                                 </span>
                             </h1>
-                            <p className="text-[9px] text-teal-300/50 uppercase tracking-widest font-mono font-semibold hidden md:block">
-                                {activeTab === 'drug' ? 'Virtual Human 3D ADME & Multi-Organ Toxicity Model' : 'Safe Emerging Disease & Antiviral Screening Model'}
+                            <p className="text-[10px] text-teal-300/60 uppercase tracking-widest font-mono font-bold mt-0.5">
+                                {activeTab === 'drug' ? 'Virtual Human 3D ADME & Multi-Organ Toxicity Model' : 'Safe Emerging Disease & Antiviral/Vaccine Screening Model'}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 sm:gap-2 no-print flex-shrink-0">
+                    <div className="flex items-center gap-3 no-print">
                         {/* Instant Simulation Deconstruction & Guide */}
                         <button
                             onClick={() => setIsExplainerOpen(true)}
-                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-gradient-to-r from-teal-500/25 via-cyan-500/25 to-blue-500/25 border border-teal-400/50 text-teal-200 hover:text-white shadow-[0_0_12px_rgba(45,212,191,0.25)] flex items-center gap-1 cursor-pointer"
+                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-gradient-to-r from-teal-500/25 via-cyan-500/25 to-blue-500/25 border border-teal-400/50 text-teal-200 hover:text-white shadow-[0_0_15px_rgba(45,212,191,0.25)] flex items-center gap-1.5 cursor-pointer"
                             title="Deconstruct & Understand this simulation in plain English"
                         >
                             <span>💡</span>
                             <span className="hidden sm:inline">Deconstruct Run</span>
-                            <span className="sm:hidden">Deconstruct</span>
                         </button>
 
                         <button
                             onClick={() => openGuide('overview')}
-                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 shadow-sm flex items-center gap-1 cursor-pointer"
+                            className="px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 shadow-md flex items-center gap-1.5 cursor-pointer"
                             title="Open System Architecture & How BioTwin Works Guide"
                         >
                             <span>📖</span>
                             <span className="hidden md:inline">Architecture Guide</span>
-                            <span className="md:hidden">Guide</span>
                         </button>
 
                         {activeTab === 'drug' && (
                             <>
-                                <div className="hidden xl:block">
-                                    <HeatmapLegend />
-                                </div>
+                                <HeatmapLegend />
                                 <button
                                     onClick={() => { setCompareMode(v => !v); setResult2(null); setDrugName2(''); }}
-                                    className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider border transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm flex items-center gap-1 cursor-pointer
+                                    className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all duration-300 hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer
                                         ${compareMode
-                                            ? 'bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.2)]'
+                                            ? 'bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
                                             : 'bg-white/[0.03] border-white/10 text-white/60 hover:text-white hover:border-white/20'}`}>
-                                    <span>⚖</span> <span className="hidden sm:inline">{compareMode ? 'Exit Compare' : 'Compare Drugs'}</span>
-                                    <span className="sm:hidden">{compareMode ? 'Exit' : 'Compare'}</span>
+                                    <span>⚖</span> {compareMode ? 'Exit Compare' : 'Compare Drugs'}
                                 </button>
                             </>
                         )}
                         <button
                             onClick={() => setIsSaveModalOpen(true)}
-                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-teal-500/20 border border-teal-500/40 text-teal-300 hover:bg-teal-500/30 shadow-sm flex items-center gap-1 cursor-pointer"
+                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-teal-500/20 border border-teal-500/40 text-teal-300 hover:bg-teal-500/30 shadow-lg flex items-center gap-1.5 cursor-pointer"
                             title="Save current simulation to Experiment Dossier"
                         >
-                            <span>💾</span> <span className="hidden sm:inline">Save Run</span><span className="sm:hidden">Save</span>
+                            <span>💾</span> Save Run
                         </button>
                         <button
                             onClick={() => setIsDossierDrawerOpen(true)}
-                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/15 text-gray-200 hover:text-white hover:bg-white/10 shadow-sm flex items-center gap-1 cursor-pointer"
+                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/15 text-gray-200 hover:text-white hover:bg-white/10 shadow-lg flex items-center gap-1.5 cursor-pointer"
                             title="View all saved experiment dossiers"
                         >
-                            <span>📁</span> <span className="hidden md:inline">Dossiers</span> <span className="text-[10px] font-mono">({savedExperiments.length})</span>
+                            <span>📁</span> Dossiers ({savedExperiments.length})
                         </button>
                         <button
                             onClick={() => window.print()}
-                            className="hidden sm:flex px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.03] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 shadow-sm items-center gap-1 cursor-pointer">
+                            className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.03] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 shadow-lg flex items-center gap-1.5 cursor-pointer">
                             <span>📄</span> PDF
-                        </button>
-                    </div>
-                </div>
-
-                {/* ── Mobile Viewport Switcher (ONLY for mobile phones < md) ──────────────── */}
-                <div className="md:hidden flex items-center justify-center px-4 py-2 bg-slate-950/90 border-b border-white/10 backdrop-blur-md z-30 no-print flex-shrink-0">
-                    <div className="flex bg-black/70 p-1 rounded-2xl border border-white/10 w-full max-w-md shadow-xl gap-1">
-                        <button
-                            onClick={() => setMobileViewTab('model')}
-                            className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                                mobileViewTab === 'model'
-                                    ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)]'
-                                    : 'text-white/50 hover:text-white'
-                            }`}
-                        >
-                            <span>🧬</span> 3D Twin
-                        </button>
-                        <button
-                            onClick={() => setMobileViewTab('controls')}
-                            className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                                mobileViewTab === 'controls'
-                                    ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)]'
-                                    : 'text-white/50 hover:text-white'
-                            }`}
-                        >
-                            <span>⚙️</span> {activeTab === 'drug' ? 'Drug Inputs' : 'Pathogen'}
-                        </button>
-                        <button
-                            onClick={() => setMobileViewTab('results')}
-                            className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                                mobileViewTab === 'results'
-                                    ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)]'
-                                    : 'text-white/50 hover:text-white'
-                            }`}
-                        >
-                            <span>📊</span> Results
                         </button>
                     </div>
                 </div>
 
                 {/* ── Main Layout ──────────────────────────────────────────── */}
                 {activeTab === 'disease' && (
-                    <div className="bg-emerald-950/40 border-b border-emerald-500/20 px-3 py-2 sm:px-6 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-200 no-print">
+                    <div className="bg-emerald-950/40 border-b border-emerald-500/20 px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-200 no-print">
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span className="font-bold uppercase tracking-wider text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">Safe In-Silico Disease Lab</span>
-                            <span className="hidden sm:inline">Computational pathogen spread dynamics and therapeutic screening model. Zero physical bio-hazard.</span>
+                            <span>Computational pathogen spread dynamics and therapeutic screening model. Zero physical bio-hazard.</span>
                         </div>
                         <div className="flex items-center gap-3 text-[11px] font-mono text-emerald-300">
                             <span>Infectivity R₀: {mutatorInfectivity.toFixed(1)}</span>
                             <span>Incubation: {mutatorIncubationSpeed}x</span>
-                            <span>Immune: {mutatorImmuneStrength}%</span>
+                            <span>Immune Resilience: {mutatorImmuneStrength}%</span>
                         </div>
                     </div>
                 )}
@@ -1637,9 +1591,9 @@ This document is a simulated educational clinical report.
                     /* ═══════════════════════════════════════════════════════════
                        DISEASE INJECTION SIMULATOR
                     ═══════════════════════════════════════════════════════════ */
-                    <div className="flex flex-1 overflow-hidden relative">
+                    <div className="flex flex-1 overflow-hidden">
                         {/* LEFT PANEL — Disease Inputs */}
-                        <div className={`w-full md:w-[260px] md:min-w-[260px] md:max-w-[260px] flex-shrink-0 flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileViewTab === 'controls' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className="w-76 flex-shrink-0 flex flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print">
                             <div className="p-5 space-y-6">
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
@@ -1799,7 +1753,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* CENTER — 3D Body View */}
-                        <div className={`flex-1 min-w-0 relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black ${mobileViewTab === 'model' ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
+                        <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black">
                             <ErrorBoundary fallbackTitle="Disease View 3D Error" onReset={() => setViewMode('BODY')}>
                                 <DrugHeatmap3D
                                     effects={cureProgress > 0 ? treatedHeatmapEffects : diseaseHeatmapEffects}
@@ -1835,13 +1789,13 @@ This document is a simulated educational clinical report.
                             />
 
                             {/* Floating Deconstruction & Understanding Pill */}
-                            <div className="absolute bottom-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pointer-events-auto no-print">
+                            <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-auto no-print">
                                 <button
                                     onClick={() => setIsExplainerOpen(true)}
-                                    className="px-2.5 py-1.5 rounded-lg bg-[#070e1b]/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-emerald-300 hover:text-white backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.25)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 text-[11px] font-bold cursor-pointer"
+                                    className="px-3.5 py-2 rounded-xl bg-[#070e1b]/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-emerald-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 text-xs font-bold cursor-pointer"
                                 >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    <span>💡 Deconstruct Infection</span>
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span>💡 Deconstruct Infection Simulation</span>
                                 </button>
                                 <button
                                     onClick={() => openGuide('pipeline')}
@@ -1919,11 +1873,11 @@ This document is a simulated educational clinical report.
                             )}
 
                             {/* View selector (float top-right) */}
-                            <div className="absolute top-1 right-2 sm:right-6 left-auto z-30 flex gap-1.5 sm:gap-3 no-print max-w-[95vw] overflow-x-auto">
-                                <div className="flex bg-slate-950/80 rounded-2xl p-1 sm:p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl scale-90 sm:scale-100 origin-top-right overflow-x-auto custom-scrollbar">
+                            <div className="absolute top-1 right-6 left-auto z-30 flex gap-3 no-print">
+                                <div className="flex bg-slate-950/80 rounded-2xl p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl">
                                     <button
                                         onClick={() => setViewMode('BODY')}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'BODY'
                                                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -1931,7 +1885,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('MUSCLES')}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'MUSCLES'
                                                 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -1939,15 +1893,15 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('NERVOUS_GLB')}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'NERVOUS_GLB'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
-                                        💜 Nerve
+                                        💜 Nerve (GLB)
                                     </button>
                                     <button
                                         onClick={() => setViewMode('SKELETON')}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'SKELETON'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -1955,7 +1909,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('ORGANS')}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'ORGANS'
                                                 ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -1966,18 +1920,18 @@ This document is a simulated educational clinical report.
 
                             {/* Disease info card overlay (top-left) */}
                             {diseaseResult && (
-                                <div className="absolute top-3 left-3 z-20 space-y-2 max-w-[240px]">
-                                    <div className="bg-slate-950/80 border border-white/10 rounded-xl p-3 backdrop-blur-md shadow-2xl relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-                                        <div className="flex items-start gap-2.5">
-                                            <div className="text-2xl bg-black/40 w-10 h-10 rounded-lg flex items-center justify-center border border-white/5">🦠</div>
+                                <div className="absolute top-6 left-6 z-20 space-y-3 max-w-[280px]">
+                                    <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 backdrop-blur-md shadow-2xl relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-2xl -mr-12 -mt-12 pointer-events-none" />
+                                        <div className="flex items-start gap-3">
+                                            <div className="text-3xl bg-black/40 w-12 h-12 rounded-xl flex items-center justify-center border border-white/5">🦠</div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-black text-white text-xs tracking-tight truncate">{diseaseResult.disease_name}</p>
-                                                <div className="flex flex-wrap items-center gap-1 mt-1">
-                                                    <span className={`text-[8px] font-black px-1.5 py-0.2 rounded border uppercase tracking-wider ${getRiskColor(diseaseResult.severity)}`}>
+                                                <p className="font-black text-white text-sm tracking-tight truncate">{diseaseResult.disease_name}</p>
+                                                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${getRiskColor(diseaseResult.severity)}`}>
                                                         {diseaseResult.severity}
                                                     </span>
-                                                    <span className="text-[8px] text-white/40 font-mono">Conf: {diseaseResult.ai_confidence_score}%</span>
+                                                    <span className="text-[9px] text-white/40 font-mono">Conf: {diseaseResult.ai_confidence_score}%</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1985,18 +1939,18 @@ This document is a simulated educational clinical report.
 
                                     {/* Cure progress bar */}
                                     {cureProgress > 0 && (
-                                        <div className="bg-slate-950/80 border border-emerald-500/20 rounded-xl p-3 backdrop-blur-md shadow-2xl">
-                                            <div className="flex items-center justify-between mb-1.5">
-                                                <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1"><Syringe size={10} /> Therapy Response</span>
-                                                <span className="text-xs font-mono font-black text-emerald-400">{cureProgress}%</span>
+                                        <div className="bg-slate-950/80 border border-emerald-500/20 rounded-2xl p-4 backdrop-blur-md shadow-2xl">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1"><Syringe size={10} /> Therapy Response</span>
+                                                <span className="text-sm font-mono font-black text-emerald-400">{cureProgress}%</span>
                                             </div>
-                                            <div className="w-full bg-white/5 rounded-full h-1.5 p-[1px] border border-white/5">
+                                            <div className="w-full bg-white/5 rounded-full h-2 p-[1px] border border-white/5">
                                                 <div
                                                     className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
                                                     style={{ width: `${cureProgress}%` }}
                                                 />
                                             </div>
-                                            <p className="text-[8px] text-white/40 mt-1">Treated with: <strong className="text-white/80">{injectedDrugs.join(' + ')}</strong></p>
+                                            <p className="text-[9px] text-white/40 mt-1.5">Treated with: <strong className="text-white/80">{injectedDrugs.join(' + ')}</strong></p>
                                         </div>
                                     )}
                                 </div>
@@ -2004,12 +1958,12 @@ This document is a simulated educational clinical report.
 
                             {/* Pathogen Timeline Scrubber (float bottom center) */}
                             {diseaseResult && !diseaseLoading && (
-                                <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-2.5 sm:p-3 rounded-xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[360px] w-full no-print">
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                                            <Clock size={10} /> Pathogen Spread Timeline
+                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[420px] w-full no-print">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                                            <Clock size={11} /> Pathogen Spread Timeline
                                         </span>
-                                        <span className="text-white font-mono text-[9px] bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
+                                        <span className="text-white font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                                             {diseaseResult.body_impact.timeline[timelineStepIndex]?.time || 'Day 1'}
                                         </span>
                                     </div>
@@ -2089,7 +2043,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* RIGHT PANEL — Analysis Results */}
-                        <div className={`w-full md:w-[300px] md:min-w-[300px] md:max-w-[300px] flex-shrink-0 border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex-col ${mobileViewTab === 'results' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className="w-96 flex-shrink-0 border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col">
                             {/* Mode Tab Switcher */}
                             <div className="flex-shrink-0 p-4 border-b border-white/10 bg-white/[0.02]">
                                 <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl">
@@ -2739,9 +2693,9 @@ This document is a simulated educational clinical report.
                     /* ═══════════════════════════════════════════════════════════
                        DRUG IMPACT VISUALIZER
                     ═══════════════════════════════════════════════════════════ */
-                    <div className="flex flex-1 overflow-hidden relative">
+                    <div className="flex flex-1 overflow-hidden">
                         {/* LEFT PANEL — Inputs */}
-                        <div className={`w-full md:w-[260px] md:min-w-[260px] md:max-w-[260px] flex-shrink-0 flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileViewTab === 'controls' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className="w-76 flex-shrink-0 flex flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print">
                             {isInteractionMode ? (
                                 <div className="p-5 space-y-6">
                                     <div>
@@ -3177,13 +3131,13 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* CENTER — 3D Viewer(s) */}
-                        <div className={`flex-1 min-w-0 flex flex-col ${compareMode ? 'divide-x divide-white/10' : ''} overflow-hidden relative ${mobileViewTab === 'model' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className={`flex-1 flex flex-col ${compareMode ? 'divide-x divide-white/10' : ''} overflow-hidden relative`}>
                             {/* View selectors */}
-                            <div className="absolute top-1 right-2 sm:right-4 left-auto z-30 flex gap-1.5 sm:gap-2 no-print max-w-[95vw] overflow-x-auto">
-                                <div className="flex bg-slate-950/80 rounded-xl p-1 border border-white/10 backdrop-blur-xl shadow-2xl overflow-x-auto">
+                            <div className="absolute top-1 right-6 left-auto z-30 flex gap-3 no-print">
+                                <div className="flex bg-slate-950/80 rounded-2xl p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl">
                                     <button
                                         onClick={() => setViewMode('BODY')}
-                                        className={`px-2.5 py-1 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'BODY'
                                                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3191,7 +3145,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('MUSCLES')}
-                                        className={`px-2.5 py-1 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'MUSCLES'
                                                 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3199,7 +3153,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('NERVOUS_GLB')}
-                                        className={`px-2.5 py-1 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'NERVOUS_GLB'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3207,7 +3161,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('SKELETON')}
-                                        className={`px-2.5 py-1 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'SKELETON'
                                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3215,7 +3169,7 @@ This document is a simulated educational clinical report.
                                     </button>
                                     <button
                                         onClick={() => setViewMode('ORGANS')}
-                                        className={`px-2.5 py-1 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
                                             ${viewMode === 'ORGANS'
                                                 ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
                                                 : 'text-white/40 hover:text-white'}`}>
@@ -3226,21 +3180,21 @@ This document is a simulated educational clinical report.
 
                             {/* Temporal Scrubbing Control */}
                             {result && result.time_based_intensity && (
-                                <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-2.5 sm:p-3 rounded-xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[260px] w-full">
-                                    <label className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-1 flex items-center justify-between">
+                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 p-4 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-full">
+                                    <label className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
                                         <span>⏱ Temporal Scrubbing (4D)</span>
-                                        <span className="text-white font-mono text-[9px] bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">{timePhase.toUpperCase()}</span>
+                                        <span className="text-white font-mono text-[10px] bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">{timePhase.toUpperCase()}</span>
                                     </label>
                                     <input
                                         type="range" min={0} max={4} step={1}
                                         value={['0 min', 'onset', 'peak', 'mid duration', 'end duration'].indexOf(timePhase)}
                                         onChange={e => {
-                                             const phases = ['0 min', 'onset', 'peak', 'mid duration', 'end duration'] as const;
-                                             setTimePhase(phases[Number(e.target.value)]);
+                                            const phases = ['0 min', 'onset', 'peak', 'mid duration', 'end duration'] as const;
+                                            setTimePhase(phases[Number(e.target.value)]);
                                         }}
-                                        className="w-full accent-sky-500 cursor-pointer h-1.5 bg-white/5 rounded-full mt-1"
+                                        className="w-full accent-sky-500 cursor-pointer h-1.5 bg-white/5 rounded-full mt-2"
                                     />
-                                    <div className="flex justify-between text-[8px] font-mono text-white/30 mt-1">
+                                    <div className="flex justify-between text-[8px] font-mono text-white/30 mt-2">
                                         <span>T+0</span>
                                         <span>ONSET</span>
                                         <span>PEAK</span>
@@ -3293,20 +3247,21 @@ This document is a simulated educational clinical report.
                                     />
 
                                     {/* Floating Deconstruction & Understanding Pill */}
-                                    <div className="absolute bottom-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pointer-events-auto no-print">
+                                    <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-auto no-print">
                                         <button
                                             onClick={() => setIsExplainerOpen(true)}
-                                            className="px-2.5 py-1.5 rounded-lg bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_15px_rgba(20,184,166,0.25)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 text-[11px] font-bold cursor-pointer"
+                                            className="px-3.5 py-2 rounded-xl bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 text-xs font-bold cursor-pointer"
                                         >
-                                            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-                                            <span>💡 Deconstruct Simulation</span>
+                                            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                                            <span>💡 Deconstruct This Simulation</span>
                                         </button>
                                         <button
                                             onClick={() => openGuide('layers')}
-                                            className="px-2 py-1.5 rounded-lg bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-[11px] font-mono cursor-pointer flex items-center gap-1"
+                                            className="px-2.5 py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-xs font-mono cursor-pointer flex items-center gap-1"
                                             title="What does each 3D anatomical layer reveal?"
                                         >
-                                            <span>3D Guide ↗</span>
+                                            <span>3D Layers Guide</span>
+                                            <span>↗</span>
                                         </button>
                                     </div>
                                 </div>
@@ -3345,7 +3300,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* RIGHT PANEL — Effect Details */}
-                        <div className={`w-full md:w-[300px] md:min-w-[300px] md:max-w-[300px] flex-shrink-0 border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex-col ${mobileViewTab === 'results' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className="w-96 flex-shrink-0 border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col">
                             {/* Tab selector */}
                             <div className="flex-shrink-0 p-4 border-b border-white/10 bg-white/[0.02]">
                                 <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl">

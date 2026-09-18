@@ -284,24 +284,24 @@ const SystemUnderstandingModal: React.FC = () => {
             />
 
             {/* Modal Dialog */}
-            <div className="relative z-10 w-full max-w-6xl max-h-[94vh] sm:max-h-[92vh] bg-[#070d19] border border-teal-500/30 rounded-3xl shadow-[0_0_80px_rgba(20,184,166,0.25)] flex flex-col overflow-hidden ring-1 ring-white/10">
+            <div className="relative z-10 w-full max-w-6xl max-h-[92vh] bg-[#070d19] border border-teal-500/30 rounded-3xl shadow-[0_0_80px_rgba(20,184,166,0.25)] flex flex-col overflow-hidden ring-1 ring-white/10">
                 
                 {/* Modal Header */}
-                <div className="flex-shrink-0 px-4 py-3.5 sm:px-6 sm:py-5 border-b border-white/10 bg-gradient-to-r from-teal-950/40 via-slate-900/80 to-blue-950/40 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-500 flex items-center justify-center text-white shadow-[0_0_20px_rgba(45,212,191,0.4)] ring-1 ring-white/20 flex-shrink-0">
-                            <Brain size={20} className="text-white drop-shadow" />
+                <div className="flex-shrink-0 px-6 py-5 border-b border-white/10 bg-gradient-to-r from-teal-950/40 via-slate-900/80 to-blue-950/40 flex items-center justify-between">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-500 flex items-center justify-center text-white shadow-[0_0_20px_rgba(45,212,191,0.4)] ring-1 ring-white/20">
+                            <Brain size={22} className="text-white drop-shadow" />
                         </div>
-                        <div className="min-w-0">
+                        <div>
                             <div className="flex items-center gap-2">
-                                <h2 className="text-base sm:text-2xl font-black tracking-tight text-white truncate">
+                                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
                                     BioTwin System Architecture & Understanding Guide
                                 </h2>
                                 <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[10px] font-mono font-bold uppercase tracking-wider hidden sm:inline-block">
                                     In-Silico Core v2.4
                                 </span>
                             </div>
-                            <p className="text-[11px] sm:text-xs text-teal-300/80 font-medium mt-0.5 line-clamp-1 sm:line-clamp-none">
+                            <p className="text-xs text-teal-300/80 font-medium mt-0.5">
                                 Everything you need to know about the science, mathematical models, 3D anatomy, and preclinical workflows.
                             </p>
                         </div>
@@ -309,15 +309,15 @@ const SystemUnderstandingModal: React.FC = () => {
 
                     <button 
                         onClick={closeGuide}
-                        className="p-2 sm:p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition-all duration-200 cursor-pointer flex-shrink-0"
+                        className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition-all duration-200 cursor-pointer"
                         aria-label="Close Guide"
                     >
-                        <X size={18} />
+                        <X size={20} />
                     </button>
                 </div>
 
                 {/* Navigation Tabs Bar */}
-                <div className="flex-shrink-0 px-3 sm:px-6 bg-slate-950/60 border-b border-white/10 flex items-center gap-2 overflow-x-auto py-2.5 scrollbar-none">
+                <div className="flex-shrink-0 px-6 bg-slate-950/60 border-b border-white/10 flex items-center gap-2 overflow-x-auto py-2.5 scrollbar-none">
                     {[
                         { id: 'overview', label: '🌟 Concept & Science', icon: '🧬' },
                         { id: 'pipeline', label: '⚡ 4-Stage Simulation Pipeline', icon: '🔄' },

@@ -106,41 +106,39 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
 
             {/* Scientific Navigation Header */}
-            <header className="fixed top-0 left-0 right-0 h-12 z-40 transition-all duration-300">
-                <div className="absolute inset-0 bg-[#030712]/95 backdrop-blur-xl border-b border-white/10 shadow-lg"></div>
-                <div className="container mx-auto px-3 sm:px-4 h-full relative flex justify-between items-center max-w-7xl">
+            <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300">
+                <div className="absolute inset-0 bg-[#030712]/85 backdrop-blur-xl border-b border-white/10 shadow-2xl"></div>
+                <div className="container mx-auto px-4 py-2.5 relative flex justify-between items-center max-w-7xl">
                     {/* Brand */}
                     <div
-                        className="flex items-center space-x-2 cursor-pointer group flex-shrink-0"
+                        className="flex items-center space-x-3 cursor-pointer group"
                         onClick={() => navigateTo('DRUG_VISUALIZER')}
                     >
-                        <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-600 text-white p-1.5 rounded-lg shadow-md shadow-teal-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-teal-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-300">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                             </svg>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1.5">
-                                BioTwin <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 font-mono font-bold tracking-wider">AI RESEARCH LAB</span>
-                            </span>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-base md:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+                                    BioTwin <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 font-mono font-bold tracking-wider">AI RESEARCH LAB</span>
+                                </span>
+                            </div>
+                            <p className="text-[10px] text-teal-300/80 font-medium tracking-wide hidden sm:block">
+                                Test on a virtual human first, then validate in the real world.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Integrated Scientific Validation Pill (Seamlessly inside header — Never overlaps) */}
-                    <div className="hidden xl:flex items-center gap-2 text-[10px] text-teal-300/80 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20 font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse flex-shrink-0"></span>
-                        <span className="font-bold text-white uppercase text-[8px] tracking-wider bg-teal-500/20 px-1.5 py-0.2 rounded border border-teal-500/30 flex-shrink-0">In-Silico Environment</span>
-                        <span className="text-gray-300">Empirical validation in wet-lab assays & clinical trials required.</span>
-                    </div>
-
                     {/* Navigation Tabs */}
-                    <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-2.5 flex-shrink-0">
+                    <div className="flex items-center space-x-2 md:space-x-3">
                         <button
                             onClick={() => openGuide('overview')}
-                            className="flex items-center space-x-1 text-xs font-bold px-2.5 py-1 rounded-lg transition-all bg-gradient-to-r from-teal-500/15 via-cyan-500/15 to-blue-500/15 text-teal-300 border border-teal-500/40 hover:border-teal-300 hover:shadow-[0_0_12px_rgba(45,212,191,0.25)] hover:scale-105 active:scale-95 cursor-pointer"
+                            className="flex items-center space-x-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all bg-gradient-to-r from-teal-500/15 via-cyan-500/15 to-blue-500/15 text-teal-300 border border-teal-500/40 hover:border-teal-300 hover:shadow-[0_0_15px_rgba(45,212,191,0.25)] hover:scale-105 active:scale-95 cursor-pointer"
                             title="Open System Architecture & How BioTwin Works Guide"
                         >
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
                             <span className="flex items-center gap-1">
                                 <span>💡</span>
                                 <span className="hidden sm:inline">How BioTwin Works</span>
@@ -150,9 +148,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
                         <button
                             onClick={() => navigateTo('DRUG_VISUALIZER')}
-                            className={`flex items-center space-x-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                            className={`flex items-center space-x-2 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer ${
                                 currentPage === 'DRUG_VISUALIZER'
-                                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-[0_0_12px_rgba(20,184,166,0.2)]'
+                                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-[0_0_15px_rgba(20,184,166,0.2)]'
                                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                             }`}
                         >
@@ -164,9 +162,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
                         <button
                             onClick={() => navigateTo('DASHBOARD')}
-                            className={`flex items-center space-x-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                            className={`flex items-center space-x-2 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer ${
                                 currentPage === 'DASHBOARD'
-                                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-[0_0_12px_rgba(20,184,166,0.2)]'
+                                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-[0_0_15px_rgba(20,184,166,0.2)]'
                                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                             }`}
                         >
@@ -176,58 +174,32 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             <span className="hidden sm:inline">Executive Hub</span>
                         </button>
 
-                        <div className="h-4 w-px bg-white/10 hidden md:block"></div>
+                        <div className="h-5 w-px bg-white/10 hidden md:block"></div>
                         <ThemeToggleButton />
                         <ProfileMenu />
                     </div>
                 </div>
             </header>
 
-            <main className="relative container mx-auto p-3 sm:p-4 pt-14 md:p-6 md:pt-16 pb-24 md:pb-6 z-10 max-w-7xl">
+            {/* Scientific Validation Banner */}
+            <div className="fixed top-[62px] left-0 right-0 z-30 bg-black/40 border-b border-teal-500/20 backdrop-blur-md py-1.5 px-4 text-center">
+                <p className="text-[11px] font-medium text-teal-300/90 tracking-wide flex items-center justify-center gap-2">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                    <span className="font-bold text-white uppercase tracking-wider text-[9px] bg-teal-500/20 px-1.5 py-0.5 rounded border border-teal-500/30">In-Silico Environment</span>
+                    Computational prediction for candidate screening. Empirical validation in wet-lab assays & clinical trials is required.
+                </p>
+            </div>
+
+            <main className="relative container mx-auto p-4 pt-28 md:p-6 md:pt-32 z-10 max-w-7xl">
                 {children}
             </main>
-
-            {/* Mobile Bottom Navigation Bar (Only for phones < md) */}
-            <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#070d19]/95 backdrop-blur-2xl border-t border-white/10 px-6 py-2 flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.7)] md:hidden pb-safe">
-                <button
-                    onClick={() => navigateTo('DRUG_VISUALIZER')}
-                    className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all cursor-pointer ${
-                        currentPage === 'DRUG_VISUALIZER'
-                            ? 'text-teal-300 font-bold scale-105'
-                            : 'text-gray-400 hover:text-white'
-                    }`}
-                >
-                    <span className="text-lg">🧬</span>
-                    <span className="text-[10px] tracking-wide">3D Twin</span>
-                </button>
-
-                <button
-                    onClick={() => navigateTo('DASHBOARD')}
-                    className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all cursor-pointer ${
-                        currentPage === 'DASHBOARD'
-                            ? 'text-teal-300 font-bold scale-105'
-                            : 'text-gray-400 hover:text-white'
-                    }`}
-                >
-                    <span className="text-lg">📊</span>
-                    <span className="text-[10px] tracking-wide">Executive</span>
-                </button>
-
-                <button
-                    onClick={() => openGuide('overview')}
-                    className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-teal-400 transition-all active:scale-95 cursor-pointer"
-                >
-                    <span className="text-lg">💡</span>
-                    <span className="text-[10px] tracking-wide font-bold">Guide</span>
-                </button>
-            </nav>
 
             {/* AI Research Assistant Chatbot Button */}
             {user && currentPage !== 'EDIT_PROFILE' && (
                 <>
                     <button
                         onClick={() => setIsChatOpen(prev => !prev)}
-                        className="fixed bottom-20 right-4 md:bottom-8 md:right-8 group z-[100] flex items-center gap-3 cursor-pointer"
+                        className="fixed bottom-6 right-4 md:bottom-8 md:right-8 group z-[100] flex items-center gap-3"
                         aria-label="Open AI Research Assistant"
                     >
                         <div className="hidden md:flex items-center gap-2 bg-[#0a0f1d]/90 backdrop-blur-md border border-teal-500/30 text-teal-300 px-3.5 py-2 rounded-full shadow-xl text-xs font-bold tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
@@ -236,7 +208,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         </div>
                         <div className="relative">
                             <div className="absolute inset-0 bg-teal-400 rounded-2xl blur-md opacity-40 group-hover:opacity-80 animate-pulse"></div>
-                            <div className="relative bg-gradient-to-tr from-teal-600 via-cyan-600 to-blue-600 text-white p-3 md:p-4 rounded-2xl shadow-2xl hover:shadow-teal-500/50 transform hover:scale-105 transition-all duration-300 ring-1 ring-white/30">
+                            <div className="relative bg-gradient-to-tr from-teal-600 via-cyan-600 to-blue-600 text-white p-3.5 md:p-4 rounded-2xl shadow-2xl hover:shadow-teal-500/50 transform hover:scale-105 transition-all duration-300 ring-1 ring-white/30">
                                 {ICONS.chatbot}
                             </div>
                         </div>

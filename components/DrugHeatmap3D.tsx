@@ -865,7 +865,7 @@ const CameraSetup: React.FC<{ resetCameraFlag?: number }> = ({ resetCameraFlag }
         const perspectiveCamera = camera as THREE.PerspectiveCamera;
         const fov = perspectiveCamera.fov * (Math.PI / 180);
         const distance = 4.0 / (2 * Math.tan(fov / 2));
-        camera.position.set(0, 0, distance * 0.88);
+        camera.position.set(0, 0, distance * 1.15);
         camera.lookAt(0, 0, 0);
         camera.updateProjectionMatrix();
     }, [camera, resetCameraFlag]);
@@ -1843,13 +1843,9 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     const skeletonEffects = useMemo(() => effects.filter(e => e.layer === 'SKELETON_VIEW'), [effects]);
 
     return (
-        <div className="relative w-full h-full select-none touch-none">
+        <div className="relative w-full h-full select-none">
             {/* ── Three.js Canvas ── */}
-            <Canvas
-                shadows
-                dpr={typeof window !== 'undefined' && window.innerWidth < 768 ? [1, 1.5] : [1, 2]}
-                camera={{ position: [0, 0, 4.2], fov: 42 }}
-            >
+            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
                 {/* Lighting — exact match to MedicalModel3D */}
@@ -1930,41 +1926,40 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
                 <OrbitControls
                     ref={orbitRef}
-                    enablePan={true}
-                    minDistance={1.2}
+                    enablePan={false}
+                    minDistance={2}
                     maxDistance={12}
                     autoRotate={true}
                     autoRotateSpeed={0.8}
                     enableDamping
                     dampingFactor={0.08}
-                    touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
                 />
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>
 
             {/* ── 4-Tier Surface Heat-Map Impact Legend ───────────────────── */}
             {effects.length > 0 && (
-                <div className="absolute top-3 left-3 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-xl p-2.5 shadow-2xl text-[10px] space-y-1.5 select-none min-w-[180px] hidden sm:block">
-                    <div className="flex items-center gap-1.5 font-bold text-white/90 text-[10px] uppercase tracking-wider border-b border-white/10 pb-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px]">
+                    <div className="flex items-center gap-2 font-bold text-white/90 text-[11px] uppercase tracking-wider border-b border-white/10 pb-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                         Surface Impact Heat-Map
                     </div>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px]">
-                        <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-[#00d2ff] shadow-[0_0_6px_#00d2ff]" />
-                            <span className="text-slate-300">🔵 Low</span>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#00d2ff] shadow-[0_0_8px_#00d2ff]" />
+                            <span className="text-slate-300">🔵 Low Impact</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_6px_#10b981]" />
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
                             <span className="text-slate-300">🟢 Moderate</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-[#f59e0b] shadow-[0_0_6px_#f59e0b]" />
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]" />
                             <span className="text-slate-300">🟡 Significant</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_6px_#ef4444]" />
-                            <span className="text-slate-300">🔴 High</span>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] shadow-[0_0_8px_#ef4444]" />
+                            <span className="text-slate-300">🔴 High Impact</span>
                         </div>
                     </div>
                 </div>
@@ -1974,9 +1969,9 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
             {hoveredOrgan && hoveredEffect && (() => {
                 const { text, hex } = heatLabelColor(hoveredEffect.intensity);
                 return (
-                    <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none
-                        bg-black/85 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5
-                        shadow-2xl max-w-[90vw] min-w-[180px] sm:min-w-[210px] text-center">
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none
+                        bg-black/85 backdrop-blur-xl border border-white/20 rounded-2xl px-5 py-3.5
+                        shadow-2xl min-w-[210px] text-center">
                         <p className="text-base font-black text-white flex items-center justify-center gap-2">
                             <span>{ORGAN_ICONS[hoveredOrgan] ?? '🫀'}</span> {hoveredOrgan}
                         </p>

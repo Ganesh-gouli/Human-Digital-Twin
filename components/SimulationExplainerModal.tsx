@@ -38,21 +38,21 @@ export const SimulationExplainerModal: React.FC<SimulationExplainerModalProps> =
             <div className="relative z-10 w-full max-w-3xl max-h-[90vh] bg-[#070d19] border border-teal-500/30 rounded-3xl shadow-[0_0_60px_rgba(20,184,166,0.25)] flex flex-col overflow-hidden ring-1 ring-white/10">
                 
                 {/* Header */}
-                <div className="flex-shrink-0 px-4 py-3.5 sm:px-6 sm:py-5 border-b border-white/10 bg-gradient-to-r from-teal-950/40 via-slate-900 to-cyan-950/40 flex items-center justify-between">
+                <div className="flex-shrink-0 px-6 py-5 border-b border-white/10 bg-gradient-to-r from-teal-950/40 via-slate-900 to-cyan-950/40 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-300 flex-shrink-0">
-                            <Sparkles size={18} />
+                        <div className="w-10 h-10 rounded-2xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-300">
+                            <Sparkles size={20} />
                         </div>
-                        <div className="min-w-0">
+                        <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="text-base sm:text-xl font-black text-white truncate">
+                                <h3 className="text-lg sm:text-xl font-black text-white">
                                     Simulation Deconstruction & Rationale
                                 </h3>
-                                <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[10px] font-mono font-bold uppercase hidden sm:inline-block">
+                                <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[10px] font-mono font-bold uppercase">
                                     {isDrug ? drugResult?.drug_name : diseaseResult?.disease_name}
                                 </span>
                             </div>
-                            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                            <p className="text-xs text-gray-400 mt-0.5">
                                 Plain-English scientific explanation of organ shaders, strain scores, and genomic responses.
                             </p>
                         </div>
@@ -60,14 +60,14 @@ export const SimulationExplainerModal: React.FC<SimulationExplainerModalProps> =
 
                     <button 
                         onClick={onClose}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition-all cursor-pointer flex-shrink-0"
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition-all cursor-pointer"
                     >
                         <X size={18} />
                     </button>
                 </div>
 
                 {/* Body Content */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-gray-200 scrollbar-thin scrollbar-thumb-teal-500/20">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 text-gray-200 scrollbar-thin scrollbar-thumb-teal-500/20">
                     
                     {/* Primary Mechanism Summary */}
                     <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
