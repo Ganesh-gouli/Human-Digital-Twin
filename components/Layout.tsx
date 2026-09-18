@@ -202,7 +202,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <>
                     <button
                         onClick={() => setIsChatOpen(prev => !prev)}
-                        className="fixed bottom-5 right-4 md:bottom-8 md:right-8 group z-40 flex items-center gap-3"
+                        className={`fixed ${currentPage === 'DRUG_VISUALIZER' ? 'bottom-[72px] lg:bottom-8' : 'bottom-5 md:bottom-8'} right-4 md:right-8 group z-40 flex items-center gap-3`}
                         aria-label="Open AI Research Assistant"
                     >
                         <div className="hidden md:flex items-center gap-2 bg-[#0a0f1d]/90 backdrop-blur-md border border-teal-500/30 text-teal-300 px-3.5 py-2 rounded-full shadow-xl text-xs font-bold tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
