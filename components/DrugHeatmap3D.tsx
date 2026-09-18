@@ -1848,7 +1848,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
             <Canvas
                 shadows
                 dpr={typeof window !== 'undefined' && window.innerWidth < 768 ? [1, 1.5] : [1, 2]}
-                camera={{ position: [0, 0, 5], fov: 45 }}
+                camera={{ position: [0, 0, 4.2], fov: 42 }}
             >
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
