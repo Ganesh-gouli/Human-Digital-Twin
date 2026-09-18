@@ -3341,7 +3341,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* RIGHT PANEL — Effect Details */}
-                        <div className="w-96 flex-shrink-0 border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col">
+                        <div className={`w-full lg:w-96 flex-shrink-0 border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex-col ${mobileViewTab === 'results' ? 'flex' : 'hidden lg:flex'}`}>
                             {/* Tab selector */}
                             <div className="flex-shrink-0 p-4 border-b border-white/10 bg-white/[0.02]">
                                 <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl">
