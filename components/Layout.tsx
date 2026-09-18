@@ -106,33 +106,35 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
 
             {/* Scientific Navigation Header */}
-            <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300">
+            <header className="fixed top-0 left-0 right-0 h-12 z-40 transition-all duration-300">
                 <div className="absolute inset-0 bg-[#030712]/95 backdrop-blur-xl border-b border-white/10 shadow-lg"></div>
-                <div className="container mx-auto px-3 sm:px-4 py-1 sm:py-1.5 relative flex justify-between items-center max-w-7xl">
+                <div className="container mx-auto px-3 sm:px-4 h-full relative flex justify-between items-center max-w-7xl">
                     {/* Brand */}
                     <div
-                        className="flex items-center space-x-2 cursor-pointer group"
+                        className="flex items-center space-x-2 cursor-pointer group flex-shrink-0"
                         onClick={() => navigateTo('DRUG_VISUALIZER')}
                     >
                         <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-600 text-white p-1.5 rounded-lg shadow-md shadow-teal-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
-                            <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                             </svg>
                         </div>
-                        <div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1.5">
-                                    BioTwin <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 font-mono font-bold tracking-wider">AI RESEARCH LAB</span>
-                                </span>
-                            </div>
-                            <p className="text-[9px] text-teal-300/70 font-medium tracking-wide hidden lg:block">
-                                Test on a virtual human first, then validate in the real world.
-                            </p>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1.5">
+                                BioTwin <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 font-mono font-bold tracking-wider">AI RESEARCH LAB</span>
+                            </span>
                         </div>
                     </div>
 
+                    {/* Integrated Scientific Validation Pill (Seamlessly inside header — Never overlaps) */}
+                    <div className="hidden xl:flex items-center gap-2 text-[10px] text-teal-300/80 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20 font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse flex-shrink-0"></span>
+                        <span className="font-bold text-white uppercase text-[8px] tracking-wider bg-teal-500/20 px-1.5 py-0.2 rounded border border-teal-500/30 flex-shrink-0">In-Silico Environment</span>
+                        <span className="text-gray-300">Empirical validation in wet-lab assays & clinical trials required.</span>
+                    </div>
+
                     {/* Navigation Tabs */}
-                    <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-2.5">
+                    <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-2.5 flex-shrink-0">
                         <button
                             onClick={() => openGuide('overview')}
                             className="flex items-center space-x-1 text-xs font-bold px-2.5 py-1 rounded-lg transition-all bg-gradient-to-r from-teal-500/15 via-cyan-500/15 to-blue-500/15 text-teal-300 border border-teal-500/40 hover:border-teal-300 hover:shadow-[0_0_12px_rgba(45,212,191,0.25)] hover:scale-105 active:scale-95 cursor-pointer"
@@ -180,16 +182,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </div>
                 </div>
             </header>
-
-            {/* Scientific Validation Banner — Sleek & Compact */}
-            <div className="fixed top-[41px] sm:top-[45px] left-0 right-0 z-30 bg-black/60 border-b border-teal-500/20 backdrop-blur-md py-0.5 px-3 text-center">
-                <p className="text-[9px] sm:text-[10px] font-medium text-teal-300/90 tracking-wide flex items-center justify-center gap-1.5 truncate">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse flex-shrink-0"></span>
-                    <span className="font-bold text-white uppercase tracking-wider text-[8px] bg-teal-500/20 px-1 py-0.2 rounded border border-teal-500/30 flex-shrink-0">In-Silico Environment</span>
-                    <span className="hidden sm:inline">Computational candidate screening. Empirical validation in wet-lab assays & clinical trials is required.</span>
-                    <span className="sm:hidden truncate">Computational candidate screening. Wet-lab validation required.</span>
-                </p>
-            </div>
 
             <main className="relative container mx-auto p-3 sm:p-4 pt-18 sm:pt-20 md:p-6 md:pt-22 pb-24 md:pb-6 z-10 max-w-7xl">
                 {children}
