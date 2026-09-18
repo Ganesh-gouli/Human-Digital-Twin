@@ -1930,8 +1930,8 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
                 <OrbitControls
                     ref={orbitRef}
-                    enablePan={false}
-                    minDistance={2}
+                    enablePan={true}
+                    minDistance={1.2}
                     maxDistance={12}
                     autoRotate={true}
                     autoRotateSpeed={0.8}
@@ -1944,27 +1944,27 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
             {/* ── 4-Tier Surface Heat-Map Impact Legend ───────────────────── */}
             {effects.length > 0 && (
-                <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px] hidden sm:block">
-                    <div className="flex items-center gap-2 font-bold text-white/90 text-[11px] uppercase tracking-wider border-b border-white/10 pb-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="absolute top-3 left-3 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-xl p-2.5 shadow-2xl text-[10px] space-y-1.5 select-none min-w-[180px] hidden sm:block">
+                    <div className="flex items-center gap-1.5 font-bold text-white/90 text-[10px] uppercase tracking-wider border-b border-white/10 pb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         Surface Impact Heat-Map
                     </div>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#00d2ff] shadow-[0_0_8px_#00d2ff]" />
-                            <span className="text-slate-300">🔵 Low Impact</span>
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px]">
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#00d2ff] shadow-[0_0_6px_#00d2ff]" />
+                            <span className="text-slate-300">🔵 Low</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_6px_#10b981]" />
                             <span className="text-slate-300">🟢 Moderate</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]" />
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#f59e0b] shadow-[0_0_6px_#f59e0b]" />
                             <span className="text-slate-300">🟡 Significant</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] shadow-[0_0_8px_#ef4444]" />
-                            <span className="text-slate-300">🔴 High Impact</span>
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_6px_#ef4444]" />
+                            <span className="text-slate-300">🔴 High</span>
                         </div>
                     </div>
                 </div>
