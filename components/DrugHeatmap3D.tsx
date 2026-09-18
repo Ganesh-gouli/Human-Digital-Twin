@@ -2034,7 +2034,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
             {/* ── Idle hint ─────────────────────────────────────────────── */}
             {effects.length === 0 && !isAnalyzing && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+                <div className="absolute bottom-14 lg:bottom-6 left-1/2 -translate-x-1/2 pointer-events-none z-10">
                     <p className="text-white/15 text-[10px] font-mono uppercase tracking-[0.2em] animate-pulse">
                         Select a drug · run analysis
                     </p>
