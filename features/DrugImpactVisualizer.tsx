@@ -1662,16 +1662,16 @@ This document is a simulated educational clinical report.
 
                 {/* ── Main Layout ──────────────────────────────────────────── */}
                 {activeTab === 'disease' && (
-                    <div className="bg-emerald-950/40 border-b border-emerald-500/20 px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-200 no-print">
+                    <div className="bg-emerald-950/40 border-b border-emerald-500/20 px-3 sm:px-6 py-1.5 sm:py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] sm:text-xs text-emerald-200 no-print">
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span className="font-bold uppercase tracking-wider text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">Safe In-Silico Disease Lab</span>
-                            <span>Computational pathogen spread dynamics and therapeutic screening model. Zero physical bio-hazard.</span>
+                            <span className="font-bold uppercase tracking-wider text-[9px] sm:text-[10px] bg-emerald-500/20 px-1.5 sm:px-2 py-0.5 rounded border border-emerald-500/30">Safe In-Silico Disease Lab</span>
+                            <span className="hidden md:inline">Computational pathogen spread dynamics and therapeutic screening model. Zero physical bio-hazard.</span>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] font-mono text-emerald-300">
-                            <span>Infectivity R₀: {mutatorInfectivity.toFixed(1)}</span>
+                        <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] font-mono text-emerald-300">
+                            <span>R₀: {mutatorInfectivity.toFixed(1)}</span>
                             <span>Incubation: {mutatorIncubationSpeed}x</span>
-                            <span>Immune Resilience: {mutatorImmuneStrength}%</span>
+                            <span>Immunity: {mutatorImmuneStrength}%</span>
                         </div>
                     </div>
                 )}
@@ -1679,9 +1679,9 @@ This document is a simulated educational clinical report.
                     /* ═══════════════════════════════════════════════════════════
                        DISEASE INJECTION SIMULATOR
                     ═══════════════════════════════════════════════════════════ */
-                    <div className="flex flex-1 overflow-hidden">
+                    <div className="flex flex-1 overflow-hidden relative">
                         {/* LEFT PANEL — Disease Inputs */}
-                        <div className="w-76 flex-shrink-0 flex flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print">
+                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'}`}>
                             <div className="p-5 space-y-6">
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
