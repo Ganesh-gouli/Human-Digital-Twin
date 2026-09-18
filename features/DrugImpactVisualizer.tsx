@@ -3408,7 +3408,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* RIGHT PANEL — Effect Details */}
-                        <div className="w-96 flex-shrink-0 border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col">
+                        <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col ${mobileTab === 'TELEMETRY' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'}`}>
                             {/* Tab selector */}
                             <div className="flex-shrink-0 p-4 border-b border-white/10 bg-white/[0.02]">
                                 <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl">
