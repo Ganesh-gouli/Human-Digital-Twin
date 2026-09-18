@@ -1841,7 +1841,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* CENTER — 3D Body View */}
-                        <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black">
+                        <div className={`relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black ${mobileTab === 'VIEWPORT' ? 'flex-1 flex flex-col w-full h-full' : 'hidden lg:flex lg:flex-1 lg:flex-col'}`}>
                             <ErrorBoundary fallbackTitle="Disease View 3D Error" onReset={() => setViewMode('BODY')}>
                                 <DrugHeatmap3D
                                     effects={cureProgress > 0 ? treatedHeatmapEffects : diseaseHeatmapEffects}
@@ -1877,17 +1877,17 @@ This document is a simulated educational clinical report.
                             />
 
                             {/* Floating Deconstruction & Understanding Pill */}
-                            <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-auto no-print">
+                            <div className="absolute bottom-16 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                 <button
                                     onClick={() => setIsExplainerOpen(true)}
-                                    className="px-3.5 py-2 rounded-xl bg-[#070e1b]/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-emerald-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 text-xs font-bold cursor-pointer"
+                                    className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-emerald-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer"
                                 >
                                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                     <span>💡 Deconstruct Infection Simulation</span>
                                 </button>
                                 <button
                                     onClick={() => openGuide('pipeline')}
-                                    className="px-2.5 py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-xs font-mono cursor-pointer flex items-center gap-1"
+                                    className="px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-[11px] sm:text-xs font-mono cursor-pointer flex items-center gap-1"
                                     title="View Simulation Pipeline"
                                 >
                                     <span>Pipeline ↗</span>
@@ -1896,7 +1896,7 @@ This document is a simulated educational clinical report.
 
                             {/* Organ Pathology Diagnostics HUD Overlay */}
                             {diseaseSelectedOrgan && diseaseResult && (
-                                <div className="absolute top-24 right-6 z-20 w-80 bg-slate-950/90 border border-emerald-500/30 rounded-2xl p-4 backdrop-blur-md shadow-[0_0_30px_rgba(16,185,129,0.2)] space-y-3 animate-fade-in no-print">
+                                <div className="absolute top-16 sm:top-24 left-3 right-3 sm:left-auto sm:right-6 sm:w-80 w-auto max-w-sm mx-auto z-30 bg-slate-950/95 border border-emerald-500/30 rounded-2xl p-4 backdrop-blur-md shadow-[0_0_30px_rgba(16,185,129,0.2)] space-y-3 animate-fade-in no-print">
                                     <div className="flex items-center justify-between border-b border-white/10 pb-2">
                                         <span className="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
                                             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
@@ -1961,8 +1961,8 @@ This document is a simulated educational clinical report.
                             )}
 
                             {/* View selector (float top-right) */}
-                            <div className="absolute top-1 right-6 left-auto z-30 flex gap-3 no-print">
-                                <div className="flex bg-slate-950/80 rounded-2xl p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl">
+                            <div className="absolute top-2 left-2 right-2 sm:left-auto sm:right-6 z-30 flex justify-center sm:justify-end no-print">
+                                <div className="flex bg-slate-950/85 rounded-2xl p-1 border border-white/10 backdrop-blur-xl shadow-2xl max-w-full overflow-x-auto custom-scrollbar">
                                     <button
                                         onClick={() => setViewMode('BODY')}
                                         className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300
