@@ -789,7 +789,14 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, user, contextData, l
 
     return (
         <div className={wrapperClasses}>
-            {content}
+            {/* Mobile tap-outside backdrop */}
+            <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-[2px] sm:hidden pointer-events-auto transition-opacity"
+                onClick={onClose}
+            />
+            <div className="relative z-10 w-full sm:w-auto pointer-events-auto">
+                {content}
+            </div>
         </div>
     );
 };
