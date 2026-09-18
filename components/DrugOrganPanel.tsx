@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { HeatmapEffect, DrugEffectType, Pharmacokinetics, Pharmacodynamics } from '../types';
-import { Activity, Clock, ShieldAlert, AlertTriangle, Heart, Pill, Sparkles, ChevronRight, Ban, HelpCircle } from 'lucide-react';
+import { Activity, Clock, ShieldAlert, AlertTriangle, Heart, Pill, Sparkles, ChevronRight, Ban, HelpCircle, Info } from 'lucide-react';
+import { getPlainEnglishForDrug } from '../services/plainEnglishGuide';
 
 const TYPE_CONFIG: Record<DrugEffectType, { label: string; color: string; bg: string; border: string; glow: string }> = {
     therapeutic: { label: 'Therapeutic', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', glow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]' },
@@ -74,6 +75,8 @@ const DrugOrganPanel: React.FC<DrugOrganPanelProps> = ({
         Severe: { color: 'text-rose-400', bg: 'bg-rose-500/15 border-rose-500/30', border: 'border-rose-500/40', glow: 'shadow-[0_0_20px_rgba(244,63,94,0.25)] animate-pulse' },
     }[normalizedRisk] || { color: 'text-gray-400', bg: 'bg-gray-500/10', border: 'border-gray-500/20', glow: '' };
 
+    const plainDrug = getPlainEnglishForDrug(drugName);
+
     return (
         <div className="flex flex-col h-full overflow-hidden text-white">
             {/* Drug header */}
@@ -107,13 +110,23 @@ const DrugOrganPanel: React.FC<DrugOrganPanelProps> = ({
                     </div>
                 </div>
                 
-                <div className="mt-4 p-3 rounded-xl bg-white/[0.02] border border-white/5 shadow-inner">
+                <div className="mt-4 p-3 rounded-xl bg-white/[0.02] border border-white/5 shadow-inner space-y-2">
                     <p className="text-xs text-blue-200/80 leading-relaxed font-medium">
                         <span className="text-[10px] text-blue-400 font-bold uppercase tracking-widest block mb-1">Primary Mechanism of Action</span>
                         {pharmacodynamics?.primary_mechanism || mechanism}
                     </p>
+                    {plainDrug && (
+                        <div className="pt-2 border-t border-white/5 flex items-start gap-1.5 text-xs text-teal-200 leading-relaxed">
+                            <span className="text-sm">💡</span>
+                            <div>
+                                <strong className="text-teal-300 font-bold">In simple words: </strong>
+                                <span>{plainDrug.howItWorks}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
+
 
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 custom-scrollbar">
@@ -246,11 +259,27 @@ const DrugOrganPanel: React.FC<DrugOrganPanelProps> = ({
                                         </div>
 
                                         {e.mechanism && (
-                                            <div className="mb-3 p-2.5 bg-black/40 rounded-xl border border-white/5">
+                                            <div className="mb-3 p-2.5 bg-black/40 rounded-xl border border-white/5 space-y-2">
                                                 <p className="text-[10px] text-white/70 leading-relaxed">
                                                     <span className="text-white/30 font-bold uppercase tracking-wider text-[8px] mr-1 block">Cellular Pathway</span>
                                                     {e.mechanism}
                                                 </p>
+                                                {(() => {
+                                                    const organTip = plainDrug?.organSimpleImpact.find(o => 
+                                                        e.structure_name.toLowerCase().includes(o.organName.toLowerCase()) || 
+                                                        o.organName.toLowerCase().includes(e.structure_name.toLowerCase())
+                                                    );
+                                                    if (!organTip) return null;
+                                                    return (
+                                                        <div className="p-2 rounded-lg bg-teal-500/10 border border-teal-500/20 text-[11px] text-teal-200 flex items-start gap-1.5 leading-snug">
+                                                            <span className="text-xs">👉</span>
+                                                            <div>
+                                                                <strong className="text-teal-300">Plain English tip: </strong>
+                                                                <span>{organTip.actionTip}</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         )}
 

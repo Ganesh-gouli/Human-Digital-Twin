@@ -22,10 +22,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onExplore }) => {
             const centerY = rect.top + rect.height / 2;
 
             // Calculate mouse position relative to container center
-            let moveX = (e.clientX - centerX) * 0.8; // 0.8 factor for parallax feel
+            let moveX = (e.clientX - centerX) * 0.8;
             let moveY = (e.clientY - centerY) * 0.8;
 
-            // Constrain movement within glass boundary (approx +/- 250px given 600px container and sphere size)
             const maxOffset = 180;
             moveX = Math.max(-maxOffset, Math.min(maxOffset, moveX));
             moveY = Math.max(-maxOffset, Math.min(maxOffset, moveY));
@@ -35,7 +34,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onExplore }) => {
 
         const animate = () => {
             setSpherePos(prev => {
-                // Smooth easing (lerp)
                 const dx = targetPos.current.x - prev.x;
                 const dy = targetPos.current.y - prev.y;
                 return {
@@ -64,28 +62,62 @@ const LandingPage: React.FC<LandingPageProps> = ({ onExplore }) => {
         <div className={`fixed inset-0 z-50 flex flex-col md:flex-row bg-[#020617] text-white overflow-hidden transition-opacity duration-1000 ${isExiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
 
             {/* Background Gradient */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-teal-900/20 via-[#020617] to-black"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-teal-950/40 via-[#020617] to-black"></div>
+
+            {/* Microdot Laboratory Grid Overlay */}
+            <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(#2dd4bf_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none"></div>
 
             {/* Content Container */}
             <div className="relative z-20 w-full md:w-1/2 flex flex-col justify-center px-8 md:px-20 h-full">
                 <div className={`transition-all duration-1000 delay-300 ${isExiting ? 'translate-y-10 opacity-0' : 'translate-y-0 opacity-100'}`}>
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-r from-teal-200 to-white leading-tight">
-                        The Future <br /> of Healthcare.
+                    
+                    {/* Mission Tag */}
+                    <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-mono font-semibold mb-6 tracking-wide shadow-[0_0_20px_rgba(45,212,191,0.15)]">
+                        <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                        VIRTUAL IN-SILICO RESEARCH PLATFORM
+                    </div>
+
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-5 bg-clip-text text-transparent bg-gradient-to-r from-teal-100 via-white to-teal-300 leading-tight">
+                        Test on a virtual human first, <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-300">
+                            then validate in the real world.
+                        </span>
                     </h1>
-                    <p className="text-lg md:text-xl text-blue-200/60 max-w-md font-light mb-10 leading-relaxed">
-                        Precision AI diagnostics, personalized wellness, and seamless patient care. Experience the next generation of medical technology.
+
+                    <p className="text-base md:text-lg text-blue-100/70 max-w-xl font-light mb-8 leading-relaxed">
+                        A computational research environment for scientists to simulate drug pharmacokinetics, predict organ-specific toxicities, and model emerging pandemic diseases safely before moving to real-world assays.
                     </p>
 
-                    <button
-                        onClick={handleExploreClick}
-                        className="group relative px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:border-teal-400/30 active:scale-95"
-                    >
-                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-teal-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <span className="relative z-10 flex items-center gap-3 font-medium tracking-wide">
-                            Explore Technology
-                            <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    {/* Scientific Feature Highlights */}
+                    <div className="grid grid-cols-2 gap-4 max-w-lg mb-9 text-xs text-teal-200/80 font-mono">
+                        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                            <span className="text-teal-400">⚡</span> 3D Organ Toxicity Heatmap
+                        </div>
+                        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                            <span className="text-teal-400">🧬</span> CYP450 Genomic Metabolizers
+                        </div>
+                        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                            <span className="text-teal-400">🦠</span> Emerging Pandemic Modeling
+                        </div>
+                        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                            <span className="text-teal-400">📂</span> Preclinical Experiment Dossiers
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <button
+                            onClick={handleExploreClick}
+                            className="group relative px-8 py-4 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-slate-950 font-bold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 shadow-[0_0_30px_rgba(45,212,191,0.4)] active:scale-95 flex items-center gap-3"
+                        >
+                            <span className="relative z-10 flex items-center gap-2.5 font-bold tracking-wide">
+                                Enter In-Silico AI Laboratory
+                                <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </span>
+                        </button>
+                        <span className="text-[11px] text-white/40 font-mono">
+                            Computational predictions • Not clinical advice
                         </span>
-                    </button>
+                    </div>
                 </div>
 
                 {/* Scroll Indicator */}
@@ -100,24 +132,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onExplore }) => {
                     ref={containerRef}
                     className="relative w-[300px] h-[300px] md:w-[600px] md:h-[600px] flex items-center justify-center rounded-full overflow-hidden"
                 >
-                    {/* The Glowing Sphere - INCREASED SIZE & DEPTH */}
+                    {/* Glowing Sphere */}
                     <div
                         className={`absolute rounded-full transition-opacity duration-1000 ${isExiting ? 'scale-150 opacity-0' : 'scale-100 opacity-100'}`}
                         style={{
-                            width: '400px', // Increased size (approx 30-40% larger than before)
+                            width: '400px',
                             height: '400px',
-                            background: 'radial-gradient(circle at 30% 30%, #2dd4bf, #059669)', // Teal to Emerald
+                            background: 'radial-gradient(circle at 30% 30%, #2dd4bf, #0f766e)',
                             transform: `translate(${spherePos.x}px, ${spherePos.y}px)`,
-                            boxShadow: '0 0 120px rgba(45, 212, 191, 0.6), inset 0 0 60px rgba(0,0,0,0.5)', // Stronger glow + inner depth
+                            boxShadow: '0 0 140px rgba(45, 212, 191, 0.6), inset 0 0 70px rgba(0,0,0,0.6)',
                             zIndex: 0
                         }}
                     >
-                        {/* Internal Light Reflection/Highlight */}
+                        {/* Internal Light Reflection */}
                         <div className="absolute top-10 left-10 w-20 h-20 bg-white opacity-40 blur-xl rounded-full"></div>
-                        <div className="absolute bottom-10 right-10 w-32 h-32 bg-emerald-900 opacity-50 blur-2xl rounded-full mix-blend-multiply"></div>
+                        <div className="absolute bottom-10 right-10 w-32 h-32 bg-emerald-950 opacity-60 blur-2xl rounded-full mix-blend-multiply"></div>
                     </div>
 
-                    {/* Glass Slices Layer - VERTICAL & CIRCULAR SILHOUETTE */}
+                    {/* Glass Slices Layer */}
                     <div className="absolute inset-0 w-full h-full flex flex-row justify-center items-center z-20 gap-2 pointer-events-none p-0">
                         {Array.from({ length: 23 }).map((_, i) => {
                             const distance = Math.abs(i - 11);
@@ -132,15 +164,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onExplore }) => {
                                         flex: widthFactor,
                                         backdropFilter: 'blur(20px) saturate(180%)',
                                         background: 'linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
-                                        borderLeft: '1px solid rgba(255,255,255,0.2)', // Subtle edge highlight
+                                        borderLeft: '1px solid rgba(255,255,255,0.2)',
                                         borderRight: '1px solid rgba(255,255,255,0.05)',
-                                        boxShadow: 'inset 0 0 12px rgba(0, 0, 0, 0.1)' // Minimal depth, no rotateY
+                                        boxShadow: 'inset 0 0 12px rgba(0, 0, 0, 0.1)'
                                     }}
                                 >
-                                    {/* Frosted Noise Texture */}
-                                    <div className="absolute inset-0 opacity-[0.05] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
-
-                                    {/* Vertical Reflection Highlight */}
+                                    <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#ffffff15_1px,transparent_1px)] [background-size:16px_16px]"></div>
                                     <div className="absolute inset-y-0 left-0 w-[1px] bg-gradient-to-b from-transparent via-white/50 to-transparent opacity-60"></div>
                                 </div>
                             );
@@ -153,5 +182,3 @@ const LandingPage: React.FC<LandingPageProps> = ({ onExplore }) => {
 };
 
 export default LandingPage;
-
-

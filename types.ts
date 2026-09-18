@@ -1,31 +1,65 @@
-
 export type Gender = 'male' | 'female' | 'other';
 
 export interface UserProfile {
-    name: string;
-    email: string;
-    age: number;
-    gender: Gender;
+    name: string; // Investigator name
+    email: string; // Investigator email / institution
+    age: number; // Subject age
+    gender: Gender; // Subject biological sex
     height: number; // in cm
     weight: number; // in kg
     bmi: number;
+    institution?: string;
+    cypProfile?: string; // e.g. 'Normal (CYP2D6*1/*1)'
+    estimatedGFR?: number; // mL/min (e.g. 105)
     password?: string;
-    emergencyContact?: string;
 }
 
-export type Page = 'DASHBOARD' | 'DIET_PLANNER' | 'REPORT_ANALYZER' | 'CALORIE_COUNTER' | 'EXERCISE_CORNER' | 'TODAYS_GOAL' | 'LOCATION_TRACKER' | 'EDIT_PROFILE' | 'ACTIVITY_TRACKER' | 'GYM_MANAGEMENT' | 'MEDICAL_IMAGING' | 'DRUG_VISUALIZER' | 'SKIN_DETECTION' | 'DIABETES_PREDICTION' | 'HEART_DISEASE_ANALYZER' | 'KIDNEY_DISEASE_ANALYZER' | 'CANCER_DETECTION' | 'QUANTUM_PULSE' | 'YOGA_POSE_DETECTOR';
+export type Page = 'DASHBOARD' | 'DRUG_VISUALIZER' | 'EDIT_PROFILE';
 
-export interface CatalogExercise {
+export interface OrganToxicityScore {
+    organ: string;
+    toxicity_level: 'low' | 'moderate' | 'high' | 'severe';
+    strain_score: number; // 0 - 100
+    mechanism: string;
+    confidence: number;
+    toxic_threshold_exceeded: boolean;
+}
+
+export interface ResearchTriageRecommendation {
+    verdict: 'HIGH_PRIORITY_IN_VITRO' | 'MONITOR_CLOSELY' | 'HIGH_TOXIC_RISK';
+    recommendation_title: string;
+    summary: string;
+    vulnerable_organs: string[];
+    mitigation_notes: string;
+}
+
+export interface ExperimentDossier {
     id: string;
-    name: string;
-    muscles: string[]; // Primary muscles targeted
-    equipment: string[];
-    difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-    imageUrl?: string;
-    videoUrl?: string;
-    description?: string;
+    timestamp: string;
+    title: string;
+    investigator: string;
+    type: 'DRUG_SIMULATION' | 'DISEASE_PATHOGEN_SIMULATION' | 'DRUG_COMPARISON';
+    targetCompound: string;
+    secondaryCompound?: string;
+    dosage: string;
+    route: string;
+    cohort: {
+        age: number;
+        gender: Gender;
+        weight: number;
+        genomicProfile: string;
+    };
+    systemicRiskScore: number;
+    confidenceScore: number; // 0 - 100
+    uncertaintyMargin: number; // e.g. 4.8 (%)
+    organToxicities: OrganToxicityScore[];
+    triageVerdict: 'RECOMMENDED' | 'CAUTION' | 'CONTRAINDICATED';
+    validationStatus: 'In-Silico Complete' | 'Pending In-Vitro Assay' | 'Assay Confirmed';
+    notes: string;
+    simulationData?: any; // Cached drug/disease result for 1-click reload
 }
 
+// Backward compatibility helper types
 export interface LoggedFood {
     name: string;
     calories: number;
@@ -34,116 +68,14 @@ export interface LoggedFood {
 
 export interface DailyLog {
     date: string;
-    caloriesIn: number; // For graph - only from 'counter' source
+    caloriesIn: number;
     caloriesOut: number;
     loggedFoods: LoggedFood[];
-}
-
-export interface MealOption {
-    name: string;
-    calories: number;
-    description: string;
-}
-
-export interface Meal {
-    breakfast: MealOption[];
-    lunch: MealOption[];
-    snacks: MealOption[];
-    dinner: MealOption[];
-}
-
-export interface DietPlan {
-    mealPlan: Meal;
-    reasoning: string;
-    healthRecommendations: string[];
-    foodsToInclude: string[];
-    foodsToAvoid: string[];
-    precautions: string[];
-    exerciseRoutine: Exercise[];
-    lifestyleModifications: string[];
-}
-
-export interface ReportAnalysis extends DietPlan {
-    reportSummary: string;
-    patientInfo: {
-        name: string;
-        age: number;
-        gender: string;
-        reportDate: string;
-    };
-    actionPlan: string[];
-    treatmentRecommendations: string[];
-    problemExplanation: string;
-    keyRecommendations: string[];
-}
-
-export interface IdentifiedFood {
-    id: string;
-    name: string;
-    weight: number;
-    cookingMethod: string; // Added for accuracy
-}
-
-export interface FoodItem {
-    name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-    source: 'USDA' | 'AI' | 'USER';
-    confidence?: number; // AI's confidence in its own estimation
-    healthVerdict?: string; // New field for health pros/cons
-}
-
-export interface CalorieAnalysisResult {
-    foodItems: FoodItem[];
-    accuracy: number;
-}
-
-export interface Exercise {
-    name: string;
-    reps: string;
-    sets: number;
-    caloriesBurnedPerSet: number;
-    youtubeQuery: string;
-    videoScript: string;
-    steps: string[];
-    modifications?: string[];
-}
-
-
-export interface WorkoutRoutine {
-    warmUp: Exercise[];
-    mainWorkout: Exercise[];
-    coolDown: Exercise[];
-}
-
-export interface SingleExerciseInfo {
-    name: string;
-    youtubeQuery: string;
-    steps: string[];
-    tips: string[];
 }
 
 export interface ChatMessage {
     role: 'user' | 'model';
     parts: { text: string }[];
-}
-
-export interface HealthServiceLocation {
-    name: string;
-    address: string;
-    mapsUri: string;
-    latitude: number;
-    longitude: number;
-    rating?: number;
-}
-
-export interface NearbyHealthServices {
-    hospitals: HealthServiceLocation[];
-    clinics: HealthServiceLocation[];
-    medicalStores: HealthServiceLocation[];
 }
 
 export interface Pharmacokinetics {
@@ -180,18 +112,66 @@ export interface TimeBasedIntensity {
     "end duration": number;
 }
 
+export interface SynthesisReactionStep {
+    step_number: number;
+    reaction_name: string;
+    reagents: string;
+    conditions?: string;
+    intermediate_product: string;
+    yield_percent: number;
+    notes?: string;
+}
+
+export interface ChemicalSynthesisPathway {
+    precursors: string[];
+    reaction_steps: SynthesisReactionStep[];
+    total_yield_percent: number;
+    atom_economy?: string;
+    green_chemistry_score?: number; // 0 - 100
+    safety_hazard_notes?: string;
+}
+
+export interface MolecularEnhancementProposal {
+    id: string;
+    strategy_name: string;
+    chemical_modification: string;
+    pharmacological_rationale: string;
+    target_organ_sparing: string; // e.g. "Stomach (reduces mucosal toxicity by 65%)"
+    toxicity_reduction_percent: number; // e.g. 65
+    half_life_change?: string; // e.g. "Extended from 1.9h to 5.2h"
+    potency_delta?: string; // e.g. "+15% COX-2 selectivity"
+    synthetic_feasibility: 'High' | 'Moderate' | 'Complex';
+    modified_chemical_formula?: string;
+}
+
 export interface DrugAnalysisResult {
     drug_name: string;
-    category: string;
-    pharmacokinetics: Pharmacokinetics;
-    pharmacodynamics: Pharmacodynamics;
+    category?: string;
+    chemical_formula?: string;
+    iupac_name?: string;
+    smiles_string?: string;
+    functional_groups?: string[];
+    synthesis_pathway?: ChemicalSynthesisPathway;
+    enhancement_proposals?: MolecularEnhancementProposal[];
+    is_enhanced_derivative?: boolean;
+    parent_drug_name?: string;
+    enhancement_applied?: string;
+    pharmacokinetics?: Pharmacokinetics;
+    pharmacodynamics?: Pharmacodynamics;
     heatmap_effects: HeatmapEffect[];
     time_based_intensity: TimeBasedIntensity;
     system_wide_risk_score: number;
-    interaction_risk_flag: boolean;
+    confidence_score?: number;
+    uncertainty_margin?: number;
+    interaction_risk_flag?: boolean;
     genomic_warnings?: string[];
 
-    // Legacy fields that might still be used elsewhere or in mock data
+    // Optional / legacy fields
+    primary_mechanism?: string;
+    molecular_weight?: string;
+    half_life?: string;
+    bioavailability?: string;
+    peak_concentration_time?: string;
     effects?: DrugOrganEffect[];
     mechanism?: string;
     short_term_effects?: string[];
@@ -205,32 +185,25 @@ export interface DrugAnalysisResult {
 
 export type DrugEffectType = 'therapeutic' | 'stimulation' | 'suppression' | 'toxicity' | 'side-effect' | 'relief';
 
-// Legacy interface kept for backward compatibility with Mock Data and other components
 export interface DrugOrganEffect {
-    organ: string;
-    system: string;
-    predicted_effect: string;
-    mechanism_hypothesis: string;
+    layer?: 'ORGAN_VIEW' | 'SKELETON_VIEW' | string;
+    structure_name?: string;
+    effect_type?: string;
+    mechanism?: string;
+    organ?: string;
+    system?: string;
+    predicted_effect?: string;
+    mechanism_hypothesis?: string;
     intensity: number;
-    type: DrugEffectType;
+    type?: DrugEffectType | string;
     onset?: number;
     duration?: number;
     confidence_score: number;
+    risk_level?: string;
+    toxic_threshold?: boolean;
+    accumulation_factor?: number;
+    dose_dependency_factor?: number;
 }
-
-export interface SkinAnalysisResult {
-    diseaseName: string;
-    causes: string[];
-    homeRemedies: string[];
-    medicalTreatments: string[];
-    severity: 'Mild' | 'Moderate' | 'Serious';
-    explanation: string;
-    disclaimer: string;
-    abcdScores?: { asymmetry: number; border: number; color: number; diameter: number; evolution: number };
-    dermalInfiltration?: { epidermis: number; dermis: number; subcutaneous: number };
-    skinMetrics?: { melaninIndex: number; hydration: number; erythemaIndex: number; barrierHealth: number };
-}
-
 
 export interface DiseaseTimelineEntry {
     time: string;
@@ -257,6 +230,7 @@ export interface DiseaseSimulationResult {
     disease_name: string;
     severity: 'mild' | 'moderate' | 'severe';
     ai_confidence_score: number;
+    uncertainty_margin?: number;
     disease_injection: {
         entry_point: string;
         spread_mechanism: string;

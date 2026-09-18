@@ -1,0 +1,7 @@
+# Neutral Skeleton Material
+newmtl default
+Ka 0.2 0.2 0.2
+Kd 0.88 0.88 0.88
+Ks 0.1 0.1 0.1
+d 1.0
+illum 2

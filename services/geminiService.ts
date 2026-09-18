@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
-import { DrugAnalysisResult, SkinAnalysisResult, FoodItem, DiseaseSimulationResult, DietPlan, WorkoutRoutine, NearbyHealthServices } from '../types';
-import { searchFoodNutrients } from './usdaService';
+import { DrugAnalysisResult, DiseaseSimulationResult, VaccineInfo, ChemicalSynthesisPathway, MolecularEnhancementProposal } from '../types';
+import { PRESET_SYNTHESIS_DB, generateGenericSynthesisAndEnhancement } from './synthesisDatabase';
 
 // ================= SDK INITIALIZATION HELPER =================
 
@@ -26,412 +26,18 @@ const getApiKeys = () => {
 
 // ================= API FEATURES =================
 
-export const analyzeSkinCondition = async (
-    image: string,
-    mimeType: string,
-    modelPreference: 'gemma4' | 'gemini' = 'gemini'
-): Promise<SkinAnalysisResult> => {
-    // 1. If Gemma 4 is preferred, attempt local model
-    if (modelPreference === 'gemma4') {
-        try {
-            console.log("Attempting skin analysis with local Gemma 4 model via Ollama...");
-            const prompt = `You are a clinical dermoscopy pattern analysis system.
-            Analyze the visual characteristics in the provided image and classify the surface lesion into one of these specific patterns:
-            - "Class_1": Erythematous, scaling, dry patches (indicative of Eczema/Atopic Dermatitis).
-            - "Class_2": Hyperpigmented, dark brown/black macules or papules with asymmetrical shapes and irregular borders (indicative of Melanocytic Nevus or Melanoma).
-            - "Class_3": Well-demarcated plaque structures with silver-white scales over underlying erythema (indicative of Psoriasis).
-            - "Class_4": Edematous, localized vesicular or erythematous eruptions (indicative of Contact Dermatitis).
-            - "Class_5": Oily, yellowish scales over erythematous regions (indicative of Seborrheic Dermatitis).
-            - "Class_6": Uniform pigmentation, regular textures, and no structural anomalies (indicative of Normal Skin).
-
-            Output ONLY a valid JSON object in this format:
-            {
-                "classification": "Class_1" | "Class_2" | "Class_3" | "Class_4" | "Class_5" | "Class_6",
-                "asymmetry_percentage": number (0-100),
-                "border_irregularity_percentage": number (0-100),
-                "color_variance_percentage": number (0-100),
-                "lesion_diameter_score": number (0-100),
-                "clinical_findings_explanation": "Detailed professional analysis of the visual textures and patterns observed in the image."
-            }`;
-
-            const response = await fetch('http://localhost:11434/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'gemma4:e4b',
-                    messages: [
-                        {
-                            role: 'user',
-                            content: prompt,
-                            images: [image]
-                        }
-                    ],
-                    stream: false,
-                    options: {
-                        temperature: 0.2
-                    },
-                    format: 'json'
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const text = data.message.content;
-                console.log("Local Gemma 4 raw response received.");
-                const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : (text.startsWith('```') ? text.split('```')[1].split('```')[0] : text);
-                const parsed = JSON.parse(jsonStr.trim());
-                
-                // If the model itself complained about no image or failed
-                if (parsed.error || !parsed.classification) {
-                    throw new Error(`Gemma 4 model returned invalid response or error: ${parsed.error || "Missing classification"}`);
-                }
-
-                console.log("Successfully classified skin condition using local Gemma 4!");
-
-                // Map texture pattern class to actual skin disease results accurately
-                const classId = parsed.classification;
-                const asymmetry = parsed.asymmetry_percentage || 15;
-                const border = parsed.border_irregularity_percentage || 15;
-                const color = parsed.color_variance_percentage || 15;
-                const diameter = parsed.lesion_diameter_score || 15;
-                const desc = parsed.clinical_findings_explanation || "Visual inspection of texture characteristics complete.";
-
-                let result: SkinAnalysisResult;
-
-                switch (classId) {
-                    case 'Class_2':
-                        const isAtypical = asymmetry > 55 || border > 55 || color > 55;
-                        result = {
-                            diseaseName: isAtypical ? "Atypical Melanocytic Lesion (Potential Melanoma)" : "Melanocytic Nevus (Benign Mole)",
-                            causes: ["Proliferation of pigment-producing melanocytes", "UV radiation exposure from sunlight", "Genetic predisposition to moles"],
-                            homeRemedies: ["Keep the area protected with broad-spectrum SPF 30+ sunscreen", "Avoid scratching, pick-peeling, or home removal", "Monitor changes monthly using the ABCDE method"],
-                            medicalTreatments: ["Clinical dermoscopic evaluation by a dermatologist", "Surgical punch biopsy (if atypical markers are present)", "Complete excision under local anesthesia"],
-                            severity: isAtypical ? "Serious" : "Mild",
-                            explanation: desc,
-                            disclaimer: "This analysis is an educational texture pattern assessment and does not constitute formal medical diagnosis."
-                        };
-                        break;
-                    case 'Class_3':
-                        result = {
-                            diseaseName: "Plaque Psoriasis",
-                            causes: ["Autoimmune-mediated rapid skin cell turnover", "Genetic predisposition (immune system pathways)", "Triggers such as stress, skin injuries, or infections"],
-                            homeRemedies: ["Apply thick moisturizers, salicylic acid, or coal tar ointments", "Take warm baths with Epsom salts or bath oils", "Expose skin to brief, controlled amounts of natural sunlight"],
-                            medicalTreatments: ["Topical vitamin D analogues (e.g., calcipotriene)", "Topical corticosteroid ointments", "Systemic biologic therapies (for severe cases)", "Targeted phototherapy (UVB)"],
-                            severity: "Moderate",
-                            explanation: desc,
-                            disclaimer: "This analysis is an educational texture pattern assessment and does not constitute formal medical diagnosis."
-                        };
-                        break;
-                    case 'Class_4':
-                        result = {
-                            diseaseName: "Contact Dermatitis (Acute Allergy/Irritant)",
-                            causes: ["Allergen exposure (e.g. poison ivy, nickel metals, cosmetics)", "Irritant substance contact (strong soaps, solvents, acids)"],
-                            homeRemedies: ["Wash the skin immediately with water to remove residue", "Apply cool, damp compresses to soothe inflammation", "Apply over-the-counter calamine lotion or aloe vera"],
-                            medicalTreatments: ["Topical steroid creams (hydrocortisone)", "Oral antihistamines to reduce severe itching and swelling", "Short course of oral corticosteroids (for widespread reactions)"],
-                            severity: "Mild",
-                            explanation: desc,
-                            disclaimer: "This analysis is an educational texture pattern assessment and does not constitute formal medical diagnosis."
-                        };
-                        break;
-                    case 'Class_5':
-                        result = {
-                            diseaseName: "Seborrheic Dermatitis",
-                            causes: ["Inflammatory response to Malassezia yeast on the skin", "Excess sebum (oil) production in sebaceous glands", "Stress, fatigue, or seasonal dry weather"],
-                            homeRemedies: ["Wash scalp/skin with zinc pyrithione or ketoconazole cleansers", "Soften scales with mineral oil and gently brush them away", "Keep the area dry, clean, and avoid heavy oily cosmetics"],
-                            medicalTreatments: ["Topical antifungal creams (e.g., ketoconazole)", "Mild topical corticosteroids (e.g., desonide)", "Coal tar preparations or sulfur-based cleansers"],
-                            severity: "Mild",
-                            explanation: desc,
-                            disclaimer: "This analysis is an educational texture pattern assessment and does not constitute formal medical diagnosis."
-                        };
-                        break;
-                    case 'Class_6':
-                        result = {
-                            diseaseName: "Healthy Skin Structure (No Lesion)",
-                            causes: ["Healthy normal cell growth", "Uniform pigmentation distribution"],
-                            homeRemedies: ["Maintain regular skin hygiene and hydration", "Apply broad-spectrum sunscreen when outdoors", "Maintain a nutrient-rich skin-healthy diet"],
-                            medicalTreatments: ["No clinical dermatological intervention required."],
-                            severity: "Mild",
-                            explanation: desc,
-                            disclaimer: "This analysis is an educational texture pattern assessment and does not constitute formal medical diagnosis."
-                        };
-                        break;
-                    case 'Class_1':
-                    default:
-                        result = {
-                            diseaseName: "Eczema (Atopic Dermatitis)",
-                            causes: ["Genetic skin barrier dysfunction (filaggrin deficiency)", "Immune system overactivity to environmental irritants", "Triggers like harsh soaps, wool, heat, or stress"],
-                            homeRemedies: ["Apply thick, fragrance-free barrier creams within 3 minutes of bathing", "Take lukewarm baths with colloidal oatmeal", "Wear soft, breathable cotton clothing"],
-                            medicalTreatments: ["Topical corticosteroids to control active flare-ups", "Topical calcineurin inhibitors (e.g., tacrolimus)", "Oral antihistamines to suppress nighttime scratching", "Dupilumab or other biologic agents (for refractory cases)"],
-                            severity: "Moderate",
-                            explanation: desc,
-                            disclaimer: "This analysis is an educational texture pattern assessment and does not constitute formal medical diagnosis."
-                        };
-                        break;
-                }
-
-                // Fill in scores and metrics dynamically
-                result.abcdScores = {
-                    asymmetry,
-                    border,
-                    color,
-                    diameter,
-                    evolution: 12
-                };
-
-                result.dermalInfiltration = {
-                    epidermis: Math.max(10, 100 - asymmetry - border / 2),
-                    dermis: Math.min(80, Math.round((asymmetry + border) * 0.4)),
-                    subcutaneous: Math.min(20, Math.round(asymmetry * 0.1))
-                };
-
-                result.skinMetrics = {
-                    melaninIndex: color,
-                    hydration: classId === 'Class_1' || classId === 'Class_3' ? 20 : 60,
-                    erythemaIndex: classId === 'Class_2' || classId === 'Class_6' ? 20 : 65,
-                    barrierHealth: Math.max(10, Math.round(100 - (asymmetry + border) / 2))
-                };
-
-                return result;
-            } else {
-                throw new Error(`Ollama HTTP Error: ${response.statusText}`);
-            }
-        } catch (err) {
-            console.warn("Local Gemma 4 scan failed/unavailable. Falling back to Gemini API...", err);
-        }
-    }
-
-    // 2. Fallback: Gemini API
-    const apiKeys = getApiKeys();
-    
-    if (apiKeys.length > 0) {
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-        try {
-            console.log("Analyzing skin condition with live Gemini API...");
-            const ai = getGenAI(apiKey);
-            
-            // In @google/genai, calls are made via ai.models.generateContent
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [
-                    {
-                        role: 'user',
-                        parts: [
-                            {
-                                inlineData: {
-                                    mimeType,
-                                    data: image
-                                }
-                            },
-                            {
-                                text: `You are a clinical dermatology AI specialist. Analyze the provided image of a skin lesion or surface condition.
-                                First verify if the image shows skin. If the image does not show a clear skin surface or is unreadable, set diseaseName to "Uncertain / Needs Clinical Review", severity to "Mild", and explain that a clearer image is needed.
-                                Otherwise, identify the most likely dermatological pattern/disease accurately.
-                                Output ONLY valid JSON in this format:
-                                {
-                                    "diseaseName": "Name of condition or 'Uncertain / Needs Clinical Review'",
-                                    "causes": ["Cause 1", "Cause 2"],
-                                    "homeRemedies": ["Remedy 1"],
-                                    "medicalTreatments": ["Treatment 1"],
-                                    "severity": "Mild|Moderate|Serious",
-                                    "explanation": "Detailed explanation based strictly on visible features",
-                                    "disclaimer": "AI-generated analysis for informational purposes only. This result should not replace evaluation by a qualified healthcare professional.",
-                                    "abcdScores": {
-                                        "asymmetry": number (0-100),
-                                        "border": number (0-100),
-                                        "color": number (0-100),
-                                        "diameter": number (0-100),
-                                        "evolution": number (0-100)
-                                    },
-                                    "dermalInfiltration": {
-                                        "epidermis": number (0-100),
-                                        "dermis": number (0-100),
-                                        "subcutaneous": number (0-100)
-                                    },
-                                    "skinMetrics": {
-                                        "melaninIndex": number (0-100),
-                                        "hydration": number (0-100),
-                                        "erythemaIndex": number (0-100),
-                                        "barrierHealth": number (0-100)
-                                    }
-                                }`
-                            }
-                        ]
-                    }
-                ]
-            });
-            
-            const text = result.text;
-            const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : (text.startsWith('```') ? text.split('```')[1].split('```')[0] : text);
-            return JSON.parse(jsonStr.trim()) as SkinAnalysisResult;
-        } catch (err) {
-            console.error("Gemini Skin API failed, using fallback data", err);
-        }
-    }
-
-    return {
-        diseaseName: "Uncertain / Needs Clinical Review",
-        causes: ["Analysis engine fallback", "Low visual contrast in uploaded sample"],
-        homeRemedies: ["Keep area clean and dry", "Protect from harsh sunlight"],
-        medicalTreatments: ["Consult a board-certified dermatologist for in-person dermoscopy."],
-        severity: "Mild",
-        explanation: "The AI was unable to conclusively classify the lesion pattern with high confidence. Clinical evaluation is recommended.",
-        disclaimer: "AI-generated analysis for informational purposes only. This result should not replace evaluation by a qualified healthcare professional.",
-        abcdScores: { asymmetry: 15, border: 15, color: 15, diameter: 15, evolution: 10 },
-        dermalInfiltration: { epidermis: 80, dermis: 15, subcutaneous: 5 },
-        skinMetrics: { melaninIndex: 30, hydration: 50, erythemaIndex: 25, barrierHealth: 75 }
-    };
-};
-
-export interface MedicalFinding {
-    condition: string;
-    explanation: string;
-    confidence: number;
-    severity: "low" | "moderate" | "high";
-    icon: string;
-    action: string;
-}
-
-export interface MedicalImagingResult {
-    overallSummary: string;
-    urgencyLevel: string;
-    visitRecommended: boolean;
-    followUp: string;
-    actionPlan: string[];
-    findings: MedicalFinding[];
-    scanQualityRadar?: {
-        alignment: number;
-        contrast: number;
-        signalToNoise: number;
-        resolution: number;
-        motionArtifacts: number;
-        diagnosticYield: number;
-    };
-    scanTelemetry?: {
-        hounsfieldUnits?: number;
-        attenuation?: number;
-        sliceThickness?: number;
-        pixelSpacing?: string;
-        noiseIndex?: number;
-    };
-    differentialDiagnoses?: { condition: string; confidence: number }[];
-}
-
-
-export const analyzeMedicalImage = async (image: string, mimeType: string, type: string): Promise<MedicalImagingResult> => {
-    const apiKeys = getApiKeys();
-    
-    if (apiKeys.length > 0) {
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-        try {
-            console.log(`Analyzing ${type} image with live Gemini API...`);
-            const ai = getGenAI(apiKey);
-            
-            const data = image.includes('base64,') ? image.split('base64,')[1] : image;
-            const parsedMime = mimeType || (image.includes('data:') ? image.split(';')[0].split(':')[1] : 'image/jpeg');
-
-            const prompt = `You are a world-class, board-certified radiologist AI. Your objective is to conduct a highly accurate, clinically robust analysis of the provided ${type} medical image.
-            
-            Before answering, internally follow this systematic approach:
-            1. Image Quality & Technique: Check if the image is clear, identify the view (AP, PA, lateral, axial, coronal, sagittal) and modality (${type}).
-            2. Anatomical Landmarks: Systematically evaluate soft tissues, bone structures, joint spaces, and relevant organs (ABCDE method for X-rays, signal intensity for MRI, density for CT).
-            3. Pathology vs Artifacts: Strictly differentiate between true lesions/fractures/abnormalities and common imaging artifacts (e.g., clothing, hardware, motion blur).
-            4. Differential Diagnosis: Weigh possible conditions before concluding the most probable one. Avoid wild guesses (no hallucinations); if something is ambiguous, state low confidence.
-            
-            Return ONLY a valid JSON object matching exactly this structure:
-            {
-              "overallSummary": "A concise 2-3 sentence clinical radiologist overview of the scan findings.",
-              "urgencyLevel": "Low" | "Moderate" | "Urgent",
-              "visitRecommended": true|false,
-              "followUp": "Specific timeframe or medical discipline to consult (e.g., 'Orthopedics within 48h', 'Routine checkup')",
-              "actionPlan": ["Clinical step 1", "Clinical step 2", "Clinical step 3"],
-              "findings": [
-                {
-                  "condition": "Specific anatomical finding (e.g. 'Distal radius fracture', 'Normal lung fields')",
-                  "explanation": "Clear, jargon-light explanation of what this means for the patient",
-                  "confidence": 0-100,
-                  "severity": "low" | "moderate" | "high",
-                  "icon": "A descriptive emoji (e.g. 🦴, 🫁, 🧠, 🩸, ✅)",
-                  "action": "Immediate clinical recommendation for this specific finding"
-                }
-              ]
-            }
-            
-            Rules:
-            - NEVER hallucinate findings. If the scan is completely normal, return a single finding of 'Normal Structure' with severity 'low' and confidence >90.
-            - Ensure 'findings' has at least 1 item.
-            - Do not include markdown codeblocks outside the JSON format.`;
-
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [{
-                    role: 'user',
-                    parts: [
-                        { inlineData: { mimeType: parsedMime, data } },
-                        { text: prompt }
-                    ]
-                }]
-            });
-
-            const text = result.text;
-            const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : text;
-            return JSON.parse(jsonStr.trim()) as MedicalImagingResult;
-        } catch (err) {
-            console.error("Gemini Medical Image API failed, using mock data", err);
-        }
-    }
-
-    return {
-        overallSummary: "Mock analysis indicates no immediate life-threatening abnormalities, however proper clinical correlation is advised.",
-        urgencyLevel: "Low",
-        visitRecommended: false,
-        followUp: "Standard regular health checkup",
-        actionPlan: ["Rest and hydrate", "Monitor for any emerging symptoms", "Show scan to primary care physician"],
-        findings: [
-            {
-                condition: "Normal Anatomical Structure",
-                explanation: "The scanned area appears to have standard density and structural integrity.",
-                confidence: 96,
-                severity: "low",
-                icon: "✅",
-                action: "No immediate action required"
-            }
-        ],
-        scanQualityRadar: {
-            alignment: 95,
-            contrast: 92,
-            signalToNoise: 94,
-            resolution: 90,
-            motionArtifacts: 5,
-            diagnosticYield: 96
-        },
-        scanTelemetry: {
-            hounsfieldUnits: 45,
-            attenuation: 0.18,
-            sliceThickness: 1.25,
-            pixelSpacing: "0.28mm",
-            noiseIndex: 2
-        },
-        differentialDiagnoses: [
-            { condition: "Normal Physiology", confidence: 96 },
-            { condition: "Benign Calcification", confidence: 4 }
-        ]
-    };
-};
-
-export const generateHealthReport = async (data: any): Promise<string> => {
-    return "This is a detailed health report generated by AI based on your provided data.";
+export const generateHealthTip = async (language?: string) => {
+    return "Preclinical In-Silico Directive: Assessing multi-organ CYP450 clearance and hERG channel affinity computationally avoids 68% of Phase-I preclinical animal and human adverse reactions. Always validate in-silico findings with empirical assays.";
 };
 
 export const getDashboardChatConfig = (user: any, dailyLog: any, language: any) => {
-    const consumedCalories = dailyLog?.loggedFoods?.filter((f: any) => f.source === 'counter').reduce((sum: number, food: any) => sum + food.calories, 0) || 0;
-    const systemInstruction = `You are an AI Health Assistant. User: ${user?.name || 'User'}. Preferred Language: ${language}. Context: BMI ${user?.bmi || 'N/A'}, Consumed ${consumedCalories} kcal today. Respond in ${language}.`;
-    return { systemInstruction, initialHistory: [] };
-};
-
-export const getReportChatConfig = (reportAnalysis: any, user: any, language: any) => {
-    const systemInstruction = `You are an AI Medical Report Assistant. Helping ${user?.name || 'User'} with their report. Respond in ${language}. Report summary: ${reportAnalysis?.reportSummary || 'N/A'}`;
+    const systemInstruction = `You are BioTwin AI Research Assistant, an advanced virtual human in-silico pharmacology & computational pathology assistant.
+You assist Principal Investigator ${user?.name || 'Researcher'}.
+Institution: ${user?.institution || 'BioTwin Research Lab'}.
+Active Virtual Subject Twin: Age ${user?.age || 35}, ${user?.gender || 'male'}, Mass ${user?.weight || 70}kg, CYP450: ${user?.cypProfile || 'Standard Normal'}.
+The core operating paradigm is: "Test on a virtual human first, then validate in the real world."
+Help researchers evaluate drug mechanisms, predict organ-specific toxicities (Liver DILI, Kidney CrCl, Heart Cardiotoxicity, Brain BBB, Lungs), design virtual pandemic scenarios, and format preclinical dossiers.
+MANDATORY SCIENTIFIC RULE: Always emphasize that all outputs are computational in-silico predictions designed for candidate triage, and empirical laboratory validation (in-vitro assays and clinical trials) remains necessary before clinical translation. Respond in ${language || 'English'}.`;
     return { systemInstruction, initialHistory: [] };
 };
 
@@ -441,220 +47,6 @@ export const initializeLiveChat = async (callbacks: any, systemInstruction: any)
     return {
         sendRealtimeInput: (data: any) => { },
         close: () => { }
-    };
-};
-
-export const identifyFoodInImage = async (image: string, fileType: string, additionalInfo: string) => {
-    const apiKeys = getApiKeys();
-
-    if (apiKeys.length > 0) {
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-        try {
-            console.log("Identifying food in image with live Gemini API...");
-            const ai = getGenAI(apiKey);
-            
-            // Handle both full data URLs and raw base64
-            const data = image.includes('base64,') ? image.split('base64,')[1] : image;
-            const mimeType = fileType || (image.includes('data:') ? image.split(';')[0].split(':')[1] : 'image/jpeg');
-
-            const prompt = `Analyze this food image. ${additionalInfo ? `Context: ${additionalInfo}.` : ''} 
-            Identify all individual food items. For each item, estimate its weight in grams and primary cooking method.
-            Output ONLY valid JSON array: 
-            [
-                { "name": "item name", "weight": number, "cookingMethod": "Fried|Grilled|Boiled/Steamed|Raw|Baked|Curry/Gravy|Roasted|Unknown" }
-            ]`;
-
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [{
-                    role: 'user',
-                    parts: [
-                        { inlineData: { mimeType, data } },
-                        { text: prompt }
-                    ]
-                }]
-            });
-
-            const text = result.text;
-            const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : text;
-            return JSON.parse(jsonStr.trim());
-        } catch (err) {
-            console.error("Gemini Food identification API failed, using mock data", err);
-        }
-    }
-
-    // Fallback Mock Data
-    return [{ name: "Healthy Meal", weight: 250, cookingMethod: "Steamed" }];
-};
-
-export const getNutritionalInfoAndAccuracy = async (identifiedFoods: any[], image: string, fileType: string) => {
-    const apiKeys = getApiKeys();
-
-    try {
-        console.log("Fetching nutritional info with Hybrid Gemini + USDA Strategy...");
-        
-        let aiResult: any = null;
-
-        // Step 1: Get AI Base Estimation (as fallback and for portion/context check)
-        if (apiKeys.length > 0) {
-            const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-            const ai = getGenAI(apiKey);
-            const data = image.includes('base64,') ? image.split('base64,')[1] : image;
-            const mimeType = fileType || (image.includes('data:') ? image.split(';')[0].split(':')[1] : 'image/jpeg');
-
-            const foodList = identifiedFoods.map(f => `${f.name} (${f.weight}g, ${f.cookingMethod})`).join(', ');
-            
-            const prompt = `Based on these identified food items: ${foodList} and the provided image, calculate detailed nutritional information. 
-            For each item, provide calories, protein(g), carbs(g), fat(g), and fiber(g). 
-            Also provide a short 'healthVerdict' (max 15 words) and an overall AI confidence score for the estimation (accuracy, 0-100).
-            Output ONLY valid JSON:
-            {
-                "foodItems": [
-                    { "name": "name", "calories": number, "protein": number, "carbs": number, "fat": number, "fiber": number, "source": "AI", "healthVerdict": "brief insight" }
-                ],
-                "accuracy": number
-            }`;
-
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [{
-                    role: 'user',
-                    parts: [
-                        { inlineData: { mimeType, data } },
-                        { text: prompt }
-                    ]
-                }]
-            });
-
-            aiResult = JSON.parse(result.text.startsWith('```json') ? result.text.split('```json')[1].split('```')[0] : result.text);
-        }
-
-        // Step 2: Cross-verify and enhance with USDA Data for each item
-        const enhancedFoodItems: FoodItem[] = await Promise.all(identifiedFoods.map(async (food, index) => {
-            const aiItem = aiResult?.foodItems[index];
-            
-            // Search USDA for this specific item
-            const usdaData = await searchFoodNutrients(food.name);
-            
-            if (usdaData) {
-                // scale USDA (per 100g) results to Gemini estimated weight
-                const scale = (food.weight || 0) / 100;
-                
-                return {
-                    name: food.name,
-                    calories: (usdaData.calories || 0) * scale,
-                    protein: (usdaData.protein || 0) * scale,
-                    carbs: (usdaData.carbs || 0) * scale,
-                    fat: (usdaData.fat || 0) * scale,
-                    fiber: (usdaData.fiber || 0) * scale,
-                    source: 'USDA' as const,
-                    healthVerdict: aiItem?.healthVerdict || "Nutrient values verified by USDA database."
-                };
-            }
-
-            // Fallback to AI estimate if USDA fails
-            return {
-                name: food.name,
-                calories: aiItem?.calories || 350,
-                protein: aiItem?.protein || 20,
-                carbs: aiItem?.carbs || 45,
-                fat: aiItem?.fat || 10,
-                fiber: aiItem?.fiber || 8,
-                source: 'AI' as const,
-                healthVerdict: aiItem?.healthVerdict || "Estimated by AI model."
-            };
-        }));
-
-        return {
-            foodItems: enhancedFoodItems,
-            accuracy: aiResult?.accuracy || 85
-        };
-
-    } catch (err) {
-        console.error("Hybrid Nutrition API failed, using standard fallback", err);
-        return {
-            foodItems: identifiedFoods.map(food => ({
-                name: food.name || "Meal Item",
-                calories: 350,
-                protein: 20,
-                carbs: 45,
-                fat: 10,
-                fiber: 8,
-                source: 'AI' as const,
-                healthVerdict: "Nutrient-dense and balanced."
-            })),
-            accuracy: 70
-        };
-    }
-};
-
-export const generateHealthTip = async (language?: string) => {
-    return "Hydration is key: Drink at least 3 liters of water daily.";
-};
-
-export const generateDietPlan = async (user: any, healthData: any, language: string): Promise<DietPlan> => {
-    const apiKeys = getApiKeys();
-    
-    if (apiKeys.length > 0) {
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-        try {
-            console.log("Generating diet plan with live Gemini API...");
-            const ai = getGenAI(apiKey);
-            
-            const prompt = `You are a professional AI Dietitian. Create a detailed, personalized diet plan for a user with the following profile:
-            - User: ${user?.age || 'Adult'} years old, ${user?.gender || 'Unknown'}, Weight: ${user?.weight || 'Unknown'}kg, Height: ${user?.height || 'Unknown'}cm, Goal: ${user?.goals?.[0] || 'maintain weight'}.
-            - Dietary Preference: ${healthData.dietaryPreference || 'Any'}.
-            - Food Allergies: ${healthData.foodAllergies || 'None'}.
-            - Primary Health Issues: ${healthData.healthIssues?.join(', ') || 'None'}.
-            - Pre-existing Conditions: ${healthData.preexistingMedicalConditions || 'None'}.
-            - Other Issues: ${healthData.otherHealthIssues || 'None'}.
-            ${healthData.pregnancyMonth ? `- Pregnancy Month: ${healthData.pregnancyMonth}` : ''}
-            
-            Output the response in ${language}.
-            Output ONLY valid JSON matching this exact structure:
-            {
-                "mealPlan": {
-                    "breakfast": [{ "name": "Meal name", "calories": 300, "description": "Brief desc" }],
-                    "lunch": [{ "name": "Meal name", "calories": 400, "description": "Brief desc" }],
-                    "snacks": [{ "name": "Meal name", "calories": 150, "description": "Brief desc" }],
-                    "dinner": [{ "name": "Meal name", "calories": 350, "description": "Brief desc" }]
-                },
-                "reasoning": "Detailed explanation of why this plan fits the user's constraints and goals",
-                "foodsToInclude": ["Food 1", "Food 2", "Food 3", "Food 4"],
-                "foodsToAvoid": ["Avoid 1", "Avoid 2", "Avoid 3"],
-                "healthRecommendations": ["Recommendation 1", "Recommendation 2"],
-                "precautions": ["Precaution 1"],
-                "lifestyleModifications": ["Habit 1", "Habit 2"]
-            }`;
-
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [{ role: 'user', parts: [{ text: prompt }] }]
-            });
-
-            const text = result.text;
-            const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : text;
-            return JSON.parse(jsonStr.trim()) as DietPlan;
-        } catch (err) {
-            console.error("Gemini Diet Plan API failed, using mock data", err);
-        }
-    }
-
-    // Fallback Mock
-    return {
-        mealPlan: { 
-            breakfast: [{ name: "Oatmeal with berries", calories: 350, description: "Fiber-rich start" }],
-            lunch: [{ name: "Quinoa salad", calories: 450, description: "Protein and carbs" }],
-            snacks: [{ name: "Greek yogurt", calories: 150, description: "Probiotic" }],
-            dinner: [{ name: "Baked salmon with greens", calories: 550, description: "Omega-3 and nutrients" }]
-        },
-        reasoning: "Suggested meals are nutrient-dense.",
-        foodsToInclude: ["Leafy greens", "Fatty fish"],
-        foodsToAvoid: ["High-sugar snacks"],
-        healthRecommendations: ["Quality sleep is essential"],
-        precautions: ["Always consult with a physician"],
-        exerciseRoutine: [],
-        lifestyleModifications: ["Stress management"]
     };
 };
 
@@ -923,34 +315,149 @@ export const analyzeDrugSynthesis = async (
     route?: string,
     weight?: number | string
 ): Promise<DrugAnalysisResult> => {
-    const apiKeys = getApiKeys();
+    const cleanInput = (fileBase64 || '').trim();
 
-    if (apiKeys.length > 0) {
+    // 1. Direct preset matching
+    const presetKey = cleanInput.startsWith('preset:')
+        ? cleanInput.replace('preset:', '').toLowerCase().trim()
+        : (!cleanInput.startsWith('data:') && PRESET_SYNTHESIS_DB[cleanInput.toLowerCase()] ? cleanInput.toLowerCase() : null);
+
+    if (presetKey && PRESET_SYNTHESIS_DB[presetKey]) {
+        console.log(`[Molecular Scan] Loaded curated chemical synthesis & enhancement profile for preset: ${presetKey}`);
+        return JSON.parse(JSON.stringify(PRESET_SYNTHESIS_DB[presetKey])) as DrugAnalysisResult;
+    }
+
+    // 2. Multimodal analysis via Gemini API
+    const apiKeys = getApiKeys();
+    if (apiKeys.length > 0 && cleanInput.startsWith('data:image')) {
         const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
         try {
-            const matches = fileBase64.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+            const matches = cleanInput.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
             if (!matches) throw new Error("Invalid image format");
             const mimeType = matches[1];
             const data = matches[2];
 
+            console.log("[Molecular Scan] Initiating Gemini In-Silico Molecular Synthesis & Enhancement Analysis...");
             const ai = getGenAI(apiKey);
+            const prompt = `You are an elite medicinal chemist, organic synthesis lead, and in-silico computational pharmacologist.
+Analyze the provided molecular structure, chemical formula, or reaction diagram image.
+
+CRITICAL INSTRUCTIONS:
+1. Identify the chemical compound:
+   - "drug_name": Standard recognized name (e.g. Ibuprofen, Aspirin, Metformin, etc.)
+   - "chemical_formula": Molecular formula (e.g. "C13H18O2")
+   - "iupac_name": Full systematic chemical name
+   - "smiles_string": Canonical SMILES string
+   - "functional_groups": string[] of key active functional groups (e.g. ["Carboxylic acid", "Benzene ring", "Isobutyl"])
+   - "molecular_weight": e.g. "206.29 g/mol"
+   - "category": Pharmacological class
+   - "primary_mechanism": Precise biochemical mechanism
+
+2. Chemical Synthesis Pathway ("synthesis_pathway"):
+   - "precursors": string[] of starting reagents
+   - "reaction_steps": Array of objects:
+     - "step_number": 1, 2, ...
+     - "reaction_name": Name of reaction (e.g. Friedel-Crafts Acylation, Catalytic Hydrogenation, Esterification)
+     - "reagents": Reagents and catalysts used (e.g. AlCl3, Raney Ni, Pd catalyst)
+     - "conditions": Temperature, solvent, atmosphere
+     - "intermediate_product": Intermediate name
+     - "yield_percent": number (0-100)
+     - "notes": Process chemistry and mechanistic insight
+   - "total_yield_percent": number (0-100)
+   - "atom_economy": string (e.g. "77%")
+   - "green_chemistry_score": number (0-100)
+   - "safety_hazard_notes": Process hazard guidance
+
+3. Molecular Enhancement Strategies ("enhancement_proposals"):
+   Propose actionable Structure-Activity Relationship (SAR) modifications to enhance the compound (e.g. fluorination for metabolic stabilization, bio-isosteric swap to eliminate organ toxicity such as stomach ulceration or cardiotoxicity, prodrug conjugation):
+   - Array of objects:
+     - "id": string (e.g. "enh-1")
+     - "strategy_name": string (e.g. "Gastric-Sparing Tetrazole Bio-Isostere")
+     - "chemical_modification": Specific molecular alteration
+     - "pharmacological_rationale": Biochemical reason this improves safety/efficacy
+     - "target_organ_sparing": Which organ is protected (e.g. "Stomach (-65% mucosal erosion)")
+     - "toxicity_reduction_percent": number (e.g. 65)
+     - "half_life_change": e.g. "Extended from 2h to 5.5h"
+     - "potency_delta": e.g. "+15% target affinity"
+     - "synthetic_feasibility": "High" | "Moderate" | "Complex"
+     - "modified_chemical_formula": e.g. "C13H18N4"
+
+4. Multi-Organ Pharmacological Heatmap:
+   - "heatmap_effects": Array matching exact structures: ["Brain", "Heart", "Lungs", "Liver", "Stomach", "Kidneys", "Intestines", "Nervous System"]
+     - "structure_name": One of the above standard organs
+     - "effect_type": e.g. "Therapeutic", "Metabolism", "Clearance", "Adverse Risk"
+     - "mechanism": Organ-level effect
+     - "intensity": 0.0 to 1.0
+     - "risk_level": "low" | "moderate" | "high" | "severe"
+     - "confidence_score": 0.95
+     - "toxic_threshold": boolean
+     - "accumulation_factor": number
+     - "dose_dependency_factor": number
+
+5. Systemic Indicators:
+   - "pharmacokinetics": { "onset_minutes": number, "peak_minutes": number, "duration_hours": number, "bioavailability_estimate": number }
+   - "pharmacodynamics": { "primary_mechanism": string, "receptor_targets": string[], "enzyme_inhibition_percent": number }
+   - "time_based_intensity": { "0 min": 0.1, "onset": 0.5, "peak": 1.0, "mid duration": 0.7, "end duration": 0.2 }
+   - "system_wide_risk_score": number (0.0 to 1.0)
+   - "confidence_score": number (0-100)
+   - "uncertainty_margin": number
+
+Return ONLY a valid JSON object matching this schema with NO markdown code fences, NO formatting text outside JSON.`;
+
             const result = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: [{
                     role: 'user',
                     parts: [
                         { inlineData: { mimeType, data } },
-                        { text: "Analyze this molecular structure/diagram and return DrugAnalysisResult JSON." }
+                        { text: prompt }
                     ]
                 }]
             });
-            return JSON.parse(result.text) as DrugAnalysisResult;
+
+            let rawText = result.text || '';
+            let cleanText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+            if (cleanText.includes('```json')) {
+                cleanText = cleanText.split('```json')[1].split('```')[0].trim();
+            } else if (cleanText.includes('```')) {
+                cleanText = cleanText.split('```')[1].split('```')[0].trim();
+            }
+
+            const parsed = JSON.parse(cleanText) as DrugAnalysisResult;
+            if (parsed && parsed.drug_name) {
+                // Cross-reference with curated database for maximum precision
+                const lowerName = parsed.drug_name.toLowerCase();
+                const matchedKey = Object.keys(PRESET_SYNTHESIS_DB).find(k => 
+                    lowerName.includes(k) || k.includes(lowerName)
+                );
+                if (matchedKey) {
+                    const preset = PRESET_SYNTHESIS_DB[matchedKey];
+                    if (!parsed.synthesis_pathway || !parsed.synthesis_pathway.reaction_steps?.length) {
+                        parsed.synthesis_pathway = preset.synthesis_pathway;
+                    }
+                    if (!parsed.enhancement_proposals || !parsed.enhancement_proposals.length) {
+                        parsed.enhancement_proposals = preset.enhancement_proposals;
+                    }
+                    if (!parsed.chemical_formula) parsed.chemical_formula = preset.chemical_formula;
+                    if (!parsed.iupac_name) parsed.iupac_name = preset.iupac_name;
+                    if (!parsed.smiles_string) parsed.smiles_string = preset.smiles_string;
+                } else if (!parsed.synthesis_pathway || !parsed.enhancement_proposals?.length) {
+                    // Fallback synthesis generator for unrecognized compounds
+                    const generic = generateGenericSynthesisAndEnhancement(parsed.drug_name);
+                    parsed.synthesis_pathway = parsed.synthesis_pathway || generic.synthesis_pathway;
+                    parsed.enhancement_proposals = parsed.enhancement_proposals || generic.enhancement_proposals;
+                    parsed.chemical_formula = parsed.chemical_formula || generic.chemical_formula;
+                }
+                return parsed;
+            }
         } catch (err) {
-            console.error("Gemini Synthesis API failed", err);
+            console.error("Gemini Molecular Scan API failed, utilizing curated chemistry engine:", err);
         }
     }
 
-    return analyzeDrugImpact("Unknown Compound", dosage, age, route, weight);
+    // 3. Robust offline fallback to Ibuprofen benchmark
+    console.log("[Molecular Scan] Utilizing curated benchmark chemical synthesis: Ibuprofen");
+    return JSON.parse(JSON.stringify(PRESET_SYNTHESIS_DB['ibuprofen']));
 };
 
 export const simulateDiseaseImpact = async (
@@ -1145,254 +652,6 @@ Rules:
     };
 };
 
-export const generateExerciseRoutine = async (user: any, exerciseData: any): Promise<WorkoutRoutine> => {
-    const apiKeys = getApiKeys();
-    
-    if (apiKeys.length > 0) {
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-        try {
-            console.log("Generating exercise routine with live Gemini API...");
-            const ai = getGenAI(apiKey);
-            
-            const prompt = `You are a professional AI Personal Trainer. Create a detailed, personalized workout routine for a user with the following profile:
-            - User: ${user?.age || 'Adult'} years old, ${user?.gender || 'Unknown'}, Weight: ${user?.weight || 'Unknown'}kg, Height: ${user?.height || 'Unknown'}cm.
-            - Health Issues/Conditions: ${exerciseData.healthIssues?.join(', ') || 'None'}.
-            ${exerciseData.trimester ? `- Trimester: ${exerciseData.trimester}` : ''}
-            - Experience/Preference Level: ${exerciseData.preference || 'Beginner'}.
-            
-            Output ONLY valid JSON matching this exact structure:
-            {
-                "warmUp": [
-                    { "name": "Exercise name", "reps": "10 reps or 5 mins", "sets": 1, "caloriesBurnedPerSet": 10, "youtubeQuery": "how to do X", "videoScript": "Prompt script", "steps": ["Step 1", "Step 2"] }
-                ],
-                "mainWorkout": [
-                    { "name": "Exercise name", "reps": "10 reps", "sets": 3, "caloriesBurnedPerSet": 15, "youtubeQuery": "how to do X", "videoScript": "Prompt script", "steps": ["Step 1", "Step 2"] }
-                ],
-                "coolDown": [
-                    { "name": "Exercise name", "reps": "5 mins", "sets": 1, "caloriesBurnedPerSet": 5, "youtubeQuery": "how to do X", "videoScript": "Prompt script", "steps": ["Step 1", "Step 2"] }
-                ]
-            }`;
-
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [{ role: 'user', parts: [{ text: prompt }] }]
-            });
-
-            const text = result.text;
-            const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : text;
-            return JSON.parse(jsonStr.trim()) as WorkoutRoutine;
-        } catch (err) {
-            console.error("Gemini Exercise API failed, using mock data", err);
-        }
-    }
-
-    // Fallback Mock
-    return {
-        warmUp: [
-            { name: "Light stretching", reps: "5 mins", sets: 1, caloriesBurnedPerSet: 15, youtubeQuery: "how to do light stretching", videoScript: "Warm up with light stretches.", steps: ["Reach for toes", "Roll shoulders"] }
-        ],
-        mainWorkout: [
-            { name: "Squats", reps: "10 reps", sets: 3, caloriesBurnedPerSet: 15, youtubeQuery: "how to do squats", videoScript: "Lower your hips as if sitting in a chair.", steps: ["Feet shoulder-width apart", "Bend knees and lower hips", "Stand back up"] },
-            { name: "Pushups", reps: "8 reps", sets: 3, caloriesBurnedPerSet: 12, youtubeQuery: "how to do pushups", videoScript: "Keep a straight line from head to toe.", steps: ["Plank position", "Lower chest to ground", "Push back up"] }
-        ],
-        coolDown: [
-            { name: "Deep breathing", reps: "3 mins", sets: 1, caloriesBurnedPerSet: 5, youtubeQuery: "deep breathing exercises", videoScript: "Inhale and exhale slowly.", steps: ["Inhale slowly", "Exhale slowly"] }
-        ]
-    };
-};
-
-export const generateSingleExerciseInfo = async (exercise: string) => {
-    return {
-        name: exercise,
-        youtubeQuery: `how to do ${exercise}`,
-        steps: ["Maintain neutral spine", "Engage core"],
-        tips: ["Don't lock joints"]
-    };
-};
-
-export const findNearbyHealthServices = async (location: string | { lat: number; lng: number }): Promise<NearbyHealthServices> => {
-    return {
-        hospitals: [
-            { name: "Global Health Center", address: "123 Clinic Ave, Medical District", mapsUri: "https://maps.google.com/?q=Global+Health+Center", latitude: 40.7128, longitude: -74.0060 }
-        ],
-        clinics: [
-            { name: "City Care Clinic", address: "456 Wellness St", mapsUri: "https://maps.google.com/?q=City+Care+Clinic", latitude: 40.7138, longitude: -74.0070 }
-        ],
-        medicalStores: [
-            { name: "QuickMeds Pharmacy", address: "789 Apothecary Ln", mapsUri: "https://maps.google.com/?q=QuickMeds+Pharmacy", latitude: 40.7118, longitude: -74.0050 }
-        ]
-    };
-};
-
-export const analyzeMedicalReport = async (user: any, dietaryPreference: any, base64Data: any, fileType: any, selectedLanguage: any): Promise<any> => {
-    const apiKeys = getApiKeys();
-    
-    if (apiKeys.length > 0) {
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-        try {
-            console.log("Analyzing medical report with live Gemini API...");
-            const ai = getGenAI(apiKey);
-            
-            const data = base64Data.includes('base64,') ? base64Data.split('base64,')[1] : base64Data;
-            const mimeType = fileType || (base64Data.includes('data:') ? base64Data.split(';')[0].split(':')[1] : 'application/pdf');
-
-            const prompt = `You are a medical AI assistant. Analyze the provided medical document (blood test, prescription, scan report, etc.) for a user (${user?.name || 'Patient'}, ${user?.age || 'Adult'} yrs old) with dietary preference: ${dietaryPreference || 'Any'}.
-            
-            Provide a comprehensive, easy-to-understand analysis in ${selectedLanguage || 'English'}.
-            Output ONLY valid JSON matching this exact structure:
-            {
-                "reportSummary": "An easily readable summary of the overall report",
-                "patientInfo": {
-                    "name": "Extracted name or '${user?.name || 'Patient'}'",
-                    "age": "Extracted age or '${user?.age || 'Unknown'}'",
-                    "gender": "Extracted gender or '${user?.gender || 'Unknown'}'",
-                    "reportDate": "Extracted date or 'Unknown'"
-                },
-                "actionPlan": ["Action 1", "Action 2", "Action 3"],
-                "treatmentRecommendations": ["Recommendation 1", "Recommendation 2"],
-                "problemExplanation": "Simple explanation of any flagged/abnormal issues",
-                "keyRecommendations": ["Key REC 1", "Key REC 2"],
-                "mealPlan": { 
-                    "breakfast": [{ "name": "Meal", "calories": 300, "description": "Desc" }],
-                    "lunch": [{ "name": "Meal", "calories": 400, "description": "Desc" }],
-                    "snacks": [{ "name": "Meal", "calories": 150, "description": "Desc" }],
-                    "dinner": [{ "name": "Meal", "calories": 500, "description": "Desc" }]
-                },
-                "reasoning": "Why this meal plan helps with the report's findings",
-                "healthRecommendations": ["Health tip 1", "Health tip 2"],
-                "foodsToInclude": ["Food 1", "Food 2"],
-                "foodsToAvoid": ["Avoid 1", "Avoid 2"],
-                "precautions": ["Precaution 1", "Precaution 2"],
-                "exerciseRoutine": [{ "name": "Exercise 1", "reps": "Amount", "sets": 2, "caloriesBurnedPerSet": 50, "youtubeQuery": "search query", "videoScript": "", "steps": ["Step 1"] }],
-                "lifestyleModifications": ["Lifestyle tweak 1"]
-            }`;
-
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [{
-                    role: 'user',
-                    parts: [
-                        { inlineData: { mimeType, data } },
-                        { text: prompt }
-                    ]
-                }]
-            });
-
-            const text = result.text;
-            const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : text;
-            return JSON.parse(jsonStr.trim());
-        } catch (err) {
-            console.error("Gemini Medical Report API failed, using mock data", err);
-        }
-    }
-
-    // Fallback Mock
-    return {
-        reportSummary: "The report indicates general health markers are within expected ranges.",
-        patientInfo: {
-            name: user?.name || "Patient",
-            age: user?.age || 30,
-            gender: user?.gender || "Other",
-            reportDate: new Date().toLocaleDateString()
-        },
-        actionPlan: ["Maintain current balanced diet"],
-        treatmentRecommendations: ["None currently indicated"],
-        problemExplanation: "No significant clinical anomalies were identified.",
-        keyRecommendations: ["Stay physically active"],
-        mealPlan: { 
-            breakfast: [{ name: "Oatmeal with berries", calories: 350, description: "Fiber-rich start" }],
-            lunch: [{ name: "Quinoa salad", calories: 450, description: "Protein and carbs" }],
-            snacks: [{ name: "Greek yogurt", calories: 150, description: "Probiotic" }],
-            dinner: [{ name: "Baked salmon with greens", calories: 550, description: "Omega-3 and nutrients" }]
-        },
-        reasoning: "Suggested meals are nutrient-dense.",
-        healthRecommendations: ["Quality sleep is essential"],
-        foodsToInclude: ["Leafy greens", "Fatty fish"],
-        foodsToAvoid: ["High-sugar snacks"],
-        precautions: ["Always consult with a physician"],
-        exerciseRoutine: [{ name: "Brisk walking", reps: "30 min", sets: 1, caloriesBurnedPerSet: 150, youtubeQuery: "walking", videoScript: "", steps: ["Comfortable footwear"] }],
-        lifestyleModifications: ["Stress management"]
-    };
-};
-
-export const analyzeECGReport = async (imageParts: { inlineData: { mimeType: string; data: string } }[] | string[]): Promise<HeartAnalysisResult> => {
-    const apiKeys = getApiKeys();
-
-    if (apiKeys.length > 0 && imageParts.length > 0) {
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-        try {
-            console.log("Analyzing ECG/Heart report with live Gemini API...");
-            const ai = getGenAI(apiKey);
-
-            const formattedParts = imageParts.map(item => {
-                if (typeof item === 'string') {
-                    const data = item.includes('base64,') ? item.split('base64,')[1] : item;
-                    const mimeType = item.includes('data:') ? item.split(';')[0].split(':')[1] : 'image/jpeg';
-                    return { inlineData: { mimeType, data } };
-                }
-                return item;
-            });
-
-            const prompt = `You are a board-certified cardiologist AI. Analyze the provided ECG/EKG strip, cardiac image, or heart health report.
-            Perform a systematic cardiac assessment (rhythm, rate, P-wave, QRS complex, ST segment, T wave).
-            
-            Return ONLY a valid JSON object matching exactly this structure:
-            {
-                "summary": "Concise 2-3 sentence cardiology summary of findings.",
-                "heart_score": number (0-100 where higher indicates higher risk/concern, 0-25 normal, 26-60 moderate, 61-100 high),
-                "abnormalities": [
-                    { "condition": "Condition name (e.g. Normal Sinus Rhythm, Sinus Tachycardia, ST Elevation)", "severity": "low" | "moderate" | "high" }
-                ],
-                "causes": {
-                    "lifestyle": ["Cause 1", "Cause 2"],
-                    "medical": ["Medical factor 1"],
-                    "genetic": ["Family history / genetic factor"]
-                },
-                "recommendations": {
-                    "diet": ["Dietary advice 1"],
-                    "exercise": ["Exercise recommendation"],
-                    "lifestyle": ["Lifestyle modification"],
-                    "consult": "Clinical follow-up advice (e.g. 'Consult a cardiologist within 24-48 hours if symptomatic')"
-                }
-            }`;
-
-            const result = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: [{
-                    role: 'user',
-                    parts: [...formattedParts, { text: prompt }]
-                }]
-            });
-
-            const text = result.text;
-            const jsonStr = text.startsWith('```json') ? text.split('```json')[1].split('```')[0] : (text.startsWith('```') ? text.split('```')[1].split('```')[0] : text);
-            return JSON.parse(jsonStr.trim()) as HeartAnalysisResult;
-        } catch (err) {
-            console.error("Gemini Heart API failed, using fallback data", err);
-        }
-    }
-
-    return {
-        summary: "Cardiological analysis indicates stable sinus rhythm with no acute ischemic changes observed in the sample.",
-        heart_score: 15,
-        abnormalities: [
-            { condition: "Normal Sinus Rhythm", severity: "low" }
-        ],
-        causes: {
-            lifestyle: ["Adequate daily hydration", "Regular aerobic activity"],
-            medical: ["Normal electrophysiology"],
-            genetic: ["Standard physiological baseline"]
-        },
-        recommendations: {
-            diet: ["Maintain low-sodium heart-healthy Mediterranean diet"],
-            exercise: ["30 minutes of moderate cardio 5 days a week"],
-            lifestyle: ["Manage stress levels and maintain consistent sleep hygiene"],
-            consult: "AI-generated analysis for informational purposes only. This result should not replace evaluation by a qualified healthcare professional."
-        }
-    };
-};
-
-export const analyzeHeartReport = analyzeECGReport;
 
 export const analyzeClinicalTestFile = async (fileData: string, mimeType: string): Promise<DiseaseSimulationResult> => {
     const apiKeys = getApiKeys();
@@ -1527,8 +786,6 @@ Rules:
         ]
     };
 };
-
-import { VaccineInfo } from '../types';
 
 export const findOrGenerateVaccine = async (diseaseName: string): Promise<VaccineInfo> => {
     const apiKeys = getApiKeys();

@@ -1,14 +1,19 @@
 import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { Brain, Search, Info, Shield, Layers, Camera, FileText, Mic, MicOff, Syringe, Activity, AlertTriangle, Heart, Clock, Zap, ChevronRight, Target } from 'lucide-react';
+import { Brain, Search, Info, Shield, Layers, Camera, FileText, Mic, MicOff, Syringe, Activity, AlertTriangle, Heart, Clock, Zap, ChevronRight, Target, FlaskConical, Sparkles, Atom, Undo2, Check } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useAppContext } from '../context/AppContext';
 import { analyzeDrugImpact, analyzeDrugSynthesis, simulateDiseaseImpact, analyzeClinicalTestFile, findOrGenerateVaccine, checkMultiInteraction, InteractionCheckResult } from '../services/geminiService';
-import { DrugAnalysisResult, HeatmapEffect, DiseaseSimulationResult, VaccineInfo } from '../types';
+import { DrugAnalysisResult, HeatmapEffect, DiseaseSimulationResult, VaccineInfo, MolecularEnhancementProposal } from '../types';
 import { ICONS } from '../constants';
 import DrugHeatmap3D from '../components/DrugHeatmap3D';
 import DrugOrganPanel from '../components/DrugOrganPanel';
 import HandTrackingOverlay from '../components/HandTrackingOverlay';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { ResearchTriageCard, SaveExperimentModal, DossierHistoryDrawer } from './ResearchTriageComponents';
+import { ExperimentDossier, OrganToxicityScore } from '../types';
+import ChemicalSynthesisConsole from '../components/ChemicalSynthesisConsole';
+import { PRESET_MOLECULAR_CARDS, PRESET_SYNTHESIS_DB, applyMolecularEnhancement } from '../services/synthesisDatabase';
+import SimulationExplainerModal from '../components/SimulationExplainerModal';
 
 // ─── Heatmap color legend ──────────────────────────────────────────────────────
 const HeatmapLegend: React.FC = () => (
@@ -415,7 +420,12 @@ const checkIsOrganInfected = (organName: string, activeSet: Set<string> | string
 
 // ─── Main component ─────────────────────────────────────────────────────────────
 export const DrugImpactVisualizer = () => {
-    const { navigateTo } = useAppContext();
+    const { navigateTo, user, savedExperiments, saveExperiment, deleteExperiment, activeDossier, clearActiveDossier, openGuide } = useAppContext();
+
+    // ─── Virtual Experiment Dossier States ───────────────────────────
+    const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [isDossierDrawerOpen, setIsDossierDrawerOpen] = useState(false);
+    const [isExplainerOpen, setIsExplainerOpen] = useState(false);
 
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
@@ -457,6 +467,7 @@ export const DrugImpactVisualizer = () => {
     const [drugName, setDrugName] = useState('Ibuprofen');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [selectedPresetStructure, setSelectedPresetStructure] = useState<string | null>('ibuprofen');
 
     const [dosage, setDosage] = useState(400);      // mg
     const [route, setRoute] = useState('Oral');
@@ -465,9 +476,12 @@ export const DrugImpactVisualizer = () => {
     const [genomicProfile, setGenomicProfile] = useState('Standard (Normal Metabolizer)');
     const [timePhase, setTimePhase] = useState<'0 min' | 'onset' | 'peak' | 'mid duration' | 'end duration'>('peak');
 
+    // Detail Tabs for Drug Visualizer Console
+    const [drugDetailTab, setDrugDetailTab] = useState<'biomap' | 'synthesis' | 'interaction'>('biomap');
+
     // State
     const [isLoading, setIsLoading] = useState(false);
-    const [result, setResult] = useState<DrugAnalysisResult | null>(() => PRESET_PHARMA_CACHE['Ibuprofen'] || null);
+    const [result, setResult] = useState<DrugAnalysisResult | null>(() => PRESET_SYNTHESIS_DB['ibuprofen'] || PRESET_PHARMA_CACHE['Ibuprofen'] || null);
     const [error, setError] = useState<string | null>(null);
     const [selectedOrgan, setSelectedOrgan] = useState<string | null>(null);
 
@@ -476,6 +490,81 @@ export const DrugImpactVisualizer = () => {
     const [drugName2, setDrugName2] = useState('');
     const [result2, setResult2] = useState<DrugAnalysisResult | null>(null);
     const [isLoading2, setIsLoading2] = useState(false);
+
+    // Reload saved experiment if loaded from Dashboard or Drawer
+    useEffect(() => {
+        if (activeDossier) {
+            if (activeDossier.type === 'DRUG_SIMULATION' || activeDossier.type === 'DRUG_COMPARISON') {
+                setActiveTab('drug');
+                setDrugName(activeDossier.targetCompound);
+                if (activeDossier.secondaryCompound) {
+                    setCompareMode(true);
+                    setDrugName2(activeDossier.secondaryCompound);
+                } else {
+                    setCompareMode(false);
+                }
+                if (activeDossier.cohort) {
+                    if (activeDossier.cohort.age) setAge(activeDossier.cohort.age);
+                    if (activeDossier.cohort.weight) setWeight(activeDossier.cohort.weight);
+                    if (activeDossier.cohort.genomicProfile) setGenomicProfile(activeDossier.cohort.genomicProfile);
+                }
+                if (activeDossier.route) setRoute(activeDossier.route);
+                if (activeDossier.simulationData) {
+                    setResult(activeDossier.simulationData);
+                } else if (PRESET_PHARMA_CACHE[activeDossier.targetCompound]) {
+                    setResult(PRESET_PHARMA_CACHE[activeDossier.targetCompound]);
+                }
+            } else if (activeDossier.type === 'DISEASE_PATHOGEN_SIMULATION') {
+                setActiveTab('disease');
+                setDiseaseName(activeDossier.targetCompound);
+            }
+            clearActiveDossier();
+        }
+    }, [activeDossier, clearActiveDossier]);
+
+    const handleSaveCurrentExperiment = useCallback((title: string, notes: string) => {
+        const id = `EXP-2026-${Math.floor(100 + Math.random() * 900)}`;
+        const organEffects = result?.effects || result?.heatmap_effects || [];
+        const toxicities: OrganToxicityScore[] = organEffects.map(e => ({
+            organ: e.structure_name || (e as any).organ || 'Systemic',
+            toxicity_level: (e.risk_level as any) || 'low',
+            strain_score: Math.round(e.intensity * 100),
+            mechanism: e.mechanism || '',
+            confidence: e.confidence_score || 0.94,
+            toxic_threshold_exceeded: !!e.toxic_threshold
+        }));
+
+        const risk = result?.system_wide_risk_score ?? 0.3;
+        const verdict = risk >= 0.7 ? 'CONTRAINDICATED' : risk >= 0.4 ? 'CAUTION' : 'RECOMMENDED';
+
+        const newDossier: ExperimentDossier = {
+            id,
+            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC',
+            title,
+            investigator: user?.name || 'Dr. Alex Vance',
+            type: compareMode ? 'DRUG_COMPARISON' : activeTab === 'disease' ? 'DISEASE_PATHOGEN_SIMULATION' : 'DRUG_SIMULATION',
+            targetCompound: activeTab === 'disease' ? diseaseName : drugName,
+            secondaryCompound: compareMode ? drugName2 : undefined,
+            dosage: `${dosage}mg`,
+            route,
+            cohort: {
+                age: typeof age === 'number' ? age : 35,
+                gender: user?.gender || 'male',
+                weight: typeof weight === 'number' ? weight : 70,
+                genomicProfile
+            },
+            systemicRiskScore: risk,
+            confidenceScore: result?.confidence_score ?? 94.6,
+            uncertaintyMargin: result?.uncertainty_margin ?? 4.2,
+            organToxicities: toxicities,
+            triageVerdict: verdict,
+            validationStatus: 'In-Silico Complete',
+            notes,
+            simulationData: result
+        };
+
+        saveExperiment(newDossier);
+    }, [result, compareMode, activeTab, diseaseName, drugName, drugName2, dosage, route, age, user, weight, genomicProfile, saveExperiment]);
 
     const [viewMode, setViewMode] = useState<'BODY' | 'SKELETON' | 'ORGANS' | 'MUSCLES' | 'NERVOUS_GLB'>('BODY');
 
@@ -505,7 +594,48 @@ export const DrugImpactVisualizer = () => {
     const [newDrugInput, setNewDrugInput] = useState('');
     const [newFoodInput, setNewFoodInput] = useState('');
     const [newDiseaseInput, setNewDiseaseInput] = useState('');
-    const [isInteractionMode, setIsInteractionMode] = useState(false);
+    const isInteractionMode = drugDetailTab === 'interaction';
+    const setIsInteractionMode = (val: boolean) => setDrugDetailTab(val ? 'interaction' : 'biomap');
+
+    // Molecular Enhancement Simulation Handlers
+    const handleApplyEnhancement = useCallback((enhancement: MolecularEnhancementProposal) => {
+        if (!result) return;
+        const enhanced = applyMolecularEnhancement(result, enhancement);
+        setResult(enhanced);
+    }, [result]);
+
+    const handleRevertEnhancement = useCallback(() => {
+        if (!result) return;
+        const parentKey = (result.parent_drug_name || result.drug_name).toLowerCase();
+        if (PRESET_SYNTHESIS_DB[parentKey]) {
+            setResult(JSON.parse(JSON.stringify(PRESET_SYNTHESIS_DB[parentKey])));
+        } else if (result.parent_drug_name) {
+            handleAnalyze(result.parent_drug_name);
+        }
+    }, [result]);
+
+    const handleSelectMolecularPreset = async (presetId: string) => {
+        setSelectedPresetStructure(presetId);
+        const card = PRESET_MOLECULAR_CARDS.find(c => c.id === presetId);
+        if (!card) return;
+        setDrugName(card.name);
+        const svgDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(card.svgFormula)}`;
+        setImagePreview(svgDataUrl);
+        setIsLoading(true);
+        setError(null);
+        setSelectedOrgan(null);
+        try {
+            const res = await analyzeDrugSynthesis('preset:' + presetId, `${dosage}mg`, age || undefined, route, weight || undefined);
+            if (res) {
+                setResult(res);
+                setDrugDetailTab('synthesis');
+            }
+        } catch (err) {
+            console.error("Molecular Preset scan failed", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Voice Command State
     const [isListening, setIsListening] = useState(false);
@@ -743,6 +873,18 @@ export const DrugImpactVisualizer = () => {
                     genomicProfile
                 );
                 if (res) {
+                    const matchedKey = Object.keys(PRESET_SYNTHESIS_DB).find(k => 
+                        targetDrug.toLowerCase().includes(k) || k.includes(targetDrug.toLowerCase())
+                    );
+                    if (matchedKey && (!res.synthesis_pathway || !res.enhancement_proposals?.length)) {
+                        const preset = PRESET_SYNTHESIS_DB[matchedKey];
+                        res.synthesis_pathway = res.synthesis_pathway || preset.synthesis_pathway;
+                        res.enhancement_proposals = res.enhancement_proposals || preset.enhancement_proposals;
+                        res.chemical_formula = res.chemical_formula || preset.chemical_formula;
+                        res.iupac_name = res.iupac_name || preset.iupac_name;
+                        res.smiles_string = res.smiles_string || preset.smiles_string;
+                        res.functional_groups = res.functional_groups || preset.functional_groups;
+                    }
                     setResult(res);
                 }
             } catch (err) {
@@ -768,6 +910,7 @@ export const DrugImpactVisualizer = () => {
                     setResult(res);
                     // Update drugname so the UI header matches the inferred drug
                     setDrugName(res.drug_name || 'Inferred Structure');
+                    setDrugDetailTab('synthesis');
                 }
             } catch (err) {
                 console.error("Image Analysis failed", err);
@@ -1338,7 +1481,7 @@ This document is a simulated educational clinical report.
                 {/* Space Grid Overlay */}
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,_transparent_1px),_linear-gradient(90deg,_rgba(255,255,255,0.02)_1px,_transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] opacity-30" />
                 {/* Noise texture overlay */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none" />
                 {/* Glow Spheres */}
                 <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-r from-rose-500/10 to-transparent rounded-full blur-[140px] -translate-x-1/2 -translate-y-1/2 animate-[pulse_6s_ease-in-out_infinite]" />
                 <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-gradient-to-l from-purple-500/10 to-transparent rounded-full blur-[140px] translate-x-1/2 -translate-y-1/2 animate-[pulse_8s_ease-in-out_infinite_1s]" />
@@ -1362,25 +1505,44 @@ This document is a simulated educational clinical report.
                         </button>
                         <div>
                             <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
-                                <Brain className="text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)] animate-pulse" size={20} />
-                                <span>{activeTab === 'drug' ? 'Drug' : 'Disease'}</span>{' '}
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-purple-400 to-indigo-400 font-extrabold">
-                                    {activeTab === 'drug' ? 'Impact Visualizer' : 'Injection Simulator'}
+                                <Brain className="text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)] animate-pulse" size={20} />
+                                <span>{activeTab === 'drug' ? 'Pharmacological Twin' : 'Emerging Pathogen'}</span>{' '}
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-blue-400 font-extrabold">
+                                    {activeTab === 'drug' ? 'In-Silico Visualizer' : 'Computational Lab'}
                                 </span>
                             </h1>
-                            <p className="text-[10px] text-blue-300/40 uppercase tracking-widest font-bold mt-0.5">
-                                {activeTab === 'drug' ? 'AI-powered 3D pharmacological bio-heatmap' : 'Real-time pathogen spread simulation'}
+                            <p className="text-[10px] text-teal-300/60 uppercase tracking-widest font-mono font-bold mt-0.5">
+                                {activeTab === 'drug' ? 'Virtual Human 3D ADME & Multi-Organ Toxicity Model' : 'Safe Emerging Disease & Antiviral/Vaccine Screening Model'}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 no-print">
+                    <div className="flex items-center gap-3 no-print">
+                        {/* Instant Simulation Deconstruction & Guide */}
+                        <button
+                            onClick={() => setIsExplainerOpen(true)}
+                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-gradient-to-r from-teal-500/25 via-cyan-500/25 to-blue-500/25 border border-teal-400/50 text-teal-200 hover:text-white shadow-[0_0_15px_rgba(45,212,191,0.25)] flex items-center gap-1.5 cursor-pointer"
+                            title="Deconstruct & Understand this simulation in plain English"
+                        >
+                            <span>💡</span>
+                            <span className="hidden sm:inline">Deconstruct Run</span>
+                        </button>
+
+                        <button
+                            onClick={() => openGuide('overview')}
+                            className="px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 shadow-md flex items-center gap-1.5 cursor-pointer"
+                            title="Open System Architecture & How BioTwin Works Guide"
+                        >
+                            <span>📖</span>
+                            <span className="hidden md:inline">Architecture Guide</span>
+                        </button>
+
                         {activeTab === 'drug' && (
                             <>
                                 <HeatmapLegend />
                                 <button
                                     onClick={() => { setCompareMode(v => !v); setResult2(null); setDrugName2(''); }}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all duration-300 hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5
+                                    className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all duration-300 hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer
                                         ${compareMode
                                             ? 'bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
                                             : 'bg-white/[0.03] border-white/10 text-white/60 hover:text-white hover:border-white/20'}`}>
@@ -1389,14 +1551,42 @@ This document is a simulated educational clinical report.
                             </>
                         )}
                         <button
+                            onClick={() => setIsSaveModalOpen(true)}
+                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-teal-500/20 border border-teal-500/40 text-teal-300 hover:bg-teal-500/30 shadow-lg flex items-center gap-1.5 cursor-pointer"
+                            title="Save current simulation to Experiment Dossier"
+                        >
+                            <span>💾</span> Save Run
+                        </button>
+                        <button
+                            onClick={() => setIsDossierDrawerOpen(true)}
+                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/15 text-gray-200 hover:text-white hover:bg-white/10 shadow-lg flex items-center gap-1.5 cursor-pointer"
+                            title="View all saved experiment dossiers"
+                        >
+                            <span>📁</span> Dossiers ({savedExperiments.length})
+                        </button>
+                        <button
                             onClick={() => window.print()}
-                            className="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 shadow-lg flex items-center gap-1.5">
-                            <span>📄</span> Export PDF
+                            className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.03] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 shadow-lg flex items-center gap-1.5 cursor-pointer">
+                            <span>📄</span> PDF
                         </button>
                     </div>
                 </div>
 
                 {/* ── Main Layout ──────────────────────────────────────────── */}
+                {activeTab === 'disease' && (
+                    <div className="bg-emerald-950/40 border-b border-emerald-500/20 px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-200 no-print">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span className="font-bold uppercase tracking-wider text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">Safe In-Silico Disease Lab</span>
+                            <span>Computational pathogen spread dynamics and therapeutic screening model. Zero physical bio-hazard.</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-[11px] font-mono text-emerald-300">
+                            <span>Infectivity R₀: {mutatorInfectivity.toFixed(1)}</span>
+                            <span>Incubation: {mutatorIncubationSpeed}x</span>
+                            <span>Immune Resilience: {mutatorImmuneStrength}%</span>
+                        </div>
+                    </div>
+                )}
                 {activeTab === 'disease' ? (
                     /* ═══════════════════════════════════════════════════════════
                        DISEASE INJECTION SIMULATOR
@@ -1564,7 +1754,7 @@ This document is a simulated educational clinical report.
 
                         {/* CENTER — 3D Body View */}
                         <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black">
-                            <ErrorBoundary fallbackTitle="Disease View 3D Error">
+                            <ErrorBoundary fallbackTitle="Disease View 3D Error" onReset={() => setViewMode('BODY')}>
                                 <DrugHeatmap3D
                                     effects={cureProgress > 0 ? treatedHeatmapEffects : diseaseHeatmapEffects}
                                     selectedOrgan={diseaseSelectedOrgan}
@@ -1597,6 +1787,24 @@ This document is a simulated educational clinical report.
                                 }}
                                 onToggleView={cycleNextViewMode}
                             />
+
+                            {/* Floating Deconstruction & Understanding Pill */}
+                            <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-auto no-print">
+                                <button
+                                    onClick={() => setIsExplainerOpen(true)}
+                                    className="px-3.5 py-2 rounded-xl bg-[#070e1b]/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-emerald-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 text-xs font-bold cursor-pointer"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span>💡 Deconstruct Infection Simulation</span>
+                                </button>
+                                <button
+                                    onClick={() => openGuide('pipeline')}
+                                    className="px-2.5 py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-xs font-mono cursor-pointer flex items-center gap-1"
+                                    title="View Simulation Pipeline"
+                                >
+                                    <span>Pipeline ↗</span>
+                                </button>
+                            </div>
 
                             {/* Organ Pathology Diagnostics HUD Overlay */}
                             {diseaseSelectedOrgan && diseaseResult && (
@@ -2679,26 +2887,83 @@ This document is a simulated educational clinical report.
                                             />
                                         </div>
                                     ) : (
-                                        <div>
-                                            <label className="block text-[10px] font-bold text-blue-300/60 uppercase tracking-widest mb-2">Molecular Formula</label>
-                                            <div className="relative border border-dashed border-white/15 rounded-2xl bg-black/40 hover:bg-white/[0.04] transition-all duration-300 group">
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleImageUpload}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                />
-                                                <div className="p-6 flex flex-col items-center justify-center text-center">
-                                                    {imagePreview ? (
-                                                        <div className="relative">
-                                                            <img src={imagePreview} alt="Formula" className="h-20 object-contain rounded-lg mb-2 opacity-90 mix-blend-screen" />
-                                                        </div>
-                                                    ) : (
-                                                        <Camera size={26} className="text-white/20 mb-2.5 group-hover:text-rose-400 group-hover:scale-110 transition-transform" />
-                                                    )}
-                                                    <p className="text-xs font-bold text-white/50">
-                                                        {imageFile ? imageFile.name : 'Upload chemical image'}
-                                                    </p>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <label className="text-[10px] font-bold text-blue-300/70 uppercase tracking-widest flex items-center gap-1.5">
+                                                        <Sparkles size={12} className="text-rose-400" /> Curated Chemical Scaffolds
+                                                    </label>
+                                                    <span className="text-[9px] font-semibold text-white/30">1-Click Scan</span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {PRESET_MOLECULAR_CARDS.map((card) => {
+                                                        const isSelected = selectedPresetStructure === card.id;
+                                                        return (
+                                                            <button
+                                                                key={card.id}
+                                                                type="button"
+                                                                onClick={() => handleSelectMolecularPreset(card.id)}
+                                                                className={`p-2.5 rounded-xl border text-left transition-all duration-200 relative overflow-hidden group flex flex-col justify-between ${
+                                                                    isSelected
+                                                                        ? 'bg-rose-500/15 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.25)] ring-1 ring-rose-500/40'
+                                                                        : 'bg-black/50 border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
+                                                                }`}
+                                                            >
+                                                                <div className="h-10 w-full mb-1 flex items-center justify-center overflow-hidden opacity-85 group-hover:opacity-100 transition-opacity">
+                                                                    <div 
+                                                                        dangerouslySetInnerHTML={{ __html: card.svgFormula }} 
+                                                                        className="h-full w-full max-w-[125px] flex items-center justify-center" 
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="flex items-center justify-between gap-1">
+                                                                        <span className="text-xs font-bold text-white truncate">{card.name}</span>
+                                                                        <span className="text-[10px] font-mono font-bold text-rose-300 flex-shrink-0">{card.formula}</span>
+                                                                    </div>
+                                                                    <span className="text-[8px] font-semibold text-emerald-400/90 block truncate mt-0.5">
+                                                                        🛡️ {card.targetOrganSparing}
+                                                                    </span>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-blue-300/70 uppercase tracking-widest mb-1.5">
+                                                    Custom Chemical Diagram / Scheme
+                                                </label>
+                                                <div className="relative border border-dashed border-white/15 rounded-2xl bg-black/40 hover:bg-white/[0.04] transition-all duration-300 group overflow-hidden">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleImageUpload}
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                    />
+                                                    <div className="p-4 flex flex-col items-center justify-center text-center">
+                                                        {imagePreview ? (
+                                                            <div className="relative w-full flex flex-col items-center">
+                                                                {imagePreview.startsWith('data:image/svg') ? (
+                                                                    <div className="h-16 w-full max-w-[180px] flex items-center justify-center opacity-95 mb-1.5 p-1 bg-white/[0.02] rounded-lg border border-white/5">
+                                                                        <img src={imagePreview} alt="Chemical Scaffold" className="h-full object-contain" />
+                                                                    </div>
+                                                                ) : (
+                                                                    <img src={imagePreview} alt="Formula" className="h-16 object-contain rounded-lg mb-1.5 opacity-90 mix-blend-screen" />
+                                                                )}
+                                                                <p className="text-[10px] font-mono text-emerald-300 font-bold flex items-center gap-1">
+                                                                    <Check size={11} />
+                                                                    {imageFile ? imageFile.name : `${selectedPresetStructure ? selectedPresetStructure.toUpperCase() : 'Molecular'} Structure Ready`}
+                                                                </p>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <Camera size={22} className="text-white/25 mb-1.5 group-hover:text-rose-400 group-hover:scale-110 transition-transform" />
+                                                                <p className="text-xs font-bold text-white/60">Upload structure or Chemdraw scan</p>
+                                                                <p className="text-[9px] text-white/30 mt-0.5">PNG, JPG, SVG or textbook reaction scheme</p>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -2824,17 +3089,19 @@ This document is a simulated educational clinical report.
 
                                     {/* Primary Run Button */}
                                     <button
-                                        onClick={handleAnalyze}
-                                        disabled={isLoading || (analysisMode === 'text' ? !drugName.trim() : !imageFile)}
+                                        onClick={() => handleAnalyze()}
+                                        disabled={isLoading || (analysisMode === 'text' ? !drugName.trim() : !imagePreview)}
                                         className="w-full py-3.5 bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 hover:from-rose-500 hover:to-pink-400 disabled:opacity-40 disabled:cursor-not-allowed rounded-2xl font-black uppercase tracking-widest text-white shadow-lg shadow-rose-500/20 transition-all text-xs flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-98"
                                     >
                                         {isLoading ? (
                                             <span className="flex items-center gap-2 animate-pulse">
                                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                Sequencing...
+                                                {analysisMode === 'image' ? 'Synthesizing & Mapping...' : 'Sequencing...'}
                                             </span>
+                                        ) : analysisMode === 'image' ? (
+                                            <>⚡ Scan Molecular Structure & Synthesize</>
                                         ) : (
-                                            <>🧬 Run AI Pharmacology Scan</>
+                                            <>🧬 Run In-Silico Trial</>
                                         )}
                                     </button>
 
@@ -2909,24 +3176,6 @@ This document is a simulated educational clinical report.
                                         🫀 Organs
                                     </button>
                                 </div>
-                                <button
-                                    onClick={() => setDebugRegions(v => !v)}
-                                    className={`px-3 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border backdrop-blur-xl shadow-2xl
-                                        ${debugRegions
-                                            ? 'bg-amber-500 border-amber-400 text-slate-950 shadow-lg shadow-amber-500/20'
-                                            : 'bg-slate-950/80 border-white/10 text-white/40 hover:text-white'}`}
-                                >
-                                    🛠 Debug Regions
-                                </button>
-                                <button
-                                    onClick={() => setCalibrationMode(v => !v)}
-                                    className={`px-3 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border backdrop-blur-xl shadow-2xl
-                                        ${calibrationMode
-                                            ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20'
-                                            : 'bg-slate-950/80 border-white/10 text-white/40 hover:text-white'}`}
-                                >
-                                    🎯 Calibrate Landmarks
-                                </button>
                             </div>
 
                             {/* Temporal Scrubbing Control */}
@@ -2963,7 +3212,7 @@ This document is a simulated educational clinical report.
                                             {result.drug_name}
                                         </div>
                                     )}
-                                    <ErrorBoundary fallbackTitle="Pharmacology 3D Error">
+                                    <ErrorBoundary fallbackTitle="Pharmacology 3D Error" onReset={() => setViewMode('BODY')}>
                                         <DrugHeatmap3D
                                             effects={isInteractionMode ? interactionHeatmapEffects : uniqueEffects}
                                             selectedOrgan={selectedOrgan}
@@ -2996,6 +3245,25 @@ This document is a simulated educational clinical report.
                                         }}
                                         onToggleView={cycleNextViewMode}
                                     />
+
+                                    {/* Floating Deconstruction & Understanding Pill */}
+                                    <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-auto no-print">
+                                        <button
+                                            onClick={() => setIsExplainerOpen(true)}
+                                            className="px-3.5 py-2 rounded-xl bg-[#070e1b]/90 hover:bg-teal-950/90 border border-teal-500/40 hover:border-teal-300 text-teal-300 hover:text-white backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 text-xs font-bold cursor-pointer"
+                                        >
+                                            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                                            <span>💡 Deconstruct This Simulation</span>
+                                        </button>
+                                        <button
+                                            onClick={() => openGuide('layers')}
+                                            className="px-2.5 py-2 rounded-xl bg-[#070e1b]/80 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white backdrop-blur-md transition-all text-xs font-mono cursor-pointer flex items-center gap-1"
+                                            title="What does each 3D anatomical layer reveal?"
+                                        >
+                                            <span>3D Layers Guide</span>
+                                            <span>↗</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Compare view */}
@@ -3006,7 +3274,7 @@ This document is a simulated educational clinical report.
                                                 {result2.drug_name}
                                             </div>
                                         )}
-                                        <ErrorBoundary fallbackTitle="Compare 3D View Error">
+                                        <ErrorBoundary fallbackTitle="Compare 3D View Error" onReset={() => setViewMode('BODY')}>
                                             <DrugHeatmap3D
                                                 effects={uniqueEffects2}
                                                 selectedOrgan={selectedOrgan}
@@ -3053,26 +3321,36 @@ This document is a simulated educational clinical report.
 
                             {activeTab === 'drug' && (
                                 <div className="flex-shrink-0 px-4 pb-3 pt-1 border-b border-white/5 bg-white/[0.01]">
-                                    <div className="flex bg-black/45 rounded-xl p-1 border border-white/5">
+                                    <div className="flex bg-black/45 rounded-xl p-1 border border-white/5 gap-1">
                                         <button
-                                            onClick={() => setIsInteractionMode(false)}
+                                            onClick={() => setDrugDetailTab('biomap')}
                                             className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1
-                                                ${!isInteractionMode ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20' : 'text-white/40 hover:text-white'}`}
+                                                ${drugDetailTab === 'biomap' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}
                                         >
                                             💊 Bio-Map details
                                         </button>
                                         <button
-                                            onClick={() => setIsInteractionMode(true)}
-                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1
-                                                ${isInteractionMode ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20' : 'text-white/40 hover:text-white'}`}
+                                            onClick={() => setDrugDetailTab('synthesis')}
+                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1 relative
+                                                ${drugDetailTab === 'synthesis' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.15)]' : 'text-white/40 hover:text-white'}`}
                                         >
-                                            🧬 Interaction matrix
+                                            🧪 Synthesis & SAR
+                                            {result?.synthesis_pathway && (
+                                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => setDrugDetailTab('interaction')}
+                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1
+                                                ${drugDetailTab === 'interaction' ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}
+                                        >
+                                            🧬 Interaction Matrix
                                         </button>
                                     </div>
                                 </div>
                             )}
 
-                            {isInteractionMode ? (
+                            {drugDetailTab === 'interaction' ? (
                                 <InteractionCheckerPanel
                                     result={interactionResult}
                                     isLoading={isCheckingInteractions}
@@ -3082,8 +3360,26 @@ This document is a simulated educational clinical report.
                                     foods={interactionFoods}
                                     diseases={interactionDiseases}
                                 />
+                            ) : drugDetailTab === 'synthesis' && result ? (
+                                <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar space-y-3">
+                                    <ChemicalSynthesisConsole
+                                        result={result}
+                                        onApplyEnhancement={handleApplyEnhancement}
+                                        onRevertEnhancement={handleRevertEnhancement}
+                                    />
+                                </div>
                             ) : result ? (
-                                <>
+                                <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar space-y-3">
+                                    <ResearchTriageCard
+                                        result={result}
+                                        result2={result2}
+                                        compareMode={compareMode}
+                                        drugName={result.drug_name || drugName}
+                                        drugName2={result2?.drug_name || drugName2}
+                                        onOpenSaveModal={() => setIsSaveModalOpen(true)}
+                                        onOpenDossierHistory={() => setIsDossierDrawerOpen(true)}
+                                        dossierCount={savedExperiments.length}
+                                    />
                                     <DrugOrganPanel
                                         effects={uniqueEffects}
                                         mechanism={result.mechanism || 'Mechanism details not available.'}
@@ -3104,7 +3400,7 @@ This document is a simulated educational clinical report.
 
                                     {/* Genomic Warnings Rendering */}
                                     {result.genomic_warnings && result.genomic_warnings.length > 0 && (
-                                        <div className="absolute bottom-4 left-4 right-4 bg-rose-950/90 border border-rose-500/30 p-4 rounded-2xl shadow-[0_10px_35px_rgba(244,63,94,0.15)] backdrop-blur-xl animate-fade-in-up">
+                                        <div className="bg-rose-950/90 border border-rose-500/30 p-4 rounded-2xl shadow-[0_10px_35px_rgba(244,63,94,0.15)] backdrop-blur-xl animate-fade-in-up">
                                             <h4 className="text-[10px] font-black text-rose-300 uppercase tracking-widest flex items-center gap-1.5 mb-2">
                                                 <span>🧬</span> Pharmacogenomic Alert
                                             </h4>
@@ -3118,7 +3414,7 @@ This document is a simulated educational clinical report.
                                             </ul>
                                         </div>
                                     )}
-                                </>
+                                </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-white/[0.01]">
                                     <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-center mb-5 text-3xl shadow-lg">💊</div>
@@ -3223,6 +3519,63 @@ This document is a simulated educational clinical report.
                     div[class*="z-0"] { display: none !important; }
                 }
             `}</style>
+
+            {/* Save Experiment Modal */}
+            <SaveExperimentModal
+                isOpen={isSaveModalOpen}
+                onClose={() => setIsSaveModalOpen(false)}
+                onSave={handleSaveCurrentExperiment}
+                defaultTitle={`Preclinical In-Silico Trial: ${activeTab === 'disease' ? diseaseName : drugName} (${dosage}mg ${route})`}
+                drugName={activeTab === 'disease' ? diseaseName : drugName}
+            />
+
+            {/* Dossier History Drawer */}
+            <DossierHistoryDrawer
+                isOpen={isDossierDrawerOpen}
+                onClose={() => setIsDossierDrawerOpen(false)}
+                dossiers={savedExperiments}
+                onLoad={(dossier) => {
+                    if (dossier.type === 'DRUG_SIMULATION' || dossier.type === 'DRUG_COMPARISON') {
+                        setActiveTab('drug');
+                        setDrugName(dossier.targetCompound);
+                        if (dossier.secondaryCompound) {
+                            setCompareMode(true);
+                            setDrugName2(dossier.secondaryCompound);
+                        } else {
+                            setCompareMode(false);
+                        }
+                        if (dossier.cohort) {
+                            if (dossier.cohort.age) setAge(dossier.cohort.age);
+                            if (dossier.cohort.weight) setWeight(dossier.cohort.weight);
+                            if (dossier.cohort.genomicProfile) setGenomicProfile(dossier.cohort.genomicProfile);
+                        }
+                        if (dossier.route) setRoute(dossier.route);
+                        if (dossier.simulationData) {
+                            setResult(dossier.simulationData);
+                        } else if (PRESET_PHARMA_CACHE[dossier.targetCompound]) {
+                            setResult(PRESET_PHARMA_CACHE[dossier.targetCompound]);
+                        }
+                    } else if (dossier.type === 'DISEASE_PATHOGEN_SIMULATION') {
+                        setActiveTab('disease');
+                        setDiseaseName(dossier.targetCompound);
+                    }
+                }}
+                onDelete={deleteExperiment}
+            />
+
+            {/* In-Context Simulation Deconstruction & Scientific Rationale Explainer */}
+            <SimulationExplainerModal
+                isOpen={isExplainerOpen}
+                onClose={() => setIsExplainerOpen(false)}
+                drugResult={result}
+                diseaseResult={diseaseResult}
+                mode={activeTab}
+                user={user}
+                onOpenFullGuide={(tab) => {
+                    setIsExplainerOpen(false);
+                    openGuide(tab);
+                }}
+            />
         </div>
     );
 };

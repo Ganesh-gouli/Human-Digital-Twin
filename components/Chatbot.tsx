@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ICONS, LANGUAGES } from '../constants';
-import { Page, ChatMessage, UserProfile, DailyLog, ReportAnalysis } from '../types';
-import { getDashboardChatConfig, getReportChatConfig, initializeLiveChat } from '../services/geminiService';
+import { Page, ChatMessage, UserProfile, DailyLog } from '../types';
+import { getDashboardChatConfig, initializeLiveChat } from '../services/geminiService';
 import { getErrorMessage } from '../utils/helpers';
 import { decode, decodeAudioData, createBlob } from '../services/helpers';
 import { GoogleGenAI, Chat, LiveServerMessage } from '@google/genai';
@@ -12,7 +12,7 @@ interface ChatbotProps {
     isOpen: boolean;
     onClose: () => void;
     user: UserProfile;
-    contextData: { dailyLog?: DailyLog, reportAnalysis?: ReportAnalysis };
+    contextData: { dailyLog?: DailyLog };
     language: string;
     setLanguage: (lang: string) => void;
     mode: 'dashboard' | 'report';
@@ -20,29 +20,21 @@ interface ChatbotProps {
 }
 
 const QUICK_ACTIONS = [
-    "Summarize my day",
-    "Show my diet plan",
-    "Analyze my latest report",
-    "Find nearby clinics",
-    "What is my BMI?",
-    "Suggest a healthy snack",
-    "My daily calorie goal?",
-    "Suggest a workout",
-    "How to lose weight?",
-    "How to gain weight?",
-    "Check my report status",
-    "Help me relax",
-    "Start a voice chat",
-    "Show exercise guide"
+    "Predict organ toxicity for Doxorubicin",
+    "Explain CYP450 2D6 metabolizer impact",
+    "Compare Ibuprofen vs Aspirin renal safety",
+    "Simulate pandemic pathogen organ spread",
+    "Explain in-silico preclinical validation rules",
+    "Evaluate cardiotoxic QT prolongation risk",
+    "Summarize active virtual twin parameters",
+    "How does in-silico screening protect animals?",
+    "Explain mRNA vaccine codon simulation"
 ];
 
 const PAGE_NAME_MAP: Record<string, string> = {
-    DIET_PLANNER: 'Personalized Diet Plan',
-    REPORT_ANALYZER: 'Medical Report Analyzer',
-    CALORIE_COUNTER: 'AI Calorie Counter',
-    EXERCISE_CORNER: 'Exercise Corner',
-    TODAYS_GOAL: 'Today\'s Goal',
-    LOCATION_TRACKER: 'Nearby Health Services',
+    DRUG_VISUALIZER: '3D Human Digital Twin Lab',
+    DASHBOARD: 'Executive Research Hub',
+    EDIT_PROFILE: 'Calibrate Virtual Subject'
 };
 
 const parseModelResponse = (text: string) => {
@@ -166,14 +158,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, user, contextData, l
             return;
         }
 
-        let config;
-        if (mode === 'dashboard' && contextData.dailyLog) {
-            config = getDashboardChatConfig(user, contextData.dailyLog, language);
-        } else if (mode === 'report' && contextData.reportAnalysis) {
-            config = getReportChatConfig(contextData.reportAnalysis, user, language);
-        } else {
-            return;
-        }
+        const config = getDashboardChatConfig(user, contextData.dailyLog, language);
 
         setSystemInstruction(config.systemInstruction);
 

@@ -10,6 +10,8 @@ import { LandmarkIndicators, CalibrationMode } from './LandmarkIndicator';
 
 // Preload GLB models globally to prevent reloading on component re-mount
 try {
+    useGLTF.preload('/skeleton.glb');
+    useGLTF.preload('/inner_organs.glb');
     useGLTF.preload('/Inner organs.glb');
     useGLTF.preload('/human_anatomy_by_tripo.glb');
     useGLTF.preload('/nervous.glb');
@@ -1187,50 +1189,55 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
 });
 
 const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, visible = true }) => {
-    const obj = useLoader(OBJLoader, '/skeleton.obj');
+    const { scene } = useGLTF('/skeleton.glb');
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
 
-    const registry = useAnatomyHighlighter(obj, effects, isGlassMode);
+    const clonedScene = useMemo(() => {
+        const cloned = SkeletonUtils.clone(scene);
+        return cloned;
+    }, [scene]);
+
+    const registry = useAnatomyHighlighter(clonedScene, effects, isGlassMode);
 
     const mat = useMemo(() => {
         return new THREE.MeshStandardMaterial({
-            color: new THREE.Color('#e0e0e0'),
-            roughness: 0.8,
+            color: new THREE.Color('#e8ecf0'),
+            roughness: 0.6,
             metalness: 0.1,
             wireframe: false,
             transparent: true,
-            opacity: isGlassMode ? 0.3 : 1.0,
+            opacity: isGlassMode ? 0.35 : 1.0,
             side: THREE.DoubleSide
         });
     }, [isGlassMode]);
 
     useMemo(() => {
-        obj.traverse(child => {
+        clonedScene.traverse(child => {
             const mesh = child as THREE.Mesh;
             if (!mesh.isMesh) return;
             mesh.material = mat;
             mesh.castShadow = true;
             mesh.receiveShadow = true;
         });
-    }, [obj, mat]);
+    }, [clonedScene, mat]);
 
     useEffect(() => {
-        obj.position.set(0, 0, 0);
-        obj.scale.setScalar(1);
-        obj.updateMatrixWorld();
+        clonedScene.position.set(0, 0, 0);
+        clonedScene.scale.setScalar(1);
+        clonedScene.updateMatrixWorld();
 
-        const box = new THREE.Box3().setFromObject(obj);
+        const box = new THREE.Box3().setFromObject(clonedScene);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
         const maxDim = Math.max(size.x, size.y, size.z);
         const s = 4.0 / (maxDim || 1);
-        obj.scale.setScalar(s);
+        clonedScene.scale.setScalar(s);
 
-        obj.position.set(-center.x * s, -center.y * s, -center.z * s);
-        obj.updateMatrixWorld();
-    }, [obj]);
+        clonedScene.position.set(-center.x * s, -center.y * s, -center.z * s);
+        clonedScene.updateMatrixWorld();
+    }, [clonedScene]);
 
     const getOrgan = useCallback((e: PointerEvent): string | null => {
         const rect = gl.domElement.getBoundingClientRect();
@@ -1240,7 +1247,7 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
         );
         raycaster.setFromCamera(mouse, camera);
         const hits: THREE.Intersection[] = [];
-        obj.traverse(c => { if ((c as THREE.Mesh).isMesh) hits.push(...raycaster.intersectObject(c, false)); });
+        clonedScene.traverse(c => { if ((c as THREE.Mesh).isMesh) hits.push(...raycaster.intersectObject(c, false)); });
         if (!hits.length) return null;
         hits.sort((a, b) => a.distance - b.distance);
         const hitMesh = hits[0].object;
@@ -1251,7 +1258,7 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
             }
         }
         return null;
-    }, [obj, camera, raycaster, gl, registry]);
+    }, [clonedScene, camera, raycaster, gl, registry]);
 
     useEffect(() => {
         const el = gl.domElement;
@@ -1272,11 +1279,11 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
         };
     }, [gl, getOrgan, onOrganHover, onOrganClick]);
 
-    return <group ref={groupRef} visible={visible}><primitive object={obj} /></group>;
+    return <group ref={groupRef} visible={visible}><primitive object={clonedScene} /></group>;
 });
 
 const InnerOrgansModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, visible = true }) => {
-    const { scene } = useGLTF('/Inner organs.glb');
+    const { scene } = useGLTF('/inner_organs.glb');
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
 
@@ -1395,7 +1402,7 @@ const getMeshOnlyBoundingBox = (object: THREE.Object3D) => {
     return { box, hasMesh };
 };
 
-const normalizeModel = (model: THREE.Object3D) => {
+const normalizeModel = (model: THREE.Object3D, rotateY: number = 0) => {
     // 1. Reset target model transforms before measuring
     model.position.set(0, 0, 0);
     model.rotation.set(0, 0, 0);
@@ -1412,9 +1419,11 @@ const normalizeModel = (model: THREE.Object3D) => {
     const modelScale = targetHeight / (modelSize.y || 1);
     model.scale.setScalar(modelScale);
 
-    // Rotate target model 90 degrees around Y axis to face the camera
-    model.rotation.set(0, Math.PI / 2, 0);
-    model.updateMatrixWorld(true);
+    // Rotate target model around Y axis if required (e.g. Tripo model faces X)
+    if (rotateY !== 0) {
+        model.rotation.set(0, rotateY, 0);
+        model.updateMatrixWorld(true);
+    }
 
     // Measure the center of the rotated and scaled meshes
     const rotatedBoxResult = getMeshOnlyBoundingBox(model);
@@ -1438,7 +1447,7 @@ const MusclesModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGl
                 child.userData.isOuterBody = true;
             }
         });
-        normalizeModel(cloned);
+        normalizeModel(cloned, Math.PI / 2);
         return cloned;
     }, [gltfScene]);
 
@@ -1508,7 +1517,7 @@ const NervousGLBModel: React.FC<HumanModelProps> = React.memo(({ effects = [], i
                 mesh.receiveShadow = true;
             }
         });
-        normalizeModel(cloned);
+        normalizeModel(cloned, 0);
         return cloned;
     }, [scene]);
 
