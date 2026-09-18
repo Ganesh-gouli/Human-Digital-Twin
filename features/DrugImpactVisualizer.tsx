@@ -427,6 +427,11 @@ export const DrugImpactVisualizer = () => {
     const [isDossierDrawerOpen, setIsDossierDrawerOpen] = useState(false);
     const [isExplainerOpen, setIsExplainerOpen] = useState(false);
 
+    // ─── Mobile Responsiveness State ──────────────────────────────────
+    // Enables clean 1-tap switching on mobile phones between 3D Twin, Lab Setup, and Telemetry
+    const [mobileTab, setMobileTab] = useState<'VIEWPORT' | 'CONTROLS' | 'TELEMETRY'>('VIEWPORT');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
 
