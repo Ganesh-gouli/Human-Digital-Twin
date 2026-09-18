@@ -3533,6 +3533,7 @@ This document is a simulated educational clinical report.
                                 </div>
                             )}
                         </div>
+                    </div>
                 )}
 
                 {/* Mobile Navigation Switcher Dock (Only visible on screens < lg) */}
