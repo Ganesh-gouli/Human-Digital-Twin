@@ -540,11 +540,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, user, contextData, l
 
     const containerClasses = isEmbedded
         ? "w-full h-full flex flex-col bg-gray-50 dark:bg-gray-900 font-sans"
-        : "bg-white dark:bg-gray-900 w-full sm:w-[360px] h-[60vh] sm:h-[550px] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col pointer-events-auto border border-gray-200 dark:border-gray-800 overflow-hidden transform transition-transform duration-300 ease-in-out";
+        : "bg-white dark:bg-gray-900 w-full sm:w-[380px] h-[72vh] sm:h-[560px] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col pointer-events-auto border border-gray-200 dark:border-gray-800 overflow-hidden transform transition-transform duration-300 ease-in-out pb-safe";
 
     const wrapperClasses = isEmbedded
         ? "w-full h-full"
-        : "fixed inset-0 z-[100] flex items-end sm:items-end justify-center sm:justify-end p-0 sm:p-6 pointer-events-none font-sans";
+        : "fixed inset-0 z-[110] flex items-end justify-center sm:justify-end p-0 pb-16 sm:pb-0 sm:p-6 pointer-events-none font-sans";
 
     const content = (
         <div className={containerClasses}>
