@@ -183,7 +183,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </div>
             </header>
 
-            <main className="relative container mx-auto p-3 sm:p-4 pt-18 sm:pt-20 md:p-6 md:pt-22 pb-24 md:pb-6 z-10 max-w-7xl">
+            <main className="relative container mx-auto p-3 sm:p-4 pt-14 md:p-6 md:pt-16 pb-24 md:pb-6 z-10 max-w-7xl">
                 {children}
             </main>
 
