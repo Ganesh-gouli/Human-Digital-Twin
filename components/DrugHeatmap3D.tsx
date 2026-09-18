@@ -865,7 +865,7 @@ const CameraSetup: React.FC<{ resetCameraFlag?: number }> = ({ resetCameraFlag }
         const perspectiveCamera = camera as THREE.PerspectiveCamera;
         const fov = perspectiveCamera.fov * (Math.PI / 180);
         const distance = 4.0 / (2 * Math.tan(fov / 2));
-        camera.position.set(0, 0, distance * 1.15);
+        camera.position.set(0, 0, distance * 0.88);
         camera.lookAt(0, 0, 0);
         camera.updateProjectionMatrix();
     }, [camera, resetCameraFlag]);
