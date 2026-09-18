@@ -1478,7 +1478,7 @@ This document is a simulated educational clinical report.
     }, [diseaseResult, diseaseAge, diseaseSeverity, mutatorInfectivity, mutatorIncubationSpeed, mutatorImmuneStrength, injectedDrugs, cureProgress, injectionLog]);
 
     return (
-        <div className="drug-impact-container fixed top-[86px] sm:top-[94px] left-0 right-0 bottom-0 pb-16 md:pb-0 z-20 flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
+        <div className="drug-impact-container fixed top-[62px] sm:top-[66px] left-0 right-0 bottom-0 pb-16 md:pb-0 z-20 flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
             {/* Holographic Glowing Background Layer */}
             <div className="absolute inset-0 z-0">
                 {/* Space Grid Overlay */}
@@ -1492,39 +1492,41 @@ This document is a simulated educational clinical report.
             </div>
 
             <div className="relative z-10 flex flex-col h-full">
-                {/* ── Top Command Bar ──────────────────────────────────────────────── */}
-                <div className="flex-shrink-0 flex items-center justify-between px-3 py-3 sm:px-6 sm:py-4
-                    border-b border-white/10 bg-slate-950/40 backdrop-blur-xl shadow-2xl relative">
+                {/* ── Top Command Bar (Compact to maximize 3D canvas) ── */}
+                <div className="flex-shrink-0 flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-2
+                    border-b border-white/10 bg-slate-950/60 backdrop-blur-xl shadow-lg relative">
                     {/* Glowing bottom edge line */}
                     <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
-                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <button onClick={() => navigateTo('DASHBOARD')}
-                            className="p-2 sm:p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
-                                transition-all group flex items-center justify-center shadow-lg flex-shrink-0">
+                            className="p-1.5 sm:p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
+                                transition-all group flex items-center justify-center shadow-md flex-shrink-0"
+                            title="Back to Executive Hub"
+                        >
                             <span className="group-hover:-translate-x-0.5 block transition-transform text-white/80 group-hover:text-white">
                                 {ICONS.arrowLeft}
                             </span>
                         </button>
                         <div className="min-w-0">
-                            <h1 className="text-base sm:text-xl font-black tracking-tight flex items-center gap-2">
-                                <Brain className="text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)] animate-pulse flex-shrink-0" size={20} />
+                            <h1 className="text-xs sm:text-sm font-black tracking-tight flex items-center gap-1.5">
+                                <Brain className="text-teal-400 drop-shadow-[0_0_6px_rgba(45,212,191,0.5)] animate-pulse flex-shrink-0" size={16} />
                                 <span>{activeTab === 'drug' ? 'Pharmacological Twin' : 'Emerging Pathogen'}</span>{' '}
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-blue-400 font-extrabold">
                                     {activeTab === 'drug' ? 'In-Silico Visualizer' : 'Computational Lab'}
                                 </span>
                             </h1>
-                            <p className="text-[10px] text-teal-300/60 uppercase tracking-widest font-mono font-bold mt-0.5">
-                                {activeTab === 'drug' ? 'Virtual Human 3D ADME & Multi-Organ Toxicity Model' : 'Safe Emerging Disease & Antiviral/Vaccine Screening Model'}
+                            <p className="text-[9px] text-teal-300/50 uppercase tracking-widest font-mono font-semibold hidden md:block">
+                                {activeTab === 'drug' ? 'Virtual Human 3D ADME & Multi-Organ Toxicity Model' : 'Safe Emerging Disease & Antiviral Screening Model'}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 sm:gap-3 no-print flex-shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-2 no-print flex-shrink-0">
                         {/* Instant Simulation Deconstruction & Guide */}
                         <button
                             onClick={() => setIsExplainerOpen(true)}
-                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-gradient-to-r from-teal-500/25 via-cyan-500/25 to-blue-500/25 border border-teal-400/50 text-teal-200 hover:text-white shadow-[0_0_15px_rgba(45,212,191,0.25)] flex items-center gap-1.5 cursor-pointer"
+                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-gradient-to-r from-teal-500/25 via-cyan-500/25 to-blue-500/25 border border-teal-400/50 text-teal-200 hover:text-white shadow-[0_0_12px_rgba(45,212,191,0.25)] flex items-center gap-1 cursor-pointer"
                             title="Deconstruct & Understand this simulation in plain English"
                         >
                             <span>💡</span>
@@ -1534,7 +1536,7 @@ This document is a simulated educational clinical report.
 
                         <button
                             onClick={() => openGuide('overview')}
-                            className="px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 shadow-md flex items-center gap-1.5 cursor-pointer"
+                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 shadow-sm flex items-center gap-1 cursor-pointer"
                             title="Open System Architecture & How BioTwin Works Guide"
                         >
                             <span>📖</span>
@@ -1544,14 +1546,14 @@ This document is a simulated educational clinical report.
 
                         {activeTab === 'drug' && (
                             <>
-                                <div className="hidden lg:block">
+                                <div className="hidden xl:block">
                                     <HeatmapLegend />
                                 </div>
                                 <button
                                     onClick={() => { setCompareMode(v => !v); setResult2(null); setDrugName2(''); }}
-                                    className={`px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all duration-300 hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer
+                                    className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider border transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm flex items-center gap-1 cursor-pointer
                                         ${compareMode
-                                            ? 'bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                                            ? 'bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.2)]'
                                             : 'bg-white/[0.03] border-white/10 text-white/60 hover:text-white hover:border-white/20'}`}>
                                     <span>⚖</span> <span className="hidden sm:inline">{compareMode ? 'Exit Compare' : 'Compare Drugs'}</span>
                                     <span className="sm:hidden">{compareMode ? 'Exit' : 'Compare'}</span>
@@ -1560,21 +1562,21 @@ This document is a simulated educational clinical report.
                         )}
                         <button
                             onClick={() => setIsSaveModalOpen(true)}
-                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-teal-500/20 border border-teal-500/40 text-teal-300 hover:bg-teal-500/30 shadow-lg flex items-center gap-1.5 cursor-pointer"
+                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-teal-500/20 border border-teal-500/40 text-teal-300 hover:bg-teal-500/30 shadow-sm flex items-center gap-1 cursor-pointer"
                             title="Save current simulation to Experiment Dossier"
                         >
                             <span>💾</span> <span className="hidden sm:inline">Save Run</span><span className="sm:hidden">Save</span>
                         </button>
                         <button
                             onClick={() => setIsDossierDrawerOpen(true)}
-                            className="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/15 text-gray-200 hover:text-white hover:bg-white/10 shadow-lg flex items-center gap-1.5 cursor-pointer"
+                            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.04] border border-white/15 text-gray-200 hover:text-white hover:bg-white/10 shadow-sm flex items-center gap-1 cursor-pointer"
                             title="View all saved experiment dossiers"
                         >
-                            <span>📁</span> Dossiers <span className="text-[10px] font-mono">({savedExperiments.length})</span>
+                            <span>📁</span> <span className="hidden md:inline">Dossiers</span> <span className="text-[10px] font-mono">({savedExperiments.length})</span>
                         </button>
                         <button
                             onClick={() => window.print()}
-                            className="hidden sm:flex px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.03] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 shadow-lg items-center gap-1.5 cursor-pointer">
+                            className="hidden sm:flex px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 bg-white/[0.03] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 shadow-sm items-center gap-1 cursor-pointer">
                             <span>📄</span> PDF
                         </button>
                     </div>
