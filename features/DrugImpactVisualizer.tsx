@@ -2781,9 +2781,9 @@ This document is a simulated educational clinical report.
                     /* ═══════════════════════════════════════════════════════════
                        DRUG IMPACT VISUALIZER
                     ═══════════════════════════════════════════════════════════ */
-                    <div className="flex flex-1 overflow-hidden">
+                    <div className="flex flex-1 overflow-hidden relative">
                         {/* LEFT PANEL — Inputs */}
-                        <div className="w-76 flex-shrink-0 flex flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print">
+                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'}`}>
                             {isInteractionMode ? (
                                 <div className="p-5 space-y-6">
                                     <div>
