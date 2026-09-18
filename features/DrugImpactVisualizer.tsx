@@ -3175,7 +3175,7 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* CENTER — 3D Viewer(s) */}
-                        <div className={`flex-1 flex flex-col ${compareMode ? 'divide-x divide-white/10' : ''} overflow-hidden relative ${mobileViewTab === 'model' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className={`flex-1 min-w-0 flex flex-col ${compareMode ? 'divide-x divide-white/10' : ''} overflow-hidden relative ${mobileViewTab === 'model' ? 'flex' : 'hidden md:flex'}`}>
                             {/* View selectors */}
                             <div className="absolute top-1 right-2 sm:right-6 left-auto z-30 flex gap-2 sm:gap-3 no-print max-w-[95vw] overflow-x-auto">
                                 <div className="flex bg-slate-950/80 rounded-2xl p-1.5 border border-white/10 backdrop-blur-xl shadow-2xl overflow-x-auto">
