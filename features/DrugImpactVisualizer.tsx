@@ -2045,18 +2045,18 @@ This document is a simulated educational clinical report.
                                 </div>
                             )}
 
-                            {/* Pathogen Timeline Scrubber (slid down to bottom edge so feet remain unobstructed) */}
+                            {/* Pathogen Timeline Scrubber (anchored to bottom-right side) */}
                             {diseaseResult && !diseaseLoading && (
                                 isScrubberCollapsed ? (
                                     <button
                                         onClick={() => setIsScrubberCollapsed(false)}
-                                        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 border border-emerald-500/40 text-emerald-300 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md shadow-xl flex items-center gap-1.5 cursor-pointer hover:bg-slate-900 transition-all no-print"
+                                        className="absolute bottom-2 sm:bottom-4 right-3 sm:right-6 z-30 bg-slate-950/90 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-full text-[10px] font-bold backdrop-blur-md shadow-xl flex items-center gap-1.5 cursor-pointer hover:bg-slate-900 transition-all no-print"
                                     >
                                         <span><Clock size={11} className="inline mr-1" /> Pathogen Timeline: {diseaseResult.body_impact.timeline[timelineStepIndex]?.time || 'Day 1'}</span>
                                         <span className="text-xs text-emerald-400">▲</span>
                                     </button>
                                 ) : (
-                                    <div className="absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[420px] w-[calc(100%-1.5rem)] sm:w-full no-print">
+                                    <div className="absolute bottom-2 sm:bottom-4 right-3 sm:right-6 z-30 bg-slate-950/95 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[360px] sm:w-[360px] w-[calc(100%-1.5rem)] no-print">
                                         <div className="flex items-center justify-between mb-1.5">
                                             <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
                                                 <Clock size={11} /> Pathogen Spread Timeline
@@ -3286,18 +3286,18 @@ This document is a simulated educational clinical report.
                                 </div>
                             </div>
 
-                            {/* Temporal Scrubbing Control (slid down to bottom edge so feet remain unobstructed) */}
+                            {/* Temporal Scrubbing Control (anchored to bottom-right side) */}
                             {result && result.time_based_intensity && (
                                 isScrubberCollapsed ? (
                                     <button
                                         onClick={() => setIsScrubberCollapsed(false)}
-                                        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 bg-slate-950/90 border border-sky-500/40 text-sky-300 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md shadow-xl flex items-center gap-1.5 cursor-pointer hover:bg-slate-900 transition-all no-print"
+                                        className="absolute bottom-2 sm:bottom-4 right-3 sm:right-6 z-30 bg-slate-950/90 border border-sky-500/40 text-sky-300 px-3 py-1.5 rounded-full text-[10px] font-bold backdrop-blur-md shadow-xl flex items-center gap-1.5 cursor-pointer hover:bg-slate-900 transition-all no-print"
                                     >
                                         <span>⏱ 4D Timeline: {timePhase.toUpperCase()}</span>
                                         <span className="text-xs text-sky-400">▲</span>
                                     </button>
                                 ) : (
-                                    <div className="absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-950/95 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] w-[calc(100%-1.5rem)]">
+                                    <div className="absolute bottom-2 sm:bottom-4 right-3 sm:right-6 z-30 bg-slate-950/95 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-md flex flex-col shadow-2xl shadow-black/80 max-w-[280px] sm:w-[280px] w-[calc(100%-1.5rem)]">
                                         <div className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-1 flex items-center justify-between">
                                             <span>⏱ Temporal Scrubbing (4D)</span>
                                             <div className="flex items-center gap-1.5">
