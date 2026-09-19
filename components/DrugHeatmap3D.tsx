@@ -861,6 +861,19 @@ interface HumanModelProps {
 
 const CameraSetup: React.FC<{ resetCameraFlag?: number; orbitRef?: React.RefObject<any> }> = ({ resetCameraFlag, orbitRef }) => {
     const { camera, size } = useThree();
+
+    // Continuous lock: ensure target X is ALWAYS dead-center (0) and panning is strictly disabled
+    useFrame(() => {
+        if (orbitRef?.current) {
+            if (orbitRef.current.target.x !== 0) {
+                orbitRef.current.target.x = 0;
+            }
+            if (orbitRef.current.enablePan) {
+                orbitRef.current.enablePan = false;
+            }
+        }
+    });
+
     useEffect(() => {
         const perspectiveCamera = camera as THREE.PerspectiveCamera;
         const fov = perspectiveCamera.fov * (Math.PI / 180);
@@ -868,15 +881,15 @@ const CameraSetup: React.FC<{ resetCameraFlag?: number; orbitRef?: React.RefObje
         // 1.48 zoom margin on mobile gives generous breathing room for the full model from head to toes
         const zoomMargin = isMobile ? 1.48 : 1.25;
         const distance = (4.0 / (2 * Math.tan(fov / 2))) * zoomMargin;
-        // Offset target downwards so the 3D model appears slightly higher in the viewport,
-        // leaving the foot side completely free from bottom overlays!
-        const targetY = isMobile ? -0.20 : 0;
+        // Offset target downwards so the 3D model appears nicely centered in the middle of viewport
+        const targetY = isMobile ? -0.20 : -0.15;
         camera.position.set(0, targetY, distance);
         camera.lookAt(0, targetY, 0);
         camera.updateProjectionMatrix();
 
         if (orbitRef?.current) {
             orbitRef.current.target.set(0, targetY, 0);
+            orbitRef.current.enablePan = false;
             orbitRef.current.update();
         }
     }, [camera, size.width, size.height, resetCameraFlag, orbitRef]);
@@ -885,9 +898,6 @@ const CameraSetup: React.FC<{ resetCameraFlag?: number; orbitRef?: React.RefObje
 
 const SceneRotator: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const groupRef = useRef<THREE.Group>(null);
-    useFrame(() => {
-        if (groupRef.current) groupRef.current.rotation.y += 0.002;
-    });
     return <group ref={groupRef} name="scene-rotator-group">{children}</group>;
 };
 
