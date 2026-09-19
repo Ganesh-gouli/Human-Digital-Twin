@@ -861,19 +861,6 @@ interface HumanModelProps {
 
 const CameraSetup: React.FC<{ resetCameraFlag?: number; orbitRef?: React.RefObject<any> }> = ({ resetCameraFlag, orbitRef }) => {
     const { camera, size } = useThree();
-
-    // Continuous lock: ensure target X is ALWAYS dead-center (0) and panning is strictly disabled
-    useFrame(() => {
-        if (orbitRef?.current) {
-            if (orbitRef.current.target.x !== 0) {
-                orbitRef.current.target.x = 0;
-            }
-            if (orbitRef.current.enablePan) {
-                orbitRef.current.enablePan = false;
-            }
-        }
-    });
-
     useEffect(() => {
         const perspectiveCamera = camera as THREE.PerspectiveCamera;
         const fov = perspectiveCamera.fov * (Math.PI / 180);
@@ -881,15 +868,15 @@ const CameraSetup: React.FC<{ resetCameraFlag?: number; orbitRef?: React.RefObje
         // 1.48 zoom margin on mobile gives generous breathing room for the full model from head to toes
         const zoomMargin = isMobile ? 1.48 : 1.25;
         const distance = (4.0 / (2 * Math.tan(fov / 2))) * zoomMargin;
-        // Offset target downwards so the 3D model appears nicely centered in the middle of viewport
-        const targetY = isMobile ? -0.20 : -0.15;
+        // Offset target downwards so the 3D model appears slightly higher in the viewport,
+        // leaving the foot side completely free from bottom overlays!
+        const targetY = isMobile ? -0.20 : 0;
         camera.position.set(0, targetY, distance);
         camera.lookAt(0, targetY, 0);
         camera.updateProjectionMatrix();
 
         if (orbitRef?.current) {
             orbitRef.current.target.set(0, targetY, 0);
-            orbitRef.current.enablePan = false;
             orbitRef.current.update();
         }
     }, [camera, size.width, size.height, resetCameraFlag, orbitRef]);
@@ -898,6 +885,9 @@ const CameraSetup: React.FC<{ resetCameraFlag?: number; orbitRef?: React.RefObje
 
 const SceneRotator: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const groupRef = useRef<THREE.Group>(null);
+    useFrame(() => {
+        if (groupRef.current) groupRef.current.rotation.y += 0.002;
+    });
     return <group ref={groupRef} name="scene-rotator-group">{children}</group>;
 };
 
@@ -1086,9 +1076,8 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
 
     useEffect(() => {
         obj.position.set(0, 0, 0);
-        obj.rotation.set(0, 0, 0);
         obj.scale.setScalar(1);
-        obj.updateMatrixWorld(true);
+        obj.updateMatrixWorld();
 
         const box = new THREE.Box3().setFromObject(obj);
         const center = box.getCenter(new THREE.Vector3());
@@ -1098,8 +1087,7 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
         const s = 4.0 / (maxDim || 1);
         obj.scale.setScalar(s);
 
-        // Explicitly set X to 0 to lock the model dead-center in the viewport
-        obj.position.set(0, -center.y * s, -center.z * s);
+        obj.position.set(-center.x * s, -center.y * s, -center.z * s);
         obj.updateMatrixWorld(true);
 
         // Feed geometry center and scale to shader uniforms
@@ -1258,9 +1246,8 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
         const s = 4.0 / (maxDim || 1);
         clonedScene.scale.setScalar(s);
 
-        // Explicitly lock X to 0 to maintain horizontal centering
-        clonedScene.position.set(0, -center.y * s, -center.z * s);
-        clonedScene.updateMatrixWorld(true);
+        clonedScene.position.set(-center.x * s, -center.y * s, -center.z * s);
+        clonedScene.updateMatrixWorld();
     }, [clonedScene]);
 
     const getOrgan = useCallback((e: PointerEvent): string | null => {
@@ -1326,9 +1313,8 @@ const InnerOrgansModel: React.FC<HumanModelProps> = React.memo(({ effects = [], 
         const maxDim = Math.max(size.x, size.y, size.z);
         const s = (4.0 / (maxDim || 1)) * 0.70; 
         clonedScene.scale.setScalar(s);
-        // Explicitly lock X to 0 to maintain horizontal centering
-        clonedScene.position.set(0, (-center.y * s) + 0.35, (-center.z * s) - 0.05);
-        clonedScene.updateMatrixWorld(true);
+        clonedScene.position.set(-center.x * s, (-center.y * s) + 0.35, (-center.z * s) - 0.05);
+        clonedScene.updateMatrixWorld();
     }, [clonedScene]);
 
     const getOrgan = useCallback((e: PointerEvent): string | null => {
@@ -1454,8 +1440,8 @@ const normalizeModel = (model: THREE.Object3D, rotateY: number = 0) => {
     const rotatedBoxResult = getMeshOnlyBoundingBox(model);
     const rotatedCenter = rotatedBoxResult.box.getCenter(new THREE.Vector3());
 
-    // Position it so the center of the meshes is exactly at the world origin (X locked to 0)
-    model.position.set(0, -rotatedCenter.y, -rotatedCenter.z);
+    // Position it so the center of the meshes is exactly at the world origin
+    model.position.set(-rotatedCenter.x, -rotatedCenter.y, -rotatedCenter.z);
     model.updateMatrixWorld(true);
 };
 
@@ -1806,13 +1792,13 @@ const GestureController = ({ orbitRef, rotationDelta, zoomDelta, dragDelta, rese
         controls.update();
     }, [zoomDelta, camera, orbitRef]);
 
-    // 2. Drag Logic (Strictly locked to vertical movement; X is permanently centered at 0)
+    // 2. Drag Logic
     useEffect(() => {
         if (!orbitRef.current || !dragDelta) return;
-        if (dragDelta.y !== 0) {
+        if (dragDelta.x !== 0 || dragDelta.y !== 0) {
             const controls = orbitRef.current;
-            controls.enablePan = false;
-            controls.target.x = 0;
+            controls.enablePan = true;
+            controls.target.x -= dragDelta.x * 0.05;
             controls.target.y += dragDelta.y * 0.05;
             controls.update();
         }
@@ -1841,10 +1827,9 @@ const GestureController = ({ orbitRef, rotationDelta, zoomDelta, dragDelta, rese
         const isMobile = window.innerWidth < 768;
         const zoomMargin = isMobile ? 1.48 : 1.25;
         const distance = (4.0 / (2 * Math.tan(fov / 2))) * zoomMargin;
-        const targetY = isMobile ? -0.20 : -0.15;
+        const targetY = isMobile ? -0.20 : 0;
         camera.position.set(0, targetY, distance);
         controls.target.set(0, targetY, 0);
-        controls.enablePan = false;
         camera.updateProjectionMatrix();
         controls.update();
     }, [resetFlag, camera, orbitRef]);
@@ -1878,7 +1863,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     return (
         <div className="relative w-full h-full select-none">
             {/* ── Three.js Canvas ── */}
-            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.15, 6.6], fov: 45 }}>
+            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.2, 6.6], fov: 45 }}>
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
                 {/* Lighting — exact match to MedicalModel3D */}
@@ -1966,7 +1951,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                     autoRotateSpeed={0.8}
                     enableDamping
                     dampingFactor={0.08}
-                    target={[0, -0.15, 0]}
+                    target={[0, -0.2, 0]}
                 />
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>

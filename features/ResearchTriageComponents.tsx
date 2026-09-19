@@ -78,13 +78,13 @@ export const ResearchTriageCard: React.FC<ResearchTriageProps> = ({
 
     return (
         <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0c1427] to-[#080d1a] border border-teal-500/25 shadow-2xl backdrop-blur-xl space-y-3.5 mb-4 text-white">
-            {/* Top Toolbar: Mode Switcher & Dossier Actions (Slidable horizontally on both sides) */}
-            <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-white/10 overflow-x-auto no-scrollbar scroll-smooth flex-nowrap">
+            {/* Top Toolbar: Mode Switcher & Dossier Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
                 {/* 1-Click Toggle for Normal Peoples vs Researchers */}
-                <div className="flex bg-black/60 rounded-xl p-0.5 border border-white/10 flex-shrink-0">
+                <div className="flex bg-black/60 rounded-xl p-0.5 border border-white/10">
                     <button
                         onClick={() => setIsEasyMode(true)}
-                        className={`px-3 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                        className={`px-3 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 ${
                             isEasyMode
                                 ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-md scale-[1.02]'
                                 : 'text-gray-400 hover:text-white'
@@ -96,7 +96,7 @@ export const ResearchTriageCard: React.FC<ResearchTriageProps> = ({
                     </button>
                     <button
                         onClick={() => setIsEasyMode(false)}
-                        className={`px-3 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                        className={`px-3 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 ${
                             !isEasyMode
                                 ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md scale-[1.02]'
                                 : 'text-gray-400 hover:text-white'
@@ -109,10 +109,10 @@ export const ResearchTriageCard: React.FC<ResearchTriageProps> = ({
                 </div>
 
                 {/* Save and History Actions */}
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-2">
                     <button
                         onClick={onOpenSaveModal}
-                        className="px-2.5 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 text-[11px] font-bold transition-all flex items-center gap-1 shadow-sm whitespace-nowrap"
+                        className="px-2.5 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 text-[11px] font-bold transition-all flex items-center gap-1 shadow-sm"
                         title="Save this virtual run into Experiment Dossiers"
                     >
                         <span>💾</span>
@@ -120,7 +120,7 @@ export const ResearchTriageCard: React.FC<ResearchTriageProps> = ({
                     </button>
                     <button
                         onClick={onOpenDossierHistory}
-                        className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/15 text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap"
+                        className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/15 text-[11px] font-bold transition-all flex items-center gap-1"
                         title="Open saved experiment dossiers drawer"
                     >
                         <span>📁</span>
@@ -182,21 +182,19 @@ export const ResearchTriageCard: React.FC<ResearchTriageProps> = ({
                         </p>
                     </div>
 
-                    {/* Step-by-Step Body Journey (Slidable card deck on both sides) */}
+                    {/* Step-by-Step Body Journey */}
                     <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
                             <span className="flex items-center gap-1">
                                 <span>🚶</span> How it travels through your body
                             </span>
-                            <span className="text-teal-400 font-mono text-[9px] flex items-center gap-1">
-                                3-Step Timeline <span className="text-[10px] sm:hidden">⇄ Swipe</span>
-                            </span>
+                            <span className="text-teal-400 font-mono text-[9px]">3-Step Timeline</span>
                         </div>
-                        <div className="flex sm:grid sm:grid-cols-3 gap-2 overflow-x-auto no-scrollbar scroll-smooth pb-1 pt-0.5 -mx-1 px-1 snap-x snap-mandatory">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             {plainInfo.bodyJourney.map(step => (
                                 <div
                                     key={step.stepNumber}
-                                    className="min-w-[210px] sm:min-w-0 flex-1 snap-center flex-shrink-0 p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1 shadow-sm relative overflow-hidden"
+                                    className="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1 shadow-sm relative overflow-hidden"
                                 >
                                     <div className="flex items-center justify-between">
                                         <span className="text-base">{step.icon}</span>
@@ -215,19 +213,16 @@ export const ResearchTriageCard: React.FC<ResearchTriageProps> = ({
                         </div>
                     </div>
 
-                    {/* Organ Safety Traffic Light (Slidable on both sides) */}
+                    {/* Organ Safety Traffic Light */}
                     <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                            <span className="flex items-center gap-1">
-                                <span>🚦</span> Organ Safety Guide
-                            </span>
-                            <span className="text-teal-400/70 font-mono text-[9px] sm:hidden">⇄ Swipe</span>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+                            <span>🚦</span> Organ Safety Guide
                         </div>
-                        <div className="flex sm:grid sm:grid-cols-2 gap-2 overflow-x-auto no-scrollbar scroll-smooth pb-1 pt-0.5 -mx-1 px-1 snap-x snap-mandatory">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {plainInfo.organSimpleImpact.map((org, i) => (
                                 <div
                                     key={i}
-                                    className={`min-w-[220px] sm:min-w-0 flex-1 snap-center flex-shrink-0 p-2.5 rounded-xl border flex items-start gap-2.5 ${
+                                    className={`p-2.5 rounded-xl border flex items-start gap-2.5 ${
                                         org.statusColor === 'green'
                                             ? 'bg-emerald-950/30 border-emerald-500/30'
                                             : org.statusColor === 'yellow'
