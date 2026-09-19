@@ -1086,8 +1086,9 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
 
     useEffect(() => {
         obj.position.set(0, 0, 0);
+        obj.rotation.set(0, 0, 0);
         obj.scale.setScalar(1);
-        obj.updateMatrixWorld();
+        obj.updateMatrixWorld(true);
 
         const box = new THREE.Box3().setFromObject(obj);
         const center = box.getCenter(new THREE.Vector3());
@@ -1097,7 +1098,8 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
         const s = 4.0 / (maxDim || 1);
         obj.scale.setScalar(s);
 
-        obj.position.set(-center.x * s, -center.y * s, -center.z * s);
+        // Explicitly set X to 0 to lock the model dead-center in the viewport
+        obj.position.set(0, -center.y * s, -center.z * s);
         obj.updateMatrixWorld(true);
 
         // Feed geometry center and scale to shader uniforms
