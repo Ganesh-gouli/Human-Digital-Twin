@@ -1258,8 +1258,9 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
         const s = 4.0 / (maxDim || 1);
         clonedScene.scale.setScalar(s);
 
-        clonedScene.position.set(-center.x * s, -center.y * s, -center.z * s);
-        clonedScene.updateMatrixWorld();
+        // Explicitly lock X to 0 to maintain horizontal centering
+        clonedScene.position.set(0, -center.y * s, -center.z * s);
+        clonedScene.updateMatrixWorld(true);
     }, [clonedScene]);
 
     const getOrgan = useCallback((e: PointerEvent): string | null => {
@@ -1325,8 +1326,9 @@ const InnerOrgansModel: React.FC<HumanModelProps> = React.memo(({ effects = [], 
         const maxDim = Math.max(size.x, size.y, size.z);
         const s = (4.0 / (maxDim || 1)) * 0.70; 
         clonedScene.scale.setScalar(s);
-        clonedScene.position.set(-center.x * s, (-center.y * s) + 0.35, (-center.z * s) - 0.05);
-        clonedScene.updateMatrixWorld();
+        // Explicitly lock X to 0 to maintain horizontal centering
+        clonedScene.position.set(0, (-center.y * s) + 0.35, (-center.z * s) - 0.05);
+        clonedScene.updateMatrixWorld(true);
     }, [clonedScene]);
 
     const getOrgan = useCallback((e: PointerEvent): string | null => {
@@ -1452,8 +1454,8 @@ const normalizeModel = (model: THREE.Object3D, rotateY: number = 0) => {
     const rotatedBoxResult = getMeshOnlyBoundingBox(model);
     const rotatedCenter = rotatedBoxResult.box.getCenter(new THREE.Vector3());
 
-    // Position it so the center of the meshes is exactly at the world origin
-    model.position.set(-rotatedCenter.x, -rotatedCenter.y, -rotatedCenter.z);
+    // Position it so the center of the meshes is exactly at the world origin (X locked to 0)
+    model.position.set(0, -rotatedCenter.y, -rotatedCenter.z);
     model.updateMatrixWorld(true);
 };
 
