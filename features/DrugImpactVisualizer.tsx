@@ -432,6 +432,31 @@ export const DrugImpactVisualizer = () => {
     const [mobileTab, setMobileTab] = useState<'VIEWPORT' | 'CONTROLS' | 'TELEMETRY'>('VIEWPORT');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
+    const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
+    const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
+    const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchStartX(e.touches[0].clientX);
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX === null) return;
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 55) {
+            if (diff > 0) {
+                // Swiped right -> slide towards left panel
+                if (mobileTab === 'TELEMETRY') setMobileTab('VIEWPORT');
+                else if (mobileTab === 'VIEWPORT') setMobileTab('CONTROLS');
+            } else {
+                // Swiped left -> slide towards right panel
+                if (mobileTab === 'CONTROLS') setMobileTab('VIEWPORT');
+                else if (mobileTab === 'VIEWPORT') setMobileTab('TELEMETRY');
+            }
+        }
+        setTouchStartX(null);
+    };
 
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
@@ -1494,7 +1519,7 @@ This document is a simulated educational clinical report.
                 <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-gradient-to-t from-blue-500/5 to-transparent rounded-full blur-[160px] translate-y-1/2" />
             </div>
 
-            <div className="relative z-10 flex flex-col h-full">
+            <div className="relative z-10 flex flex-col h-full" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                 {/* ── Top Command Bar ──────────────────────────────────────────────── */}
                 <div className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-4
                     border-b border-white/10 bg-slate-950/40 backdrop-blur-xl shadow-2xl relative">
@@ -1681,12 +1706,49 @@ This document is a simulated educational clinical report.
                        DISEASE INJECTION SIMULATOR
                     ═══════════════════════════════════════════════════════════ */
                     <div className="flex flex-1 overflow-hidden relative">
+                        {/* Floating Tab to expand Left Panel when collapsed (Desktop) */}
+                        {isLeftPanelCollapsed && (
+                            <button
+                                onClick={() => setIsLeftPanelCollapsed(false)}
+                                className="hidden lg:flex absolute top-16 left-0 z-30 bg-slate-950/95 hover:bg-teal-950 border-r border-y border-teal-500/40 text-teal-300 hover:text-white px-2.5 py-2 rounded-r-xl shadow-2xl backdrop-blur-md transition-all text-xs font-bold items-center gap-1.5 cursor-pointer hover:scale-105 no-print"
+                                title="Slide left panel open"
+                            >
+                                <span>⚙️</span>
+                                <span className="text-[10px] uppercase font-mono tracking-wider">Controls ▶</span>
+                            </button>
+                        )}
+
+                        {/* Floating Tab to expand Right Panel when collapsed (Desktop) */}
+                        {isRightPanelCollapsed && (
+                            <button
+                                onClick={() => setIsRightPanelCollapsed(false)}
+                                className="hidden lg:flex absolute top-16 right-0 z-30 bg-slate-950/95 hover:bg-teal-950 border-l border-y border-teal-500/40 text-teal-300 hover:text-white px-2.5 py-2 rounded-l-xl shadow-2xl backdrop-blur-md transition-all text-xs font-bold items-center gap-1.5 cursor-pointer hover:scale-105 no-print"
+                                title="Slide right panel open"
+                            >
+                                <span className="text-[10px] uppercase font-mono tracking-wider">◀ Telemetry</span>
+                                <span>📊</span>
+                            </button>
+                        )}
+
                         {/* LEFT PANEL — Disease Inputs */}
-                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'}`}>
+                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print transition-all duration-300 ${
+                            mobileTab === 'CONTROLS'
+                                ? 'flex flex-1 w-full h-full'
+                                : isLeftPanelCollapsed
+                                ? 'hidden lg:flex lg:w-0 lg:p-0 lg:border-none lg:opacity-0 overflow-hidden'
+                                : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'
+                        }`}>
                             <div className="p-5 space-y-6">
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Select Target Disease</label>
+                                        <button
+                                            onClick={() => setIsLeftPanelCollapsed(true)}
+                                            className="hidden lg:flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all text-[10px] font-mono cursor-pointer border border-white/5"
+                                            title="Slide left panel closed"
+                                        >
+                                            <span>◀ Slide</span>
+                                        </button>
                                     </div>
                                     <input
                                         type="text"
@@ -2151,9 +2213,27 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* RIGHT PANEL — Analysis Results */}
-                        <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col ${mobileTab === 'TELEMETRY' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'}`}>
+                        <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col transition-all duration-300 ${
+                            mobileTab === 'TELEMETRY'
+                                ? 'flex flex-1 w-full h-full'
+                                : isRightPanelCollapsed
+                                ? 'hidden lg:flex lg:w-0 lg:p-0 lg:border-none lg:opacity-0 overflow-hidden'
+                                : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'
+                        }`}>
                             {/* Mode Tab Switcher */}
                             <div className="flex-shrink-0 p-3 sm:p-4 border-b border-white/10 bg-white/[0.02]">
+                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                                        <span>📊</span> Analysis Telemetry
+                                    </span>
+                                    <button
+                                        onClick={() => setIsRightPanelCollapsed(true)}
+                                        className="hidden lg:flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all text-[10px] font-mono cursor-pointer border border-white/5"
+                                        title="Slide right panel closed"
+                                    >
+                                        <span>Slide ▶</span>
+                                    </button>
+                                </div>
                                 <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl overflow-x-auto no-scrollbar scroll-smooth gap-1.5 flex-nowrap">
                                     <button
                                         onClick={() => setActiveTab('drug')}
@@ -2802,8 +2882,50 @@ This document is a simulated educational clinical report.
                        DRUG IMPACT VISUALIZER
                     ═══════════════════════════════════════════════════════════ */
                     <div className="flex flex-1 overflow-hidden relative">
+                        {/* Floating Tab to expand Left Panel when collapsed (Desktop) */}
+                        {isLeftPanelCollapsed && (
+                            <button
+                                onClick={() => setIsLeftPanelCollapsed(false)}
+                                className="hidden lg:flex absolute top-16 left-0 z-30 bg-slate-950/95 hover:bg-teal-950 border-r border-y border-teal-500/40 text-teal-300 hover:text-white px-2.5 py-2 rounded-r-xl shadow-2xl backdrop-blur-md transition-all text-xs font-bold items-center gap-1.5 cursor-pointer hover:scale-105 no-print"
+                                title="Slide left panel open"
+                            >
+                                <span>⚙️</span>
+                                <span className="text-[10px] uppercase font-mono tracking-wider">Controls ▶</span>
+                            </button>
+                        )}
+
+                        {/* Floating Tab to expand Right Panel when collapsed (Desktop) */}
+                        {isRightPanelCollapsed && (
+                            <button
+                                onClick={() => setIsRightPanelCollapsed(false)}
+                                className="hidden lg:flex absolute top-16 right-0 z-30 bg-slate-950/95 hover:bg-teal-950 border-l border-y border-teal-500/40 text-teal-300 hover:text-white px-2.5 py-2 rounded-l-xl shadow-2xl backdrop-blur-md transition-all text-xs font-bold items-center gap-1.5 cursor-pointer hover:scale-105 no-print"
+                                title="Slide right panel open"
+                            >
+                                <span className="text-[10px] uppercase font-mono tracking-wider">◀ Telemetry</span>
+                                <span>📊</span>
+                            </button>
+                        )}
+
                         {/* LEFT PANEL — Inputs */}
-                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'}`}>
+                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print transition-all duration-300 ${
+                            mobileTab === 'CONTROLS'
+                                ? 'flex flex-1 w-full h-full'
+                                : isLeftPanelCollapsed
+                                ? 'hidden lg:flex lg:w-0 lg:p-0 lg:border-none lg:opacity-0 overflow-hidden'
+                                : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'
+                        }`}>
+                            <div className="px-5 pt-3 flex items-center justify-between border-b border-white/5 pb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-teal-400 flex items-center gap-1.5">
+                                    <span>⚙️</span> Lab Controls
+                                </span>
+                                <button
+                                    onClick={() => setIsLeftPanelCollapsed(true)}
+                                    className="hidden lg:flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all text-[10px] font-mono cursor-pointer border border-white/5"
+                                    title="Slide left panel closed"
+                                >
+                                    <span>◀ Slide</span>
+                                </button>
+                            </div>
                             {isInteractionMode ? (
                                 <div className="p-5 space-y-6">
                                     <div>
@@ -3447,9 +3569,27 @@ This document is a simulated educational clinical report.
                         </div>
 
                         {/* RIGHT PANEL — Effect Details */}
-                        <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col ${mobileTab === 'TELEMETRY' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'}`}>
+                        <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col transition-all duration-300 ${
+                            mobileTab === 'TELEMETRY'
+                                ? 'flex flex-1 w-full h-full'
+                                : isRightPanelCollapsed
+                                ? 'hidden lg:flex lg:w-0 lg:p-0 lg:border-none lg:opacity-0 overflow-hidden'
+                                : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'
+                        }`}>
                             {/* Tab selector */}
                             <div className="flex-shrink-0 p-3 sm:p-4 border-b border-white/10 bg-white/[0.02]">
+                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-teal-400 flex items-center gap-1.5">
+                                        <span>📊</span> Analysis Telemetry
+                                    </span>
+                                    <button
+                                        onClick={() => setIsRightPanelCollapsed(true)}
+                                        className="hidden lg:flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all text-[10px] font-mono cursor-pointer border border-white/5"
+                                        title="Slide right panel closed"
+                                    >
+                                        <span>Slide ▶</span>
+                                    </button>
+                                </div>
                                 <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl overflow-x-auto no-scrollbar scroll-smooth gap-1.5 flex-nowrap">
                                     <button
                                         onClick={() => setActiveTab('drug')}
