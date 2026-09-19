@@ -2018,9 +2018,9 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 );
             })()}
 
-            {/* ── Selected Organ Clear control (anchored to top right, away from model feet) ── */}
+            {/* ── Selected Organ Clear control (anchored to top right, away from model feet and bottom controls) ── */}
             {selectedOrgan && (
-                <div className="absolute top-14 sm:top-auto sm:bottom-4 right-4 z-20 flex items-center gap-2">
+                <div className="absolute top-14 right-4 sm:right-6 z-20 flex items-center gap-2">
                     <button
                         onClick={() => onOrganSelect('')}
                         className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-[11px] font-bold border border-white/20
