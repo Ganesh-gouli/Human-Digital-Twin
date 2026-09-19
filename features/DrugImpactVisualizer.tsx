@@ -2153,17 +2153,17 @@ This document is a simulated educational clinical report.
                         {/* RIGHT PANEL — Analysis Results */}
                         <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col ${mobileTab === 'TELEMETRY' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'}`}>
                             {/* Mode Tab Switcher */}
-                            <div className="flex-shrink-0 p-4 border-b border-white/10 bg-white/[0.02]">
-                                <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl">
+                            <div className="flex-shrink-0 p-3 sm:p-4 border-b border-white/10 bg-white/[0.02]">
+                                <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl overflow-x-auto no-scrollbar scroll-smooth gap-1.5 flex-nowrap">
                                     <button
                                         onClick={() => setActiveTab('drug')}
-                                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
+                                        className={`flex-1 min-w-[140px] whitespace-nowrap py-2 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
                                             ${(activeTab as string) === 'drug' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}>
                                         <Search size={12} /> Pharmacological
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('disease')}
-                                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
+                                        className={`flex-1 min-w-[150px] whitespace-nowrap py-2 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
                                             ${(activeTab as string) === 'disease' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}>
                                         <Syringe size={12} /> Pathogen Simulator
                                     </button>
@@ -2172,9 +2172,9 @@ This document is a simulated educational clinical report.
 
                             {diseaseResult ? (
                                 <div className="flex flex-col h-full overflow-hidden">
-                                    {/* Section Tabs */}
-                                    <div className="flex-shrink-0 px-4 pt-4">
-                                        <div className="flex gap-1 bg-black/40 rounded-xl p-1 border border-white/5 flex-wrap">
+                                    {/* Section Tabs (Slidable horizontally on both sides) */}
+                                    <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-1">
+                                        <div className="flex gap-1.5 bg-black/40 rounded-xl p-1 border border-white/5 overflow-x-auto no-scrollbar scroll-smooth flex-nowrap">
                                             {([
                                                 { id: 'injection', label: 'Spread', short: 'Spread' },
                                                 { id: 'symptoms', label: 'Symptoms', short: 'Symptoms' },
@@ -2185,7 +2185,7 @@ This document is a simulated educational clinical report.
                                                 <button
                                                     key={sect.id}
                                                     onClick={() => setActiveSection(sect.id)}
-                                                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all border border-transparent
+                                                    className={`flex-shrink-0 whitespace-nowrap px-3 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all border border-transparent
                                                         ${activeSection === sect.id ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20 shadow-md' : 'text-white/40 hover:text-white/70'}`}>
                                                     {sect.short}
                                                 </button>
@@ -3449,17 +3449,17 @@ This document is a simulated educational clinical report.
                         {/* RIGHT PANEL — Effect Details */}
                         <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col ${mobileTab === 'TELEMETRY' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'}`}>
                             {/* Tab selector */}
-                            <div className="flex-shrink-0 p-4 border-b border-white/10 bg-white/[0.02]">
-                                <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl">
+                            <div className="flex-shrink-0 p-3 sm:p-4 border-b border-white/10 bg-white/[0.02]">
+                                <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl overflow-x-auto no-scrollbar scroll-smooth gap-1.5 flex-nowrap">
                                     <button
                                         onClick={() => setActiveTab('drug')}
-                                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
+                                        className={`flex-1 min-w-[140px] whitespace-nowrap py-2 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
                                             ${(activeTab as string) === 'drug' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}>
                                         <Search size={12} /> Pharmacological
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('disease')}
-                                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
+                                        className={`flex-1 min-w-[150px] whitespace-nowrap py-2 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
                                             ${(activeTab as string) === 'disease' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}>
                                         <Syringe size={12} /> Pathogen Simulator
                                     </button>
@@ -3467,18 +3467,18 @@ This document is a simulated educational clinical report.
                             </div>
 
                             {activeTab === 'drug' && (
-                                <div className="flex-shrink-0 px-4 pb-3 pt-1 border-b border-white/5 bg-white/[0.01]">
-                                    <div className="flex bg-black/45 rounded-xl p-1 border border-white/5 gap-1">
+                                <div className="flex-shrink-0 px-3 sm:px-4 pb-2.5 pt-1 border-b border-white/5 bg-white/[0.01]">
+                                    <div className="flex bg-black/45 rounded-xl p-1 border border-white/5 gap-1.5 overflow-x-auto no-scrollbar scroll-smooth flex-nowrap">
                                         <button
                                             onClick={() => setDrugDetailTab('biomap')}
-                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1
+                                            className={`flex-shrink-0 whitespace-nowrap py-1.5 px-3 text-[10px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5
                                                 ${drugDetailTab === 'biomap' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}
                                         >
                                             💊 Bio-Map details
                                         </button>
                                         <button
                                             onClick={() => setDrugDetailTab('synthesis')}
-                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1 relative
+                                            className={`flex-shrink-0 whitespace-nowrap py-1.5 px-3 text-[10px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5 relative
                                                 ${drugDetailTab === 'synthesis' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.15)]' : 'text-white/40 hover:text-white'}`}
                                         >
                                             🧪 Synthesis & SAR
@@ -3488,7 +3488,7 @@ This document is a simulated educational clinical report.
                                         </button>
                                         <button
                                             onClick={() => setDrugDetailTab('interaction')}
-                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1
+                                            className={`flex-shrink-0 whitespace-nowrap py-1.5 px-3 text-[10px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5
                                                 ${drugDetailTab === 'interaction' ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}
                                         >
                                             🧬 Interaction Matrix
