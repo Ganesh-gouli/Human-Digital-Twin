@@ -1806,13 +1806,13 @@ const GestureController = ({ orbitRef, rotationDelta, zoomDelta, dragDelta, rese
         controls.update();
     }, [zoomDelta, camera, orbitRef]);
 
-    // 2. Drag Logic
+    // 2. Drag Logic (Strictly locked to vertical movement; X is permanently centered at 0)
     useEffect(() => {
         if (!orbitRef.current || !dragDelta) return;
-        if (dragDelta.x !== 0 || dragDelta.y !== 0) {
+        if (dragDelta.y !== 0) {
             const controls = orbitRef.current;
-            controls.enablePan = true;
-            controls.target.x -= dragDelta.x * 0.05;
+            controls.enablePan = false;
+            controls.target.x = 0;
             controls.target.y += dragDelta.y * 0.05;
             controls.update();
         }
@@ -1841,9 +1841,10 @@ const GestureController = ({ orbitRef, rotationDelta, zoomDelta, dragDelta, rese
         const isMobile = window.innerWidth < 768;
         const zoomMargin = isMobile ? 1.48 : 1.25;
         const distance = (4.0 / (2 * Math.tan(fov / 2))) * zoomMargin;
-        const targetY = isMobile ? -0.20 : 0;
+        const targetY = isMobile ? -0.20 : -0.15;
         camera.position.set(0, targetY, distance);
         controls.target.set(0, targetY, 0);
+        controls.enablePan = false;
         camera.updateProjectionMatrix();
         controls.update();
     }, [resetFlag, camera, orbitRef]);
@@ -1877,7 +1878,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     return (
         <div className="relative w-full h-full select-none">
             {/* ── Three.js Canvas ── */}
-            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.2, 6.6], fov: 45 }}>
+            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.15, 6.6], fov: 45 }}>
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
                 {/* Lighting — exact match to MedicalModel3D */}
@@ -1965,7 +1966,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                     autoRotateSpeed={0.8}
                     enableDamping
                     dampingFactor={0.08}
-                    target={[0, -0.2, 0]}
+                    target={[0, -0.15, 0]}
                 />
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>
