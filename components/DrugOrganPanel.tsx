@@ -221,7 +221,7 @@ const DrugOrganPanel: React.FC<DrugOrganPanelProps> = ({
                         {effects
                             .slice()
                             .sort((a, b) => b.intensity - a.intensity)
-                            .map(e => {
+                            .map((e, idx) => {
                                 const normalizedType = e.effect_type?.toLowerCase() as DrugEffectType;
                                 const tc = TYPE_CONFIG[normalizedType] || TYPE_CONFIG['side-effect'];
                                 const { text: iLabel, color: iColor } = intensityLabel(e.intensity);
@@ -231,7 +231,8 @@ const DrugOrganPanel: React.FC<DrugOrganPanelProps> = ({
                                         key={e.structure_name + e.layer}
                                         ref={el => { cardRefs.current[e.structure_name] = el; }}
                                         onClick={() => onOrganSelect(e.structure_name)}
-                                        className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden group
+                                        style={{ animationDelay: `${idx * 50}ms` }}
+                                        className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden group animate-fade-in-up
                                             ${isSelected
                                                 ? 'bg-gradient-to-br from-cyan-950/40 via-[#041020] to-[#020a14] border-cyan-400/50 shadow-[0_0_20px_rgba(6,182,212,0.25)] scale-[1.02] translate-x-1 ring-1 ring-cyan-400/30'
                                                 : 'bg-black/40 border-cyan-500/15 hover:bg-cyan-500/[0.04] hover:border-cyan-400/30 hover:scale-[1.01]'
