@@ -1879,6 +1879,21 @@ This document is a simulated educational clinical report.
 
                         {/* CENTER — 3D Body View */}
                         <div className={`relative overflow-hidden bg-gradient-to-b from-black via-slate-950/60 to-black ${mobileTab === 'VIEWPORT' ? 'flex-1 flex flex-col w-full h-full' : 'hidden lg:flex lg:flex-1 lg:flex-col'}`}>
+                            {/* Reticle Corner Brackets (Futuristic Lab HUD) */}
+                            <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-emerald-400/40 pointer-events-none z-20" />
+                            <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-emerald-400/40 pointer-events-none z-20" />
+                            <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-emerald-400/40 pointer-events-none z-20" />
+                            <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-emerald-400/40 pointer-events-none z-20" />
+
+                            {/* Floating Viewport HUD Telemetry */}
+                            <div className="absolute top-4 left-4 z-20 hidden md:flex flex-col gap-1 pointer-events-none select-none font-mono">
+                                <div className="flex items-center gap-2 bg-[#020a14]/80 border border-emerald-500/25 px-2.5 py-1 rounded-lg backdrop-blur-md shadow-lg text-[10px]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]" />
+                                    <span className="text-emerald-300 font-bold uppercase tracking-wider">PATHOGEN IN-SILICO SCAN</span>
+                                    <span className="text-emerald-500/40">|</span>
+                                    <span className="text-white/70">{viewMode} VIEW</span>
+                                </div>
+                            </div>
                             <ErrorBoundary fallbackTitle="Disease View 3D Error" onReset={() => setViewMode('BODY')}>
                                 <DrugHeatmap3D
                                     effects={cureProgress > 0 ? treatedHeatmapEffects : diseaseHeatmapEffects}
@@ -3414,6 +3429,28 @@ This document is a simulated educational clinical report.
                             <div className="flex-1 flex overflow-hidden">
                                 {/* Primary drug view */}
                                 <div className="flex-1 relative">
+                                    {/* Reticle Corner Brackets (Futuristic Lab HUD) */}
+                                    <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-cyan-400/40 pointer-events-none z-20" />
+                                    <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-cyan-400/40 pointer-events-none z-20" />
+                                    <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-cyan-400/40 pointer-events-none z-20" />
+                                    <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-cyan-400/40 pointer-events-none z-20" />
+
+                                    {/* Floating Viewport HUD Telemetry */}
+                                    <div className="absolute top-4 left-4 z-20 hidden md:flex flex-col gap-1 pointer-events-none select-none font-mono">
+                                        <div className="flex items-center gap-2 bg-[#020a14]/80 border border-cyan-500/25 px-2.5 py-1 rounded-lg backdrop-blur-md shadow-lg text-[10px]">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]" />
+                                            <span className="text-cyan-300 font-bold uppercase tracking-wider">HOLO-TWIN PROJECTION</span>
+                                            <span className="text-cyan-500/40">|</span>
+                                            <span className="text-white/70">{viewMode} VIEW</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-[#020a14]/60 border border-cyan-500/15 px-2 py-0.5 rounded-md backdrop-blur-sm text-[8px] text-cyan-400/60">
+                                            <span>TARGETS: {isInteractionMode ? interactionHeatmapEffects.length : uniqueEffects.length}</span>
+                                            <span>•</span>
+                                            <span>FPS: 60 [STABLE]</span>
+                                            <span>•</span>
+                                            <span>RES: ULTRA</span>
+                                        </div>
+                                    </div>
                                     {compareMode && result && (
                                         <div className="absolute top-6 left-6 z-20 px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-rose-300 shadow-md">
                                             {result.drug_name}
