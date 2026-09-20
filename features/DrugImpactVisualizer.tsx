@@ -3886,7 +3886,7 @@ This document is a simulated educational clinical report.
                 isOpen={isTelemetryModalOpen}
                 onClose={() => setIsTelemetryModalOpen(false)}
                 activeDrugName={result?.drug_name || drugName || 'Candidate Compound'}
-                cardiacStrainScore={result?.systemic_risk_score || 25}
+                cardiacStrainScore={result?.system_wide_risk_score || 25}
             />
 
             <PharmacogenomicMutatorModal
