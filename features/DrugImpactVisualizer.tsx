@@ -14,11 +14,6 @@ import { ExperimentDossier, OrganToxicityScore } from '../types';
 import ChemicalSynthesisConsole from '../components/ChemicalSynthesisConsole';
 import { PRESET_MOLECULAR_CARDS, PRESET_SYNTHESIS_DB, applyMolecularEnhancement } from '../services/synthesisDatabase';
 import SimulationExplainerModal from '../components/SimulationExplainerModal';
-import FuturisticBiomolecularPod from '../components/FuturisticBiomolecularPod';
-import FuturisticHoloScanner from '../components/FuturisticHoloScanner';
-import FuturisticBioTelemetry from '../components/FuturisticBioTelemetry';
-import HoloTargetReticles from '../components/HoloTargetReticles';
-import { sfx } from '../services/soundEffects';
 
 // ─── Heatmap color legend ──────────────────────────────────────────────────────
 const HeatmapLegend: React.FC = () => (
@@ -438,14 +433,10 @@ export const DrugImpactVisualizer = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
 
-    // ─── Separate Futuristic 3D Biomolecular Pod (DNA & Molecule / Pathogen) ─
-    const [showBiomolecularPod, setShowBiomolecularPod] = useState(true);
-
-    // ─── Cybernetic Futuristic HUD & Scanner State ────────────────────
-    const [isHoloScannerActive, setIsHoloScannerActive] = useState(true);
-    const [showBioTelemetry, setShowBioTelemetry] = useState(true);
-    const [isSfxMuted, setIsSfxMuted] = useState(() => sfx.getMuted());
-    const [cyberAura, setCyberAura] = useState<'cyan' | 'purple' | 'emerald' | 'amber'>('cyan');
+    // ─── Flanking 3D Companion Models (DNA Double Helix & Molecular/Viral Core) ─
+    const [showDnaCompanion, setShowDnaCompanion] = useState(true);
+    const [showMolecularCompanion, setShowMolecularCompanion] = useState(true);
+    const [selectedCompanionModal, setSelectedCompanionModal] = useState<'dna' | 'molecule' | 'pathogen' | null>(null);
 
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
@@ -1891,42 +1882,6 @@ This document is a simulated educational clinical report.
                                 onToggleView={cycleNextViewMode}
                             />
 
-                            {/* Dedicated Futuristic 3D Biomolecular Pod (DNA Helix & Viral Pathogen) */}
-                            {showBiomolecularPod && (
-                                <FuturisticBiomolecularPod
-                                    mode="disease"
-                                    diseaseName={diseaseResult?.disease_name}
-                                    cureProgress={cureProgress}
-                                    onClose={() => setShowBiomolecularPod(false)}
-                                />
-                            )}
-
-                            {/* Holographic Laser Bio-Scanner Overlay */}
-                            <FuturisticHoloScanner
-                                auraColor={cyberAura}
-                                isScanningActive={isHoloScannerActive}
-                                onToggleScan={() => {
-                                    setIsHoloScannerActive(v => !v);
-                                    sfx.playCyberBeep(980, 0.05);
-                                }}
-                            />
-
-                            {/* Live Quantum Bio-Telemetry HUD Card (ECG/EEG waves & vitals) */}
-                            {showBioTelemetry && (
-                                <FuturisticBioTelemetry
-                                    auraColor={cyberAura}
-                                    heartRate={72}
-                                    toxicityLevel={organDiagnostics.tdiPercent > 60 ? 'HIGH' : organDiagnostics.tdiPercent > 30 ? 'MODERATE' : 'LOW'}
-                                />
-                            )}
-
-                            {/* Holographic Fast Target Reticles */}
-                            <HoloTargetReticles
-                                selectedOrgan={diseaseSelectedOrgan}
-                                onSelectOrgan={setDiseaseSelectedOrgan}
-                                auraColor={cyberAura}
-                            />
-
                             {/* Floating Deconstruction & Understanding Pill */}
                             <div className="absolute bottom-20 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                 <button
@@ -2055,91 +2010,71 @@ This document is a simulated educational clinical report.
                                         🫀 Organs
                                     </button>
 
-                                    {/* Separate 3D Biomolecular Pod Toggle */}
+                                    {/* Flanking Companion 3D Models Toggles */}
                                     <div className="w-[1px] h-4 bg-white/20 my-auto mx-1" />
                                     <button
-                                        onClick={() => {
-                                            setShowBiomolecularPod(v => !v);
-                                            sfx.playCyberBeep(850, 0.04);
-                                        }}
-                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1.5 cursor-pointer
-                                            ${showBiomolecularPod
+                                        onClick={() => setShowDnaCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showDnaCompanion
                                                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
                                                 : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle Separate 3D Biomolecular Space (DNA & Pathogen)"
+                                        title="Toggle 3D Genomic DNA Double Helix beside the Twin"
                                     >
-                                        <span>🧬 3D Pod</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showBiomolecularPod ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
+                                        <span>🧬 DNA</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showDnaCompanion ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
                                     </button>
-
-                                    {/* Holographic Laser Scanner Toggle */}
                                     <button
-                                        onClick={() => {
-                                            setIsHoloScannerActive(v => !v);
-                                            sfx.playCyberBeep(1020, 0.04);
-                                        }}
-                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
-                                            ${isHoloScannerActive
-                                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle Ambient Holographic Laser Bio-Scanner Sweep"
-                                    >
-                                        <span>⚡ Scanner</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${isHoloScannerActive ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
-
-                                    {/* Live Bio-Telemetry HUD Toggle */}
-                                    <button
-                                        onClick={() => {
-                                            setShowBioTelemetry(v => !v);
-                                            sfx.playCyberBeep(920, 0.04);
-                                        }}
-                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
-                                            ${showBioTelemetry
+                                        onClick={() => setShowMolecularCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showMolecularCompanion
                                                 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-lg shadow-rose-500/20'
                                                 : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle Live Quantum Bio-Telemetry (ECG/EEG Canvas & Vitals)"
+                                        title="Toggle 3D Pathogen Virion model beside the Twin"
                                     >
-                                        <span>📡 Vitals</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showBioTelemetry ? 'bg-rose-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
-
-                                    {/* Sci-Fi Sound FX Toggle */}
-                                    <button
-                                        onClick={() => {
-                                            const muted = sfx.toggleMute();
-                                            setIsSfxMuted(muted);
-                                        }}
-                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
-                                            ${!isSfxMuted
-                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title={!isSfxMuted ? "Mute Sci-Fi Sound FX" : "Unmute Sci-Fi Sound FX"}
-                                    >
-                                        <span>{!isSfxMuted ? '🔊 SFX' : '🔇 Muted'}</span>
-                                    </button>
-
-                                    {/* Cyberpunk Hologram Aura Color Switcher */}
-                                    <button
-                                        onClick={() => {
-                                            const auras: Array<'cyan' | 'purple' | 'emerald' | 'amber'> = ['cyan', 'purple', 'emerald', 'amber'];
-                                            const nextIdx = (auras.indexOf(cyberAura) + 1) % auras.length;
-                                            setCyberAura(auras[nextIdx]);
-                                            sfx.playCyberBeep(1200, 0.05);
-                                        }}
-                                        className="px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all duration-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400 text-white/70 hover:text-white flex items-center gap-1 cursor-pointer"
-                                        title={`Cycle Hologram Aura (Current: ${cyberAura.toUpperCase()})`}
-                                    >
-                                        <span className={`w-2 h-2 rounded-full ${
-                                            cyberAura === 'cyan' ? 'bg-cyan-400 shadow-[0_0_8px_#06b6d4]' :
-                                            cyberAura === 'purple' ? 'bg-purple-400 shadow-[0_0_8px_#c084fc]' :
-                                            cyberAura === 'emerald' ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' :
-                                            'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
-                                        }`} />
-                                        <span className="hidden sm:inline">{cyberAura.toUpperCase()}</span>
+                                        <span>🦠 Pathogen</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showMolecularCompanion ? 'bg-rose-400 animate-pulse' : 'bg-white/20'}`} />
                                     </button>
                                 </div>
                             </div>
+
+                            {/* 3D Companion Interactive Info Popups */}
+                            {selectedCompanionModal === 'dna' && (
+                                <div className="absolute top-16 left-4 sm:left-6 z-40 bg-slate-950/95 border border-cyan-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-cyan-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> 3D Genomic DNA Core
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">Human Genome Assembly (GRCh38.p14)</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-cyan-400 font-bold">A-T Pairs:</span> 58.2%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">G-C Pairs:</span> 41.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Alignment:</span> 99.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Mutations:</span> 0 Active</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive 3D double helix tracking chromosome 7q31 pharmacogenomic markers.</p>
+                                </div>
+                            )}
+
+                            {selectedCompanionModal === 'pathogen' && (
+                                <div className="absolute top-16 right-4 sm:right-6 z-40 bg-slate-950/95 border border-rose-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(244,63,94,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-rose-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" /> 3D Pathogen Virion Capsid
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">{diseaseResult ? diseaseResult.disease_name : 'Simulated Pathogen Virion'}</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Symmetry:</span> Icosahedral</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-amber-400 font-bold">Spikes:</span> 30 Glycoproteins</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">Envelope:</span> Lipid Bilayer</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Neutralized:</span> {cureProgress}%</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Spiked viral envelope with simulated receptor binding sites.</p>
+                                </div>
+                            )}
 
                             {/* Disease info card overlay (top-left) */}
                             {diseaseResult && (
@@ -3418,91 +3353,71 @@ This document is a simulated educational clinical report.
                                         🫀 Organs
                                     </button>
 
-                                    {/* Separate 3D Biomolecular Pod Toggle */}
+                                    {/* Flanking Companion 3D Models Toggles */}
                                     <div className="w-[1px] h-4 bg-white/20 my-auto mx-1" />
                                     <button
-                                        onClick={() => {
-                                            setShowBiomolecularPod(v => !v);
-                                            sfx.playCyberBeep(850, 0.04);
-                                        }}
-                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1.5 cursor-pointer
-                                            ${showBiomolecularPod
+                                        onClick={() => setShowDnaCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showDnaCompanion
                                                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
                                                 : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle Separate 3D Biomolecular Space (DNA & Drug Molecule)"
+                                        title="Toggle 3D Genomic DNA Double Helix beside the Twin"
                                     >
-                                        <span>🧬 3D Pod</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showBiomolecularPod ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
+                                        <span>🧬 DNA</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showDnaCompanion ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
                                     </button>
-
-                                    {/* Holographic Laser Scanner Toggle */}
                                     <button
-                                        onClick={() => {
-                                            setIsHoloScannerActive(v => !v);
-                                            sfx.playCyberBeep(1020, 0.04);
-                                        }}
-                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
-                                            ${isHoloScannerActive
-                                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
+                                        onClick={() => setShowMolecularCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showMolecularCompanion
+                                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-lg shadow-purple-500/20'
                                                 : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle Ambient Holographic Laser Bio-Scanner Sweep"
+                                        title="Toggle 3D Molecular Drug Ligand model beside the Twin"
                                     >
-                                        <span>⚡ Scanner</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${isHoloScannerActive ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
-
-                                    {/* Live Bio-Telemetry HUD Toggle */}
-                                    <button
-                                        onClick={() => {
-                                            setShowBioTelemetry(v => !v);
-                                            sfx.playCyberBeep(920, 0.04);
-                                        }}
-                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
-                                            ${showBioTelemetry
-                                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-lg shadow-rose-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle Live Quantum Bio-Telemetry (ECG/EEG Canvas & Vitals)"
-                                    >
-                                        <span>📡 Vitals</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showBioTelemetry ? 'bg-rose-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
-
-                                    {/* Sci-Fi Sound FX Toggle */}
-                                    <button
-                                        onClick={() => {
-                                            const muted = sfx.toggleMute();
-                                            setIsSfxMuted(muted);
-                                        }}
-                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
-                                            ${!isSfxMuted
-                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title={!isSfxMuted ? "Mute Sci-Fi Sound FX" : "Unmute Sci-Fi Sound FX"}
-                                    >
-                                        <span>{!isSfxMuted ? '🔊 SFX' : '🔇 Muted'}</span>
-                                    </button>
-
-                                    {/* Cyberpunk Hologram Aura Color Switcher */}
-                                    <button
-                                        onClick={() => {
-                                            const auras: Array<'cyan' | 'purple' | 'emerald' | 'amber'> = ['cyan', 'purple', 'emerald', 'amber'];
-                                            const nextIdx = (auras.indexOf(cyberAura) + 1) % auras.length;
-                                            setCyberAura(auras[nextIdx]);
-                                            sfx.playCyberBeep(1200, 0.05);
-                                        }}
-                                        className="px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all duration-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400 text-white/70 hover:text-white flex items-center gap-1 cursor-pointer"
-                                        title={`Cycle Hologram Aura (Current: ${cyberAura.toUpperCase()})`}
-                                    >
-                                        <span className={`w-2 h-2 rounded-full ${
-                                            cyberAura === 'cyan' ? 'bg-cyan-400 shadow-[0_0_8px_#06b6d4]' :
-                                            cyberAura === 'purple' ? 'bg-purple-400 shadow-[0_0_8px_#c084fc]' :
-                                            cyberAura === 'emerald' ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' :
-                                            'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
-                                        }`} />
-                                        <span className="hidden sm:inline">{cyberAura.toUpperCase()}</span>
+                                        <span>⚛️ Molecule</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showMolecularCompanion ? 'bg-purple-400 animate-pulse' : 'bg-white/20'}`} />
                                     </button>
                                 </div>
                             </div>
+
+                            {/* 3D Companion Interactive Info Popups */}
+                            {selectedCompanionModal === 'dna' && (
+                                <div className="absolute top-16 left-4 sm:left-6 z-40 bg-slate-950/95 border border-cyan-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-cyan-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> 3D Genomic DNA Core
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">Human Genome Assembly (GRCh38.p14)</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-cyan-400 font-bold">A-T Pairs:</span> 58.2%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">G-C Pairs:</span> 41.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Alignment:</span> 99.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Mutations:</span> 0 Active</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive 3D double helix tracking chromosome 7q31 pharmacogenomic markers.</p>
+                                </div>
+                            )}
+
+                            {selectedCompanionModal === 'molecule' && (
+                                <div className="absolute top-16 right-4 sm:right-6 z-40 bg-slate-950/95 border border-purple-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-purple-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" /> 3D Quantum Molecular Ligand
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">{result ? result.drug_name : 'Active Pharmacophore Compound'}</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-sky-400 font-bold">Bond Order:</span> Delocalized</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Affinity:</span> 94.2 nM</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-amber-400 font-bold">Valence:</span> sp² Hybrid</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-teal-400 font-bold">LogP:</span> 2.14</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive ball-and-stick lattice with quantum electron probability orbitals.</p>
+                                </div>
+                            )}
 
                             {/* Temporal Scrubbing Control (anchored to bottom-right side) */}
                             {result && result.time_based_intensity && (
@@ -3595,6 +3510,11 @@ This document is a simulated educational clinical report.
                                             resetCameraFlag={cameraResetFlag}
                                             debugMode={debugRegions}
                                             calibrationMode={calibrationMode}
+                                            showDnaHelix={showDnaCompanion}
+                                            showMolecularModel={showMolecularCompanion}
+                                            companionMode="molecule"
+                                            onSelectDna={() => setSelectedCompanionModal('dna')}
+                                            onSelectMolecule={() => setSelectedCompanionModal('molecule')}
                                         />
                                     </ErrorBoundary>
 
@@ -3609,41 +3529,6 @@ This document is a simulated educational clinical report.
                                             setCameraResetFlag(v => v + 1);
                                         }}
                                         onToggleView={cycleNextViewMode}
-                                    />
-
-                                    {/* Dedicated Futuristic 3D Biomolecular Pod (DNA Helix & Drug Ligand) */}
-                                    {showBiomolecularPod && (
-                                        <FuturisticBiomolecularPod
-                                            mode="drug"
-                                            drugName={result?.drug_name}
-                                            onClose={() => setShowBiomolecularPod(false)}
-                                        />
-                                    )}
-
-                                    {/* Holographic Laser Bio-Scanner Overlay */}
-                                    <FuturisticHoloScanner
-                                        auraColor={cyberAura}
-                                        isScanningActive={isHoloScannerActive}
-                                        onToggleScan={() => {
-                                            setIsHoloScannerActive(v => !v);
-                                            sfx.playCyberBeep(980, 0.05);
-                                        }}
-                                    />
-
-                                    {/* Live Quantum Bio-Telemetry HUD Card (ECG/EEG waves & vitals) */}
-                                    {showBioTelemetry && (
-                                        <FuturisticBioTelemetry
-                                            auraColor={cyberAura}
-                                            heartRate={72}
-                                            toxicityLevel={uniqueEffects.some(e => e.severity === 'high') ? 'HIGH' : uniqueEffects.some(e => e.severity === 'moderate') ? 'MODERATE' : 'LOW'}
-                                        />
-                                    )}
-
-                                    {/* Holographic Fast Target Reticles */}
-                                    <HoloTargetReticles
-                                        selectedOrgan={selectedOrgan}
-                                        onSelectOrgan={setSelectedOrgan}
-                                        auraColor={cyberAura}
                                     />
 
                                     {/* Floating Deconstruction & Understanding Pill — positioned to keep feet fully visible */}
