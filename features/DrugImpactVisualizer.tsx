@@ -1901,6 +1901,32 @@ This document is a simulated educational clinical report.
                                 />
                             )}
 
+                            {/* Holographic Laser Bio-Scanner Overlay */}
+                            <FuturisticHoloScanner
+                                auraColor={cyberAura}
+                                isScanningActive={isHoloScannerActive}
+                                onToggleScan={() => {
+                                    setIsHoloScannerActive(v => !v);
+                                    sfx.playCyberBeep(980, 0.05);
+                                }}
+                            />
+
+                            {/* Live Quantum Bio-Telemetry HUD Card (ECG/EEG waves & vitals) */}
+                            {showBioTelemetry && (
+                                <FuturisticBioTelemetry
+                                    auraColor={cyberAura}
+                                    heartRate={72}
+                                    toxicityLevel={organDiagnostics.tdiPercent > 60 ? 'HIGH' : organDiagnostics.tdiPercent > 30 ? 'MODERATE' : 'LOW'}
+                                />
+                            )}
+
+                            {/* Holographic Fast Target Reticles */}
+                            <HoloTargetReticles
+                                selectedOrgan={diseaseSelectedOrgan}
+                                onSelectOrgan={setDiseaseSelectedOrgan}
+                                auraColor={cyberAura}
+                            />
+
                             {/* Floating Deconstruction & Understanding Pill */}
                             <div className="absolute bottom-20 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                 <button
