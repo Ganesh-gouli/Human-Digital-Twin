@@ -434,10 +434,8 @@ export const DrugImpactVisualizer = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
 
-    // ─── Flanking 3D Companion Models (DNA Double Helix & Molecular/Viral Core) ─
-    const [showDnaCompanion, setShowDnaCompanion] = useState(true);
-    const [showMolecularCompanion, setShowMolecularCompanion] = useState(true);
-    const [selectedCompanionModal, setSelectedCompanionModal] = useState<'dna' | 'molecule' | 'pathogen' | null>(null);
+    // ─── Separate Futuristic 3D Biomolecular Pod (DNA & Molecule / Pathogen) ─
+    const [showBiomolecularPod, setShowBiomolecularPod] = useState(true);
 
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
