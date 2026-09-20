@@ -192,15 +192,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </span>
                 </p>
             </div>
-                <p className="text-[10px] sm:text-[11px] font-medium text-teal-300/90 tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 truncate">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse flex-shrink-0"></span>
-                    <span className="font-bold text-white uppercase tracking-wider text-[8px] sm:text-[9px] bg-teal-500/20 px-1.5 py-0.5 rounded border border-teal-500/30 flex-shrink-0">In-Silico Environment</span>
-                    <span className="truncate">
-                        <span className="hidden md:inline">Computational prediction for candidate screening. </span>
-                        Empirical validation in wet-lab assays required.
-                    </span>
-                </p>
-            </div>
 
             <main className="relative container mx-auto p-3 sm:p-4 pt-24 sm:pt-28 md:p-6 md:pt-32 z-10 max-w-7xl">
                 {children}
