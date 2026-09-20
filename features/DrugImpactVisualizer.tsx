@@ -3419,11 +3419,6 @@ This document is a simulated educational clinical report.
                                             resetCameraFlag={cameraResetFlag}
                                             debugMode={debugRegions}
                                             calibrationMode={calibrationMode}
-                                            showDnaHelix={showDnaCompanion}
-                                            showMolecularModel={showMolecularCompanion}
-                                            companionMode="molecule"
-                                            onSelectDna={() => setSelectedCompanionModal('dna')}
-                                            onSelectMolecule={() => setSelectedCompanionModal('molecule')}
                                         />
                                     </ErrorBoundary>
 
@@ -3439,6 +3434,15 @@ This document is a simulated educational clinical report.
                                         }}
                                         onToggleView={cycleNextViewMode}
                                     />
+
+                                    {/* Dedicated Futuristic 3D Biomolecular Pod (DNA Helix & Drug Ligand) */}
+                                    {showBiomolecularPod && (
+                                        <FuturisticBiomolecularPod
+                                            mode="drug"
+                                            drugName={result?.drug_name}
+                                            onClose={() => setShowBiomolecularPod(false)}
+                                        />
+                                    )}
 
                                     {/* Floating Deconstruction & Understanding Pill — positioned to keep feet fully visible */}
                                     <div className="absolute top-12 sm:top-auto sm:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
