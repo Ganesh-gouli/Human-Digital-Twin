@@ -441,6 +441,12 @@ export const DrugImpactVisualizer = () => {
     // ─── Separate Futuristic 3D Biomolecular Pod (DNA & Molecule / Pathogen) ─
     const [showBiomolecularPod, setShowBiomolecularPod] = useState(true);
 
+    // ─── Cybernetic Futuristic HUD & Scanner State ────────────────────
+    const [isHoloScannerActive, setIsHoloScannerActive] = useState(true);
+    const [showBioTelemetry, setShowBioTelemetry] = useState(true);
+    const [isSfxMuted, setIsSfxMuted] = useState(() => sfx.getMuted());
+    const [cyberAura, setCyberAura] = useState<'cyan' | 'purple' | 'emerald' | 'amber'>('cyan');
+
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
 
