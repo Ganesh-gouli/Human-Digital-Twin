@@ -433,8 +433,15 @@ export const DrugImpactVisualizer = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
 
-    // ─── Top-level tab ────────────────────────────────────────────────
+    // ─── Top-level tab & Telemetry Clock ───────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
+    const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString('en-US', { hour12: false }));
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date().toLocaleTimeString('en-US', { hour12: false }));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // ─── Disease Simulator State ──────────────────────────────────────
     const [diseaseName, setDiseaseName] = useState('Influenza');
@@ -1532,13 +1539,14 @@ This document is a simulated educational clinical report.
                                 {activeTab === 'drug' ? 'In-Silico Pharmacological Simulation Laboratory' : 'Computational Pathogen Spread Dynamics Lab'}
                             </p>
                         </div>
-                        {/* Simulation Active Badge */}
-                        <div className="hidden md:flex items-center gap-2 ml-2 px-3 py-1.5 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
+                        {/* Simulation Active Badge with Live Clock */}
+                        <div className="hidden md:flex items-center gap-2 ml-2 px-3 py-1.5 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 font-mono">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                             </span>
-                            <span className="text-[9px] font-mono font-bold text-emerald-300/80 uppercase tracking-wider">Simulation Active</span>
+                            <span className="text-[9px] font-bold text-emerald-300/90 uppercase tracking-wider">LIVE IN-SILICO</span>
+                            <span className="text-[9px] text-cyan-400/60 font-semibold border-l border-emerald-500/20 pl-2">{currentTime}</span>
                         </div>
                     </div>
 
@@ -3593,6 +3601,25 @@ This document is a simulated educational clinical report.
                         </div>
                     </div>
                 )}
+
+                {/* Subtle Scientific Disclaimer & Telemetry Bar (Desktop) */}
+                <div className="hidden lg:flex flex-shrink-0 items-center justify-between px-6 py-1.5 border-t border-cyan-500/10 bg-[#020a14]/80 backdrop-blur-md text-[10px] font-mono text-cyan-400/50 relative z-20">
+                    <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1.5 text-cyan-300/70">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                            COMPUTATIONAL ENGINE: BIO-TWIN V2.4 [GPU ACCELERATED]
+                        </span>
+                        <span className="text-cyan-500/30">•</span>
+                        <span>RESOLUTION: MOLECULAR DOCKING + ORGAN KINETICS</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <span className="text-amber-400/80 font-semibold flex items-center gap-1.5">
+                            <span>⚠</span> RESEARCH ONLY: IN-SILICO COMPUTATIONAL MODEL — NOT FOR CLINICAL USE
+                        </span>
+                        <span className="text-cyan-500/30">•</span>
+                        <span className="text-cyan-500/60">SIMULATION HASH: #8F9A-401B</span>
+                    </div>
+                </div>
 
                 {/* Mobile Navigation Switcher Dock (Only visible on screens < lg) */}
                 <div className="lg:hidden flex-shrink-0 bg-slate-950/95 border-t border-white/10 backdrop-blur-xl px-2.5 py-2 z-30 flex items-center justify-around gap-1.5 no-print shadow-[0_-8px_20px_rgba(0,0,0,0.6)]">
