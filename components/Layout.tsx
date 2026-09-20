@@ -107,26 +107,26 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {/* Scientific Navigation Header */}
             <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300">
-                <div className="absolute inset-0 bg-[#030712]/85 backdrop-blur-xl border-b border-white/10 shadow-2xl"></div>
+                <div className="absolute inset-0 bg-[#020814]/90 backdrop-blur-xl border-b border-cyan-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.7)]"></div>
                 <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-2.5 relative flex justify-between items-center max-w-7xl">
                     {/* Brand */}
                     <div
                         className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group min-w-0"
                         onClick={() => navigateTo('DRUG_VISUALIZER')}
                     >
-                        <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-600 text-white p-2 sm:p-2.5 rounded-xl shadow-lg shadow-teal-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
+                        <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-600 text-white p-2 sm:p-2.5 rounded-xl shadow-lg shadow-cyan-500/25 ring-1 ring-cyan-400/40 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all duration-300 flex-shrink-0">
                             <svg className="w-4 h-4 sm:w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                             </svg>
                         </div>
                         <div className="min-w-0">
                             <div className="flex items-center gap-1.5 sm:gap-2">
-                                <span className="text-sm sm:text-base md:text-lg font-black tracking-tight text-white flex items-center gap-1 sm:gap-1.5 truncate">
-                                    BioTwin <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 font-mono font-bold tracking-wider hidden xs:inline-block">AI RESEARCH LAB</span>
+                                <span className="text-sm sm:text-base md:text-lg font-black tracking-tight text-white flex items-center gap-1.5 truncate">
+                                    Human Digital Twin <span className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono font-bold tracking-widest hidden xs:inline-block">IN-SILICO LAB</span>
                                 </span>
                             </div>
-                            <p className="text-[10px] text-teal-300/80 font-medium tracking-wide hidden md:block">
-                                Test on a virtual human first, then validate in the real world.
+                            <p className="text-[10px] text-cyan-300/80 font-medium tracking-wide hidden md:block">
+                                Autonomous Physiological Simulation & Multi-Organ Pharmacology Twin
                             </p>
                         </div>
                     </div>
@@ -135,13 +135,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 flex-shrink-0">
                         <button
                             onClick={() => openGuide('overview')}
-                            className="flex items-center space-x-1 sm:space-x-1.5 text-xs font-bold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all bg-gradient-to-r from-teal-500/15 via-cyan-500/15 to-blue-500/15 text-teal-300 border border-teal-500/40 hover:border-teal-300 hover:shadow-[0_0_15px_rgba(45,212,191,0.25)] hover:scale-105 active:scale-95 cursor-pointer"
-                            title="Open System Architecture & How BioTwin Works Guide"
+                            className="flex items-center space-x-1 sm:space-x-1.5 text-xs font-bold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all bg-gradient-to-r from-teal-500/15 via-cyan-500/15 to-blue-500/15 text-cyan-300 border border-cyan-500/40 hover:border-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
+                            title="Open System Architecture & How Human Digital Twin Works Guide"
                         >
-                            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-cyan-400 animate-pulse"></span>
                             <span className="flex items-center gap-1">
                                 <span>💡</span>
-                                <span className="hidden sm:inline">How BioTwin Works</span>
+                                <span className="hidden sm:inline">How Twin Works</span>
                                 <span className="sm:hidden text-[11px]">Guide</span>
                             </span>
                         </button>
@@ -150,11 +150,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             onClick={() => navigateTo('DRUG_VISUALIZER')}
                             className={`flex items-center space-x-1 sm:space-x-2 text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all cursor-pointer ${
                                 currentPage === 'DRUG_VISUALIZER'
-                                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-[0_0_15px_rgba(20,184,166,0.2)]'
+                                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
                                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                             }`}
                         >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                             </svg>
                             <span className="hidden sm:inline">3D Twin Lab</span>
@@ -164,11 +164,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             onClick={() => navigateTo('DASHBOARD')}
                             className={`flex items-center space-x-1 sm:space-x-2 text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all cursor-pointer ${
                                 currentPage === 'DASHBOARD'
-                                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-[0_0_15px_rgba(20,184,166,0.2)]'
+                                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
                                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                             }`}
                         >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                             <span className="hidden sm:inline">Executive Hub</span>
@@ -182,7 +182,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </header>
 
             {/* Scientific Validation Banner */}
-            <div className="fixed top-[52px] sm:top-[62px] left-0 right-0 z-30 bg-black/50 border-b border-teal-500/20 backdrop-blur-md py-1 px-3 sm:px-4 text-center">
+            <div className="fixed top-[52px] sm:top-[62px] left-0 right-0 z-30 bg-[#010610]/85 border-b border-cyan-500/20 backdrop-blur-md py-1 px-3 sm:px-4 text-center">
+                <p className="text-[10px] sm:text-[11px] font-medium text-cyan-300/90 tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 truncate">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0"></span>
+                    <span className="font-bold text-white uppercase tracking-wider text-[8px] sm:text-[9px] bg-cyan-500/20 px-1.5 py-0.5 rounded border border-cyan-500/30 flex-shrink-0 font-mono">In-Silico Environment</span>
+                    <span className="truncate">
+                        <span className="hidden md:inline">Computational prediction for candidate screening. </span>
+                        Empirical validation in wet-lab assays required.
+                    </span>
+                </p>
+            </div>
                 <p className="text-[10px] sm:text-[11px] font-medium text-teal-300/90 tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 truncate">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse flex-shrink-0"></span>
                     <span className="font-bold text-white uppercase tracking-wider text-[8px] sm:text-[9px] bg-teal-500/20 px-1.5 py-0.5 rounded border border-teal-500/30 flex-shrink-0">In-Silico Environment</span>
