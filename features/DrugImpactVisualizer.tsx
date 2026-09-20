@@ -2829,8 +2829,8 @@ This document is a simulated educational clinical report.
                        DRUG IMPACT VISUALIZER
                     ═══════════════════════════════════════════════════════════ */
                     <div className="flex flex-1 overflow-hidden relative">
-                        {/* LEFT PANEL — Inputs */}
-                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'}`}>
+                        {/* LEFT PANEL — Inputs (Lab Control Console) */}
+                        <div className={`flex-col border-r border-cyan-500/15 bg-[#020a14]/85 backdrop-blur-2xl overflow-y-auto no-print shadow-[4px_0_24px_rgba(0,0,0,0.5)] ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-80 lg:flex-shrink-0'}`}>
                             {isInteractionMode ? (
                                 <div className="p-5 space-y-6">
                                     <div>
@@ -2866,7 +2866,7 @@ This document is a simulated educational clinical report.
                                                         setNewDrugInput('');
                                                     }
                                                 }}
-                                                placeholder="Add drug (e.g. Aspirin)..."
+                                                placeholder="Add drug (e.g. Paracetamol)..."
                                                 className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-white text-xs focus:outline-none focus:ring-1 focus:ring-rose-500/50 placeholder:text-white/20"
                                             />
                                             <button
@@ -2886,12 +2886,12 @@ This document is a simulated educational clinical report.
 
                                     {/* FOODS LIST */}
                                     <div className="space-y-2">
-                                        <label className="block text-[9px] font-black text-sky-300 uppercase tracking-widest">Diet / Food Factors</label>
+                                        <label className="block text-[9px] font-black text-sky-300 uppercase tracking-widest">Concurrent Foods / Diets</label>
                                         <div className="flex gap-1 flex-wrap max-h-24 overflow-y-auto custom-scrollbar p-1 bg-black/25 rounded-xl border border-white/5">
-                                            {interactionFoods.map(f => (
-                                                <span key={f} className="inline-flex items-center gap-1 px-2 py-0.5 bg-sky-500/10 border border-sky-500/20 rounded-md text-[10px] font-bold text-sky-300">
-                                                    {f}
-                                                    <button onClick={() => setInteractionFoods(prev => prev.filter(x => x !== f))} className="hover:text-white font-mono text-[9px]">×</button>
+                                            {interactionFoods.map(d => (
+                                                <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 bg-sky-500/10 border border-sky-500/20 rounded-md text-[10px] font-bold text-sky-300">
+                                                    {d}
+                                                    <button onClick={() => setInteractionFoods(prev => prev.filter(x => x !== d))} className="hover:text-white font-mono text-[9px]">×</button>
                                                 </span>
                                             ))}
                                             {interactionFoods.length === 0 && <span className="text-[9px] text-white/20 italic p-1">No dietary factors</span>}
@@ -2908,7 +2908,7 @@ This document is a simulated educational clinical report.
                                                         setNewFoodInput('');
                                                     }
                                                 }}
-                                                placeholder="Add food (e.g. Milk)..."
+                                                placeholder="Add food (e.g. Alcohol)..."
                                                 className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-white text-xs focus:outline-none focus:ring-1 focus:ring-sky-500/50 placeholder:text-white/20"
                                             />
                                             <button
@@ -2989,20 +2989,33 @@ This document is a simulated educational clinical report.
                                     )}
                                 </div>
                             ) : (
-                                <div className="p-5 space-y-6">
+                                <div className="p-5 space-y-5">
+                                    {/* ═══ LAB CONSOLE HEADER ═══ */}
+                                    <div className="flex items-center justify-between pb-3 border-b border-cyan-500/15">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
+                                            <span className="text-[10px] font-mono font-black text-cyan-300 uppercase tracking-[0.18em]">COMPOUND CONFIGURATION</span>
+                                        </div>
+                                        <span className="text-[9px] font-mono font-bold text-cyan-400/60 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">MODULE 01</span>
+                                    </div>
+
                                     {/* Mode Selector Switch */}
-                                    <div className="flex bg-black/40 rounded-2xl p-1.5 border border-white/10 shadow-inner">
+                                    <div className="flex bg-black/60 rounded-xl p-1 border border-cyan-500/20 shadow-inner">
                                         <button
                                             onClick={() => setAnalysisMode('text')}
-                                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5
-                                                ${analysisMode === 'text' ? 'bg-white/10 text-white shadow-md' : 'text-white/40 hover:text-white/70'}`}
+                                            className={`flex-1 py-2 text-[10px] font-mono font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5
+                                                ${analysisMode === 'text'
+                                                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                                                    : 'text-white/40 hover:text-white/70 border border-transparent'}`}
                                         >
                                             <FileText size={12} /> Text Search
                                         </button>
                                         <button
                                             onClick={() => setAnalysisMode('image')}
-                                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5
-                                                ${analysisMode === 'image' ? 'bg-white/10 text-white shadow-md' : 'text-white/40 hover:text-white/70'}`}
+                                            className={`flex-1 py-2 text-[10px] font-mono font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5
+                                                ${analysisMode === 'image'
+                                                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                                                    : 'text-white/40 hover:text-white/70 border border-transparent'}`}
                                         >
                                             <Camera size={12} /> Molecular Scan
                                         </button>
@@ -3011,24 +3024,27 @@ This document is a simulated educational clinical report.
                                     {/* Inputs */}
                                     {analysisMode === 'text' ? (
                                         <div>
-                                            <label className="block text-[10px] font-bold text-blue-300/60 uppercase tracking-widest mb-2">Drug Compound</label>
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <label className="block text-[10px] font-mono font-bold text-cyan-400/80 uppercase tracking-widest">Target Compound</label>
+                                                <span className="text-[8px] font-mono text-cyan-500/50">INPUT ID: CMP-01</span>
+                                            </div>
                                             <input
                                                 type="text"
                                                 value={drugName}
                                                 onChange={e => setDrugName(e.target.value)}
                                                 onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
                                                 placeholder="Enter drug name (e.g. Ibuprofen)..."
-                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 placeholder:text-white/20 text-sm transition-all shadow-inner focus:border-rose-500/30"
+                                                className="w-full bg-black/60 border border-cyan-500/25 rounded-xl px-4 py-2.5 text-cyan-100 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400 placeholder:text-white/20 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]"
                                             />
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
                                             <div>
                                                 <div className="flex items-center justify-between mb-2">
-                                                    <label className="text-[10px] font-bold text-blue-300/70 uppercase tracking-widest flex items-center gap-1.5">
-                                                        <Sparkles size={12} className="text-rose-400" /> Curated Chemical Scaffolds
+                                                    <label className="text-[10px] font-mono font-bold text-cyan-400/80 uppercase tracking-widest flex items-center gap-1.5">
+                                                        <Sparkles size={12} className="text-cyan-400" /> Curated Chemical Scaffolds
                                                     </label>
-                                                    <span className="text-[9px] font-semibold text-white/30">1-Click Scan</span>
+                                                    <span className="text-[9px] font-mono font-semibold text-cyan-500/50">1-Click Scan</span>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {PRESET_MOLECULAR_CARDS.map((card) => {
@@ -3040,8 +3056,8 @@ This document is a simulated educational clinical report.
                                                                 onClick={() => handleSelectMolecularPreset(card.id)}
                                                                 className={`p-2.5 rounded-xl border text-left transition-all duration-200 relative overflow-hidden group flex flex-col justify-between ${
                                                                     isSelected
-                                                                        ? 'bg-rose-500/15 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.25)] ring-1 ring-rose-500/40'
-                                                                        : 'bg-black/50 border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
+                                                                        ? 'bg-cyan-500/15 border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/40'
+                                                                        : 'bg-black/50 border-cyan-500/10 hover:border-cyan-500/30 hover:bg-cyan-500/[0.04]'
                                                                 }`}
                                                             >
                                                                 <div className="h-10 w-full mb-1 flex items-center justify-center overflow-hidden opacity-85 group-hover:opacity-100 transition-opacity">
@@ -3053,7 +3069,7 @@ This document is a simulated educational clinical report.
                                                                 <div>
                                                                     <div className="flex items-center justify-between gap-1">
                                                                         <span className="text-xs font-bold text-white truncate">{card.name}</span>
-                                                                        <span className="text-[10px] font-mono font-bold text-rose-300 flex-shrink-0">{card.formula}</span>
+                                                                        <span className="text-[10px] font-mono font-bold text-cyan-300 flex-shrink-0">{card.formula}</span>
                                                                     </div>
                                                                     <span className="text-[8px] font-semibold text-emerald-400/90 block truncate mt-0.5">
                                                                         🛡️ {card.targetOrganSparing}
@@ -3066,10 +3082,10 @@ This document is a simulated educational clinical report.
                                             </div>
 
                                             <div>
-                                                <label className="block text-[10px] font-bold text-blue-300/70 uppercase tracking-widest mb-1.5">
+                                                <label className="block text-[10px] font-mono font-bold text-cyan-400/80 uppercase tracking-widest mb-1.5">
                                                     Custom Chemical Diagram / Scheme
                                                 </label>
-                                                <div className="relative border border-dashed border-white/15 rounded-2xl bg-black/40 hover:bg-white/[0.04] transition-all duration-300 group overflow-hidden">
+                                                <div className="relative border border-dashed border-cyan-500/25 rounded-2xl bg-black/40 hover:bg-cyan-500/[0.04] transition-all duration-300 group overflow-hidden">
                                                     <input
                                                         type="file"
                                                         accept="image/*"
@@ -3093,9 +3109,9 @@ This document is a simulated educational clinical report.
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <Camera size={22} className="text-white/25 mb-1.5 group-hover:text-rose-400 group-hover:scale-110 transition-transform" />
-                                                                <p className="text-xs font-bold text-white/60">Upload structure or Chemdraw scan</p>
-                                                                <p className="text-[9px] text-white/30 mt-0.5">PNG, JPG, SVG or textbook reaction scheme</p>
+                                                                <Camera size={22} className="text-cyan-400/40 mb-1.5 group-hover:text-cyan-300 group-hover:scale-110 transition-transform" />
+                                                                <p className="text-xs font-bold text-white/70">Upload structure or Chemdraw scan</p>
+                                                                <p className="text-[9px] text-cyan-400/40 mt-0.5">PNG, JPG, SVG or textbook reaction scheme</p>
                                                             </>
                                                         )}
                                                     </div>
@@ -3104,10 +3120,13 @@ This document is a simulated educational clinical report.
                                         </div>
                                     )}
 
-                                    {/* Quick Presets */}
+                                    {/* Quick Presets — Holographic Card Grid */}
                                     {analysisMode === 'text' && (
                                         <div>
-                                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2.5">Compound Library</p>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <p className="text-[10px] font-mono font-bold text-cyan-400/70 uppercase tracking-widest">Library Scaffolds</p>
+                                                <span className="text-[8px] font-mono text-cyan-500/40">PRE-COMPUTED</span>
+                                            </div>
                                             <div className="grid grid-cols-3 gap-1.5">
                                                 {DRUG_PRESETS.map(p => (
                                                     <button
@@ -3116,31 +3135,31 @@ This document is a simulated educational clinical report.
                                                             setDrugName(p.name);
                                                             handleAnalyze(p.name);
                                                         }}
-                                                        className={`flex flex-col items-center py-2 px-1 rounded-xl text-[9px] font-black tracking-tight border transition-all hover:scale-[1.03] active:scale-95 relative overflow-hidden group
+                                                        className={`flex flex-col items-center py-2 px-1 rounded-xl text-[9px] font-mono font-bold tracking-tight border transition-all hover:scale-[1.04] active:scale-95 relative overflow-hidden group
                                                             ${drugName === p.name
-                                                                ? 'bg-rose-500/10 border-rose-500/40 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
-                                                                : 'bg-white/[0.02] border-white/10 text-white/40 hover:bg-white/[0.06] hover:text-white'}`}>
+                                                                ? 'bg-gradient-to-b from-cyan-500/20 to-blue-500/10 border-cyan-400/60 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/40'
+                                                                : 'bg-black/50 border-cyan-500/10 text-white/50 hover:bg-cyan-500/[0.06] hover:border-cyan-500/30 hover:text-white'}`}>
                                                         <span className="text-lg mb-0.5 group-hover:scale-115 transition-transform">{p.icon}</span>
-                                                        <span>{p.name}</span>
+                                                        <span className="truncate w-full text-center">{p.name}</span>
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Dosage Slider */}
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1.5">
-                                            <label className="text-[10px] font-bold text-blue-300/60 uppercase tracking-widest">Active Dosage</label>
-                                            <span className="text-xs font-mono font-black text-white bg-white/5 px-2 py-0.5 rounded-md border border-white/5">{dosage} mg</span>
+                                    {/* Active Dosage Slider */}
+                                    <div className="p-3 rounded-xl bg-black/40 border border-cyan-500/10 shadow-inner">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-[10px] font-mono font-bold text-cyan-400/70 uppercase tracking-widest">Active Dosage</label>
+                                            <span className="text-xs font-mono font-black text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 shadow-[0_0_8px_rgba(6,182,212,0.2)]">{dosage} mg</span>
                                         </div>
                                         <input
                                             type="range" min={1} max={2000} step={1}
                                             value={dosage}
                                             onChange={e => handleDosageChange(Number(e.target.value))}
-                                            className="w-full accent-rose-500 cursor-pointer h-1.5 bg-white/5 rounded-full"
+                                            className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-cyan-950/60 rounded-full"
                                         />
-                                        <div className="flex justify-between text-[8px] font-mono text-white/30 mt-1">
+                                        <div className="flex justify-between text-[8px] font-mono text-cyan-400/40 mt-1">
                                             <span>1 mg</span><span>2000 mg</span>
                                         </div>
                                     </div>
@@ -3148,26 +3167,28 @@ This document is a simulated educational clinical report.
                                     {/* Custom Option Cards */}
                                     <div className="space-y-3">
                                         <div>
-                                            <label className="block text-[10px] font-bold text-blue-300/60 uppercase tracking-widest mb-1.5">Route of Action</label>
+                                            <label className="block text-[10px] font-mono font-bold text-cyan-400/70 uppercase tracking-widest mb-1.5">Route of Action</label>
                                             <select
                                                 value={route}
                                                 onChange={e => setRoute(e.target.value)}
-                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-2.5 text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/40 [&>option]:text-gray-900 transition-all font-semibold">
+                                                className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-3 py-2 text-cyan-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400 [&>option]:text-gray-900 transition-all font-semibold shadow-inner">
                                                 {ROUTES.map(r => <option key={r}>{r}</option>)}
                                             </select>
                                         </div>
 
                                         {/* Genomics profile container */}
-                                        <div className="p-4 bg-purple-500/[0.02] border border-purple-500/20 rounded-2xl relative overflow-hidden group shadow-lg">
+                                        <div className="p-3.5 bg-purple-500/[0.03] border border-purple-500/30 rounded-xl relative overflow-hidden group shadow-lg">
                                             <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-full blur-xl pointer-events-none" />
-                                            <label className="block text-[9px] font-black text-purple-300 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                                🧬 Genomic Sequencer Profile
-                                                <span className="text-[8px] bg-purple-500/20 px-1.5 py-0.2 rounded font-bold">4D</span>
+                                            <label className="block text-[9px] font-mono font-black text-purple-300 uppercase tracking-widest mb-2 flex items-center justify-between">
+                                                <span className="flex items-center gap-1.5">
+                                                    <span>🧬</span> Genomic Sequencer Profile
+                                                </span>
+                                                <span className="text-[8px] bg-purple-500/20 px-1.5 py-0.5 rounded font-bold border border-purple-500/30">4D</span>
                                             </label>
                                             <select
                                                 value={genomicProfile}
                                                 onChange={e => setGenomicProfile(e.target.value)}
-                                                className="w-full bg-black/40 border border-purple-500/30 rounded-xl px-3 py-2 text-white text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/40 [&>option]:text-gray-900 transition-all shadow-inner">
+                                                className="w-full bg-black/60 border border-purple-500/40 rounded-lg px-3 py-2 text-purple-200 text-[10px] font-mono font-bold focus:outline-none focus:ring-2 focus:ring-purple-400/40 [&>option]:text-gray-900 transition-all shadow-inner">
                                                 <option>Standard (Normal Metabolizer)</option>
                                                 <option>CYP450 Poor Metabolizer</option>
                                                 <option>CYP450 Ultra-Rapid Metabolizer</option>
@@ -3177,25 +3198,25 @@ This document is a simulated educational clinical report.
                                     </div>
 
                                     {/* Patient Profile */}
-                                    <div className="grid grid-cols-2 gap-3 border-t border-white/5 pt-4">
+                                    <div className="grid grid-cols-2 gap-3 border-t border-cyan-500/10 pt-3">
                                         <div>
-                                            <label className="block text-[10px] font-bold text-blue-300/60 uppercase tracking-widest mb-1">Age</label>
+                                            <label className="block text-[10px] font-mono font-bold text-cyan-400/70 uppercase tracking-widest mb-1">Patient Age</label>
                                             <input
                                                 type="number" min={0} max={120}
                                                 value={age}
                                                 onChange={e => setAge(e.target.value ? parseInt(e.target.value) : '')}
                                                 placeholder="yrs"
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/40 placeholder:text-white/20 transition-all font-mono"
+                                                className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-3 py-2 text-cyan-100 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400 placeholder:text-white/20 transition-all font-mono"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold text-blue-300/60 uppercase tracking-widest mb-1">Weight</label>
+                                            <label className="block text-[10px] font-mono font-bold text-cyan-400/70 uppercase tracking-widest mb-1">Weight</label>
                                             <input
                                                 type="number" min={0} max={300}
                                                 value={weight}
                                                 onChange={e => setWeight(e.target.value ? parseInt(e.target.value) : '')}
                                                 placeholder="kg"
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/40 placeholder:text-white/20 transition-all font-mono"
+                                                className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-3 py-2 text-cyan-100 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400 placeholder:text-white/20 transition-all font-mono"
                                             />
                                         </div>
                                     </div>
@@ -3204,19 +3225,19 @@ This document is a simulated educational clinical report.
                                     <div className="grid grid-cols-2 gap-2.5 pt-1">
                                         <button
                                             onClick={() => setIsHandTrackingActive(v => !v)}
-                                            className={`px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all border duration-300 flex flex-col items-center justify-center gap-1.5 shadow-md
+                                            className={`px-3 py-2.5 rounded-xl text-[9px] font-mono font-black uppercase tracking-wider transition-all border duration-300 flex flex-col items-center justify-center gap-1.5 shadow-md
                                                 ${isHandTrackingActive
-                                                    ? 'bg-sky-500/10 border-sky-500/30 text-sky-300 shadow-[0_0_12px_rgba(14,165,233,0.2)] animate-pulse'
-                                                    : 'bg-white/[0.02] border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'}`}>
+                                                    ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.3)] animate-pulse'
+                                                    : 'bg-black/40 border-cyan-500/10 text-white/50 hover:bg-cyan-500/[0.06] hover:border-cyan-500/20 hover:text-white'}`}>
                                             <Camera size={14} className="group-hover:scale-110" />
                                             <span>{isHandTrackingActive ? 'Tracking On' : 'Gestures Off'}</span>
                                         </button>
                                         <button
                                             onClick={toggleVoice}
-                                            className={`px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all border duration-300 flex flex-col items-center justify-center gap-1.5 shadow-md
+                                            className={`px-3 py-2.5 rounded-xl text-[9px] font-mono font-black uppercase tracking-wider transition-all border duration-300 flex flex-col items-center justify-center gap-1.5 shadow-md
                                                 ${isListening
-                                                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.2)] animate-pulse'
-                                                    : 'bg-white/[0.02] border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'}`}>
+                                                    ? 'bg-rose-500/15 border-rose-400/40 text-rose-200 shadow-[0_0_12px_rgba(244,63,94,0.3)] animate-pulse'
+                                                    : 'bg-black/40 border-cyan-500/10 text-white/50 hover:bg-cyan-500/[0.06] hover:border-cyan-500/20 hover:text-white'}`}>
                                             {isListening ? <Mic size={14} /> : <MicOff size={14} />}
                                             <span>{isListening ? 'Listening' : 'Voice Off'}</span>
                                         </button>
