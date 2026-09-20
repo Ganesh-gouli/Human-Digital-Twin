@@ -34,8 +34,6 @@ interface AppContextType {
     deleteExperiment: (id: string) => void;
     loadExperiment: (dossier: ExperimentDossier) => void;
     clearActiveDossier: () => void;
-    activeScientificModal: 'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null;
-    openScientificModal: (modal: 'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -161,7 +159,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [activeDossier, setActiveDossier] = useState<ExperimentDossier | null>(null);
     const [isGuideOpen, setIsGuideOpen] = useState(false);
     const [activeGuideTab, setActiveGuideTab] = useState('overview');
-    const [activeScientificModal, setActiveScientificModal] = useState<'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null>(null);
 
     // Persist dossiers to localStorage
     useEffect(() => {
@@ -318,10 +315,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setIsGuideOpen(false);
     }, []);
 
-    const openScientificModal = useCallback((modal: 'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null) => {
-        setActiveScientificModal(modal);
-    }, []);
-
     return (
         <AppContext.Provider value={{
             user,
@@ -349,9 +342,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             saveExperiment,
             deleteExperiment,
             loadExperiment,
-            clearActiveDossier,
-            activeScientificModal,
-            openScientificModal
+            clearActiveDossier
         }}>
             {children}
         </AppContext.Provider>

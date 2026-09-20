@@ -14,11 +14,6 @@ import { ExperimentDossier, OrganToxicityScore } from '../types';
 import ChemicalSynthesisConsole from '../components/ChemicalSynthesisConsole';
 import { PRESET_MOLECULAR_CARDS, PRESET_SYNTHESIS_DB, applyMolecularEnhancement } from '../services/synthesisDatabase';
 import SimulationExplainerModal from '../components/SimulationExplainerModal';
-import MolecularViewer3D from '../components/MolecularViewer3D';
-import BioTelemetryAuscultator from '../components/BioTelemetryAuscultator';
-import PharmacogenomicMutatorModal, { DEFAULT_PHARMACOGENOMIC_PROFILE, PharmacogenomicProfile } from '../components/PharmacogenomicMutatorModal';
-import QuantumDockingSimulator from '../components/QuantumDockingSimulator';
-import RealWorldEvidenceBridge from '../components/RealWorldEvidenceBridge';
 
 // ─── Heatmap color legend ──────────────────────────────────────────────────────
 const HeatmapLegend: React.FC = () => (
@@ -425,7 +420,7 @@ const checkIsOrganInfected = (organName: string, activeSet: Set<string> | string
 
 // ─── Main component ─────────────────────────────────────────────────────────────
 export const DrugImpactVisualizer = () => {
-    const { navigateTo, user, savedExperiments, saveExperiment, deleteExperiment, activeDossier, clearActiveDossier, openGuide, activeScientificModal, openScientificModal } = useAppContext();
+    const { navigateTo, user, savedExperiments, saveExperiment, deleteExperiment, activeDossier, clearActiveDossier, openGuide } = useAppContext();
 
     // ─── Virtual Experiment Dossier States ───────────────────────────
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -438,25 +433,10 @@ export const DrugImpactVisualizer = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
 
-    // ─── BioTwin Advanced Scientific Suites States ───────────────────
-    const [isMolecularModalOpen, setIsMolecularModalOpen] = useState(false);
-    const [isTelemetryModalOpen, setIsTelemetryModalOpen] = useState(false);
-    const [isGenomeModalOpen, setIsGenomeModalOpen] = useState(false);
-    const [isQuantumModalOpen, setIsQuantumModalOpen] = useState(false);
-    const [isRweModalOpen, setIsRweModalOpen] = useState(false);
-    const [patientGenomeProfile, setPatientGenomeProfile] = useState<PharmacogenomicProfile>(DEFAULT_PHARMACOGENOMIC_PROFILE);
-
-    // Auto-open scientific suite modal if navigated from Dashboard
-    useEffect(() => {
-        if (activeScientificModal) {
-            if (activeScientificModal === 'MOLECULAR') setIsMolecularModalOpen(true);
-            else if (activeScientificModal === 'TELEMETRY') setIsTelemetryModalOpen(true);
-            else if (activeScientificModal === 'GENOME') setIsGenomeModalOpen(true);
-            else if (activeScientificModal === 'QUANTUM') setIsQuantumModalOpen(true);
-            else if (activeScientificModal === 'RWE') setIsRweModalOpen(true);
-            openScientificModal(null);
-        }
-    }, [activeScientificModal, openScientificModal]);
+    // ─── Flanking 3D Companion Models (DNA Double Helix & Molecular/Viral Core) ─
+    const [showDnaCompanion, setShowDnaCompanion] = useState(true);
+    const [showMolecularCompanion, setShowMolecularCompanion] = useState(true);
+    const [selectedCompanionModal, setSelectedCompanionModal] = useState<'dna' | 'molecule' | 'pathogen' | null>(null);
 
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
@@ -791,14 +771,12 @@ export const DrugImpactVisualizer = () => {
         if (Array.isArray(result.heatmap_effects)) effects = result.heatmap_effects;
         else if (Array.isArray(result.effects)) effects = result.effects as unknown as HeatmapEffect[];
 
-        const genomeMult = patientGenomeProfile.toxicityMultiplier;
-
         if (result.time_based_intensity && result.time_based_intensity[timePhase] !== undefined) {
-            const multiplier = result.time_based_intensity[timePhase] * genomeMult;
-            return effects.map(e => ({ ...e, intensity: Math.min(1.0, e.intensity * multiplier) }));
+            const multiplier = result.time_based_intensity[timePhase];
+            return effects.map(e => ({ ...e, intensity: e.intensity * multiplier }));
         }
-        return effects.map(e => ({ ...e, intensity: Math.min(1.0, e.intensity * genomeMult) }));
-    }, [result, timePhase, patientGenomeProfile.toxicityMultiplier]);
+        return effects;
+    }, [result, timePhase]);
 
     const uniqueEffects2 = useMemo((): HeatmapEffect[] => {
         if (!result2) return [];
@@ -1662,48 +1640,8 @@ This document is a simulated educational clinical report.
                             )}
 
                             <button
-                                onClick={() => { setIsMobileMenuOpen(false); setIsMolecularModalOpen(true); }}
-                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-teal-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                                <span>⚛️</span>
-                                <span>3D Molecule Inspector</span>
-                            </button>
-
-                            <button
-                                onClick={() => { setIsMobileMenuOpen(false); setIsTelemetryModalOpen(true); }}
-                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                                <span>💓</span>
-                                <span>Bio-Telemetry & Auscultator</span>
-                            </button>
-
-                            <button
-                                onClick={() => { setIsMobileMenuOpen(false); setIsGenomeModalOpen(true); }}
-                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                                <span>🧬</span>
-                                <span>Patient Genome Mutator</span>
-                            </button>
-
-                            <button
-                                onClick={() => { setIsMobileMenuOpen(false); setIsQuantumModalOpen(true); }}
-                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-indigo-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                                <span>⚡</span>
-                                <span>Quantum Docking Simulator</span>
-                            </button>
-
-                            <button
-                                onClick={() => { setIsMobileMenuOpen(false); setIsRweModalOpen(true); }}
-                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                                <span>🌐</span>
-                                <span>Real-World Evidence Bridge</span>
-                            </button>
-
-                            <button
                                 onClick={() => { setIsMobileMenuOpen(false); setIsSaveModalOpen(true); }}
-                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-teal-300 hover:bg-teal-500/15 flex items-center gap-2 transition-colors cursor-pointer border-t border-white/10 pt-2"
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-teal-300 hover:bg-teal-500/15 flex items-center gap-2 transition-colors cursor-pointer"
                             >
                                 <span>💾</span>
                                 <span>Save Experiment Dossier</span>
@@ -1726,65 +1664,6 @@ This document is a simulated educational clinical report.
                             </button>
                         </div>
                     )}
-                </div>
-
-                {/* ── BioTwin Advanced Scientific Suites Quick Toolbar ──────────────── */}
-                <div className="bg-[#040d1a]/95 border-b border-teal-500/20 px-3 sm:px-6 py-1.5 flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar no-print backdrop-blur-md">
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                        <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-teal-400/80 mr-1 hidden sm:inline-flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-                            Suites:
-                        </span>
-                        <button
-                            onClick={() => setIsMolecularModalOpen(true)}
-                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-                            title="Open 3D Molecular Ball-and-Stick Structure Viewer"
-                        >
-                            <span>⚛️</span>
-                            <span>3D Molecule</span>
-                        </button>
-                        <button
-                            onClick={() => setIsTelemetryModalOpen(true)}
-                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-                            title="Open Acoustic Stethoscope & Live ECG Auscultator"
-                        >
-                            <span>💓</span>
-                            <span>ECG & Audio</span>
-                        </button>
-                        <button
-                            onClick={() => setIsGenomeModalOpen(true)}
-                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-                            title="Mutate Virtual Patient CYP450 Genotype & Renal Clearance"
-                        >
-                            <span>🧬</span>
-                            <span>Genome Mutator {patientGenomeProfile.toxicityMultiplier !== 1.0 && `(${patientGenomeProfile.toxicityMultiplier}x)`}</span>
-                        </button>
-                        <button
-                            onClick={() => setIsQuantumModalOpen(true)}
-                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-                            title="Calculate Hamiltonian Ground State Energy & Receptor Specificity"
-                        >
-                            <span>⚡</span>
-                            <span>Quantum Docking</span>
-                        </button>
-                        <button
-                            onClick={() => setIsRweModalOpen(true)}
-                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-                            title="Cross-reference FDA MedWatch Adverse Events & Clinical Trials"
-                        >
-                            <span>🌐</span>
-                            <span>RWE Bridge</span>
-                        </button>
-                    </div>
-
-                    {/* Current Cohort Badge */}
-                    <div className="hidden lg:flex items-center gap-2 text-[10px] font-mono text-gray-400">
-                        <span>CYP2D6: <strong className="text-purple-300">{patientGenomeProfile.cyp2d6}</strong></span>
-                        <span>•</span>
-                        <span>eGFR: <strong className="text-cyan-300">{patientGenomeProfile.egfr}</strong></span>
-                        <span>•</span>
-                        <span>Cohort: <strong className="text-white">{patientGenomeProfile.ageCohort}</strong></span>
-                    </div>
                 </div>
 
                 {/* ── Main Layout ──────────────────────────────────────────── */}
@@ -2130,8 +2009,72 @@ This document is a simulated educational clinical report.
                                                 : 'text-white/40 hover:text-white'}`}>
                                         🫀 Organs
                                     </button>
+
+                                    {/* Flanking Companion 3D Models Toggles */}
+                                    <div className="w-[1px] h-4 bg-white/20 my-auto mx-1" />
+                                    <button
+                                        onClick={() => setShowDnaCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showDnaCompanion
+                                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
+                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
+                                        title="Toggle 3D Genomic DNA Double Helix beside the Twin"
+                                    >
+                                        <span>🧬 DNA</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showDnaCompanion ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
+                                    </button>
+                                    <button
+                                        onClick={() => setShowMolecularCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showMolecularCompanion
+                                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-lg shadow-rose-500/20'
+                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
+                                        title="Toggle 3D Pathogen Virion model beside the Twin"
+                                    >
+                                        <span>🦠 Pathogen</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showMolecularCompanion ? 'bg-rose-400 animate-pulse' : 'bg-white/20'}`} />
+                                    </button>
                                 </div>
                             </div>
+
+                            {/* 3D Companion Interactive Info Popups */}
+                            {selectedCompanionModal === 'dna' && (
+                                <div className="absolute top-16 left-4 sm:left-6 z-40 bg-slate-950/95 border border-cyan-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-cyan-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> 3D Genomic DNA Core
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">Human Genome Assembly (GRCh38.p14)</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-cyan-400 font-bold">A-T Pairs:</span> 58.2%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">G-C Pairs:</span> 41.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Alignment:</span> 99.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Mutations:</span> 0 Active</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive 3D double helix tracking chromosome 7q31 pharmacogenomic markers.</p>
+                                </div>
+                            )}
+
+                            {selectedCompanionModal === 'pathogen' && (
+                                <div className="absolute top-16 right-4 sm:right-6 z-40 bg-slate-950/95 border border-rose-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(244,63,94,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-rose-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" /> 3D Pathogen Virion Capsid
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">{diseaseResult ? diseaseResult.disease_name : 'Simulated Pathogen Virion'}</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Symmetry:</span> Icosahedral</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-amber-400 font-bold">Spikes:</span> 30 Glycoproteins</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">Envelope:</span> Lipid Bilayer</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Neutralized:</span> {cureProgress}%</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Spiked viral envelope with simulated receptor binding sites.</p>
+                                </div>
+                            )}
 
                             {/* Disease info card overlay (top-left) */}
                             {diseaseResult && (
@@ -2430,7 +2373,7 @@ This document is a simulated educational clinical report.
                                                             const isSelected = selectedMedsForCocktail.includes(med.name);
                                                             const isCurrentlyInjected = injectedDrugs.includes(med.name) && cureProgress > 0;
                                                             return (
-                                                                <div key={i} className="p-4 bg-blue-500/[0.02] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-blue-500/20 transition-all duration-300">
+                                                                <div key={i} className="p-4 bg-blue-500/[0.02] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-blue-500/25 transition-all duration-300">
                                                                     <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/5 rounded-full -translate-y-2 translate-x-2 group-hover:bg-blue-500/10 transition-colors" />
                                                                     <div className="flex items-start justify-between gap-3">
                                                                         <div className="flex-1 min-w-0">
@@ -3409,8 +3352,72 @@ This document is a simulated educational clinical report.
                                                 : 'text-white/40 hover:text-white'}`}>
                                         🫀 Organs
                                     </button>
+
+                                    {/* Flanking Companion 3D Models Toggles */}
+                                    <div className="w-[1px] h-4 bg-white/20 my-auto mx-1" />
+                                    <button
+                                        onClick={() => setShowDnaCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showDnaCompanion
+                                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
+                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
+                                        title="Toggle 3D Genomic DNA Double Helix beside the Twin"
+                                    >
+                                        <span>🧬 DNA</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showDnaCompanion ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
+                                    </button>
+                                    <button
+                                        onClick={() => setShowMolecularCompanion(v => !v)}
+                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                                            ${showMolecularCompanion
+                                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-lg shadow-purple-500/20'
+                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
+                                        title="Toggle 3D Molecular Drug Ligand model beside the Twin"
+                                    >
+                                        <span>⚛️ Molecule</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showMolecularCompanion ? 'bg-purple-400 animate-pulse' : 'bg-white/20'}`} />
+                                    </button>
                                 </div>
                             </div>
+
+                            {/* 3D Companion Interactive Info Popups */}
+                            {selectedCompanionModal === 'dna' && (
+                                <div className="absolute top-16 left-4 sm:left-6 z-40 bg-slate-950/95 border border-cyan-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-cyan-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> 3D Genomic DNA Core
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">Human Genome Assembly (GRCh38.p14)</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-cyan-400 font-bold">A-T Pairs:</span> 58.2%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">G-C Pairs:</span> 41.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Alignment:</span> 99.8%</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Mutations:</span> 0 Active</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive 3D double helix tracking chromosome 7q31 pharmacogenomic markers.</p>
+                                </div>
+                            )}
+
+                            {selectedCompanionModal === 'molecule' && (
+                                <div className="absolute top-16 right-4 sm:right-6 z-40 bg-slate-950/95 border border-purple-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span className="font-black text-purple-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" /> 3D Quantum Molecular Ligand
+                                        </span>
+                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
+                                    </div>
+                                    <p className="text-white/90 font-bold text-[11px]">{result ? result.drug_name : 'Active Pharmacophore Compound'}</p>
+                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-sky-400 font-bold">Bond Order:</span> Delocalized</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Affinity:</span> 94.2 nM</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-amber-400 font-bold">Valence:</span> sp² Hybrid</div>
+                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-teal-400 font-bold">LogP:</span> 2.14</div>
+                                    </div>
+                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive ball-and-stick lattice with quantum electron probability orbitals.</p>
+                                </div>
+                            )}
 
                             {/* Temporal Scrubbing Control (anchored to bottom-right side) */}
                             {result && result.time_based_intensity && (
@@ -3503,6 +3510,11 @@ This document is a simulated educational clinical report.
                                             resetCameraFlag={cameraResetFlag}
                                             debugMode={debugRegions}
                                             calibrationMode={calibrationMode}
+                                            showDnaHelix={showDnaCompanion}
+                                            showMolecularModel={showMolecularCompanion}
+                                            companionMode="molecule"
+                                            onSelectDna={() => setSelectedCompanionModal('dna')}
+                                            onSelectMolecule={() => setSelectedCompanionModal('molecule')}
                                         />
                                     </ErrorBoundary>
 
@@ -3885,40 +3897,6 @@ This document is a simulated educational clinical report.
                     setIsExplainerOpen(false);
                     openGuide(tab);
                 }}
-            />
-
-            {/* ── BioTwin Advanced Scientific Enhancement Modals ── */}
-            <MolecularViewer3D
-                drugName={result?.drug_name || drugName || 'Aspirin'}
-                isOpen={isMolecularModalOpen}
-                onClose={() => setIsMolecularModalOpen(false)}
-            />
-
-            <BioTelemetryAuscultator
-                isOpen={isTelemetryModalOpen}
-                onClose={() => setIsTelemetryModalOpen(false)}
-                activeDrugName={result?.drug_name || drugName || 'Candidate Compound'}
-                cardiacStrainScore={result?.system_wide_risk_score || 25}
-            />
-
-            <PharmacogenomicMutatorModal
-                isOpen={isGenomeModalOpen}
-                onClose={() => setIsGenomeModalOpen(false)}
-                currentProfile={patientGenomeProfile}
-                onApplyProfile={setPatientGenomeProfile}
-                activeDrugName={result?.drug_name || drugName || 'Candidate Compound'}
-            />
-
-            <QuantumDockingSimulator
-                isOpen={isQuantumModalOpen}
-                onClose={() => setIsQuantumModalOpen(false)}
-                drugName={result?.drug_name || drugName || 'Candidate Compound'}
-            />
-
-            <RealWorldEvidenceBridge
-                isOpen={isRweModalOpen}
-                onClose={() => setIsRweModalOpen(false)}
-                drugName={result?.drug_name || drugName || 'Candidate Compound'}
             />
         </div>
     );

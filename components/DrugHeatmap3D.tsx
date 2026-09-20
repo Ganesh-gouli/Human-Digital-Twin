@@ -7,6 +7,8 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { HeatmapEffect } from '../types';
 import gsap from 'gsap';
 import { LandmarkIndicators, CalibrationMode } from './LandmarkIndicator';
+import DnaHelix3D from './DnaHelix3D';
+import MolecularModel3D from './MolecularModel3D';
 
 // Preload GLB models globally to prevent reloading on component re-mount
 try {
@@ -1597,6 +1599,12 @@ export interface DrugHeatmap3DProps {
     debugMode?: boolean;
     /** When true, shows calibration click-to-coordinate tool on outer body */
     calibrationMode?: boolean;
+    /** 3D Companion Models flanking the Human Twin */
+    showDnaHelix?: boolean;
+    showMolecularModel?: boolean;
+    companionMode?: 'molecule' | 'pathogen';
+    onSelectDna?: () => void;
+    onSelectMolecule?: () => void;
 }
 
 const DebugRegionsOverlay = ({ debugMode }: { debugMode?: boolean }) => {
@@ -1838,7 +1846,8 @@ const GestureController = ({ orbitRef, rotationDelta, zoomDelta, dragDelta, rese
 };
 
 const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
-    effects = [], selectedOrgan, isGlassMode, showSkeleton, showBody, showOrgans, showMuscles, showNervousGLB, onOrganSelect, isAnalyzing, isCuring, cureProgress = 0, handRotationDelta, handDragDelta, handZoomDelta, resetCameraFlag, debugMode, calibrationMode
+    effects = [], selectedOrgan, isGlassMode, showSkeleton, showBody, showOrgans, showMuscles, showNervousGLB, onOrganSelect, isAnalyzing, isCuring, cureProgress = 0, handRotationDelta, handDragDelta, handZoomDelta, resetCameraFlag, debugMode, calibrationMode,
+    showDnaHelix = true, showMolecularModel = true, companionMode, onSelectDna, onSelectMolecule
 }) => {
     // Ref for the outer body group — shared with LandmarkIndicators
     const outerBodyGroupRef = useRef<THREE.Group | null>(null);
@@ -1874,6 +1883,27 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 <spotLight position={[0, 5, -5]} intensity={2} color="#06b6d4" />
 
                 <CameraSetup resetCameraFlag={resetCameraFlag} orbitRef={orbitRef} />
+
+                {/* ── Flanking 3D Companion Models Beside the Human Twin ── */}
+                {showDnaHelix && (
+                    <DnaHelix3D
+                        position={[-2.4, 0, 0]}
+                        scale={0.82}
+                        speed={1.0}
+                        onClick={onSelectDna}
+                    />
+                )}
+
+                {showMolecularModel && (
+                    <MolecularModel3D
+                        position={[2.4, 0, 0]}
+                        scale={0.82}
+                        mode={companionMode || (isCuring ? 'pathogen' : 'molecule')}
+                        speed={1.0}
+                        onClick={onSelectMolecule}
+                    />
+                )}
+
                 <SceneRotator>
                     <React.Suspense fallback={<CanvasLoaderFallback />}>
                         {(showBody || (!showOrgans && !showSkeleton && !showMuscles && !showNervousGLB)) && (
