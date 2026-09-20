@@ -292,7 +292,7 @@ export const Dashboard: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
                     <div
-                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        onClick={() => { openScientificModal('MOLECULAR'); navigateTo('DRUG_VISUALIZER'); }}
                         className="p-4 rounded-2xl bg-teal-950/20 border border-teal-500/20 hover:border-teal-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
                     >
                         <div>
@@ -306,7 +306,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div
-                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        onClick={() => { openScientificModal('TELEMETRY'); navigateTo('DRUG_VISUALIZER'); }}
                         className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 hover:border-cyan-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
                     >
                         <div>
@@ -320,7 +320,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div
-                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        onClick={() => { openScientificModal('GENOME'); navigateTo('DRUG_VISUALIZER'); }}
                         className="p-4 rounded-2xl bg-purple-950/20 border border-purple-500/20 hover:border-purple-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
                     >
                         <div>
@@ -334,7 +334,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div
-                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        onClick={() => { openScientificModal('QUANTUM'); navigateTo('DRUG_VISUALIZER'); }}
                         className="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 hover:border-indigo-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
                     >
                         <div>
@@ -348,7 +348,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div
-                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        onClick={() => { openScientificModal('RWE'); navigateTo('DRUG_VISUALIZER'); }}
                         className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 hover:border-emerald-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
                     >
                         <div>
