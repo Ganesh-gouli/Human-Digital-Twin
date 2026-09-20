@@ -318,6 +318,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setIsGuideOpen(false);
     }, []);
 
+    const openScientificModal = useCallback((modal: 'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null) => {
+        setActiveScientificModal(modal);
+    }, []);
+
     return (
         <AppContext.Provider value={{
             user,
@@ -345,7 +349,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             saveExperiment,
             deleteExperiment,
             loadExperiment,
-            clearActiveDossier
+            clearActiveDossier,
+            activeScientificModal,
+            openScientificModal
         }}>
             {children}
         </AppContext.Provider>
