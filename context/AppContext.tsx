@@ -161,6 +161,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [activeDossier, setActiveDossier] = useState<ExperimentDossier | null>(null);
     const [isGuideOpen, setIsGuideOpen] = useState(false);
     const [activeGuideTab, setActiveGuideTab] = useState('overview');
+    const [activeScientificModal, setActiveScientificModal] = useState<'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null>(null);
 
     // Persist dossiers to localStorage
     useEffect(() => {
