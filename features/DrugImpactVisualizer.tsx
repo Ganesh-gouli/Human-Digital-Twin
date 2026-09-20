@@ -1881,6 +1881,16 @@ This document is a simulated educational clinical report.
                                 onToggleView={cycleNextViewMode}
                             />
 
+                            {/* Dedicated Futuristic 3D Biomolecular Pod (DNA Helix & Viral Pathogen) */}
+                            {showBiomolecularPod && (
+                                <FuturisticBiomolecularPod
+                                    mode="disease"
+                                    diseaseName={diseaseResult?.disease_name}
+                                    cureProgress={cureProgress}
+                                    onClose={() => setShowBiomolecularPod(false)}
+                                />
+                            )}
+
                             {/* Floating Deconstruction & Understanding Pill */}
                             <div className="absolute bottom-20 lg:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                 <button
