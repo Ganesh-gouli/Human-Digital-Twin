@@ -234,13 +234,15 @@ export const BioTelemetryAuscultator: React.FC<BioTelemetryProps> = ({
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        let width = (canvas.width = canvas.parentElement?.clientWidth || 600);
-        let height = (canvas.height = canvas.parentElement?.clientHeight || 200);
+        let width = Math.max(canvas.parentElement?.clientWidth || 0, 600);
+        let height = Math.max(canvas.parentElement?.clientHeight || 0, 200);
+        canvas.width = width;
+        canvas.height = height;
 
         let x = 0;
         let t = 0;
         const points: Array<{ x: number; y: number }> = [];
-        const maxPoints = Math.floor(width);
+        const maxPoints = Math.max(Math.floor(width), 300);
 
         const render = () => {
             // Background Grid (Medical Phosphor Green/Teal)
