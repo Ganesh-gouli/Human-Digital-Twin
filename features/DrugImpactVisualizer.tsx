@@ -3802,40 +3802,88 @@ This document is a simulated educational clinical report.
 
             {/* Immersive Scan holographic animation overlay */}
             {(isLoading || isLoading2) && (
-                <div className="fixed inset-0 z-[150] pointer-events-auto overflow-hidden flex flex-col items-center justify-center">
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md transition-all duration-500" />
+                <div className="fixed inset-0 z-[150] pointer-events-auto overflow-hidden flex flex-col items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-[#010712]/90 backdrop-blur-2xl transition-all duration-500" />
 
-                    {/* Glowing spinner graphic */}
-                    <div className="relative z-10 flex flex-col items-center max-w-[320px]">
-                        <div className="relative w-48 h-48 mb-6">
-                            {/* Hexagon grid background */}
-                            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxwYXRoIGQ9Ik0wIDEwbTEwLTEwbDEwIDEwbS0xMCAxMGwxMC0xMCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIGZpbGw9Im5vbmUiLz4KPC9zdmc+')] opacity-30 [mask-image:radial-gradient(circle_at_center,black_40%,transparent_100%)]" />
+                    {/* Cyber Grid Background */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#06b6d408_1px,transparent_1px),linear-gradient(to_bottom,#06b6d408_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
-                            <div className="absolute inset-0 border-2 border-t-rose-500 border-r-rose-500/20 border-b-transparent border-l-transparent rounded-full animate-[spin_1.5s_linear_infinite]" />
-                            <div className="absolute inset-2 border border-t-transparent border-r-transparent border-b-purple-500 border-l-purple-500/20 rounded-full animate-[spin_2.5s_linear_infinite_reverse]" />
-                            <div className="absolute inset-4 border border-t-sky-500/30 border-b-transparent rounded-full animate-[spin_4s_linear_infinite]" />
+                    {/* Corner HUD Brackets */}
+                    <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-cyan-400/40 pointer-events-none" />
+                    <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-cyan-400/40 pointer-events-none" />
+                    <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-cyan-400/40 pointer-events-none" />
+                    <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-cyan-400/40 pointer-events-none" />
+
+                    {/* Glowing holographic rings graphic */}
+                    <div className="relative z-10 flex flex-col items-center max-w-md w-full">
+                        <div className="relative w-48 h-48 mb-6 flex items-center justify-center">
+                            {/* Outer dashed radar ring */}
+                            <div className="absolute inset-0 border border-dashed border-cyan-500/30 rounded-full animate-[spin_12s_linear_infinite]" />
+                            {/* Middle cyan/teal ring */}
+                            <div className="absolute inset-2 border-2 border-t-cyan-400 border-r-cyan-400/20 border-b-teal-400 border-l-transparent rounded-full animate-[spin_3s_linear_infinite]" />
+                            {/* Inner reverse purple ring */}
+                            <div className="absolute inset-5 border-2 border-t-transparent border-r-purple-400 border-b-transparent border-l-purple-400/40 rounded-full animate-[spin_2s_linear_infinite_reverse]" />
+                            {/* Innermost pulsing ring */}
+                            <div className="absolute inset-8 border border-cyan-300/40 rounded-full animate-ping opacity-25" />
 
                             {/* Center symbol */}
-                            <div className="absolute inset-0 flex items-center justify-center text-4xl animate-[pulse_1s_ease-in-out_infinite]">
-                                💊
+                            <div className="relative z-10 flex items-center justify-center text-4xl animate-[pulse_1.5s_ease-in-out_infinite] filter drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]">
+                                🧬
                             </div>
 
                             {/* Scanning laser line mapping */}
-                            <div className="absolute left-0 w-full h-[1.5px] bg-rose-400 shadow-[0_0_12px_#f43f5e] animate-scan-bounce" />
+                            <div className="absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#22d3ee] animate-scan-bounce" />
                         </div>
 
-                        <div className="bg-slate-950/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl px-6 py-4 text-center w-full">
-                            <h2 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-purple-400 uppercase tracking-widest mb-1.5">
-                                Mapping Pharmacology
-                            </h2>
-                            <div className="flex items-center justify-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        {/* High-tech telemetry card */}
+                        <div className="bg-[#020b17]/90 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.2)] rounded-2xl p-6 text-center w-full relative overflow-hidden">
+                            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono font-black uppercase tracking-widest mb-3">
+                                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                                <span>IN-SILICO COMPUTATIONAL TRIAL IN PROGRESS</span>
                             </div>
-                            <p className="mt-3 text-[9px] font-mono text-blue-200/50 uppercase tracking-widest truncate">
-                                Analyzing: {isLoading2 ? drugName2 : drugName}
-                            </p>
+
+                            <h2 className="text-base font-black text-white uppercase tracking-wider mb-1">
+                                Multi-Organ Pharmacokinetics Simulation
+                            </h2>
+
+                            <div className="flex items-center justify-center gap-2 my-2.5 py-1.5 px-3 rounded-xl bg-black/50 border border-cyan-500/20 text-xs font-mono">
+                                <span className="text-gray-400 uppercase text-[10px]">Target Compound:</span>
+                                <span className="font-bold text-cyan-300 uppercase tracking-wide truncate max-w-[200px]">
+                                    {isLoading2 ? drugName2 : (drugName || 'COMPOUND')}
+                                </span>
+                            </div>
+
+                            {/* Simulation telemetry stream */}
+                            <div className="text-left font-mono text-[10px] space-y-2 my-3 p-3 rounded-xl bg-black/60 border border-white/5 text-gray-400">
+                                <div className="flex items-center justify-between text-teal-300">
+                                    <span>▸ Bio-distribution & Absorption</span>
+                                    <span className="font-bold text-[9px] uppercase tracking-wider bg-teal-500/20 px-1.5 py-0.5 rounded border border-teal-500/30">COMPUTING</span>
+                                </div>
+                                <div className="flex items-center justify-between text-cyan-300">
+                                    <span>▸ Receptor Binding Affinity</span>
+                                    <span className="font-bold text-[9px] uppercase tracking-wider bg-cyan-500/20 px-1.5 py-0.5 rounded border border-cyan-500/30">MAPPING</span>
+                                </div>
+                                <div className="flex items-center justify-between text-blue-300">
+                                    <span>▸ Off-Target Systemic Toxicity</span>
+                                    <span className="font-bold text-[9px] uppercase tracking-wider bg-blue-500/20 px-1.5 py-0.5 rounded border border-blue-500/30">SYNTHESIZING</span>
+                                </div>
+                            </div>
+
+                            {/* Animated progress indicator */}
+                            <div className="h-2 bg-black/60 rounded-full overflow-hidden p-[1px] border border-cyan-500/30 relative">
+                                <div className="h-full rounded-full bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500 w-full animate-pulse relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] animate-[scanline-sweep_1.5s_linear_infinite]" />
+                                </div>
+                            </div>
+
+                            {/* Telemetry metadata footer */}
+                            <div className="mt-3 flex items-center justify-between text-[9px] font-mono text-cyan-300/60 uppercase tracking-wider">
+                                <span>ENGINE: BIOTWIN v4.2</span>
+                                <span>LATENCY: 14ms</span>
+                                <span>PRECISION: FP16</span>
+                            </div>
                         </div>
                     </div>
                 </div>
