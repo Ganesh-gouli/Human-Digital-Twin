@@ -39,6 +39,32 @@ const CanvasLoaderFallback: React.FC = () => {
 // ─── Base color (matches Iron Man Hologram) ───────────────────────────────────
 const BASE_COLOR = new THREE.Color('#00ffff');
 
+// ─── Holographic Chamber Floor ────────────────────────────────────────────────
+const HolographicChamberFloor: React.FC = () => {
+    return (
+        <group position={[0, -2.15, 0]}>
+            {/* Fine cyber grid */}
+            <gridHelper args={[8, 16, '#06b6d4', '#0369a1']}>
+                <meshBasicMaterial transparent opacity={0.12} />
+            </gridHelper>
+            {/* Outer concentric glowing ring */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
+                <ringGeometry args={[1.7, 1.73, 64]} />
+                <meshBasicMaterial color="#06b6d4" transparent opacity={0.35} side={THREE.DoubleSide} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
+                <ringGeometry args={[2.5, 2.52, 64]} />
+                <meshBasicMaterial color="#0284c7" transparent opacity={0.2} side={THREE.DoubleSide} />
+            </mesh>
+            {/* Ground radial glow */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
+                <circleGeometry args={[2.8, 64]} />
+                <meshBasicMaterial color="#06b6d4" transparent opacity={0.03} side={THREE.DoubleSide} />
+            </mesh>
+        </group>
+    );
+};
+
 // ─── Organ synonym definitions ────────────────────────────────────────────────
 const ORGAN_SYNONYMS: Record<string, string[]> = {
     'Lungs': ['lung', 'lungs', 'respiratory', 'pulmonary', 'alveol', 'bronch', 'throat', 'airway'],
@@ -1866,12 +1892,13 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
             <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.2, 6.6], fov: 45 }}>
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
-                {/* Lighting — exact match to MedicalModel3D */}
-                <ambientLight intensity={0.7} color="#ffffff" />
+                {/* Enhanced Holographic Simulation Lighting */}
+                <ambientLight intensity={0.8} color="#ffffff" />
+                <spotLight position={[0, 7, 0]} angle={0.45} penumbra={0.9} intensity={2.4} color="#22d3ee" />
                 <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1}
                     intensity={1.2} castShadow shadow-mapSize={[780, 780]} color="#ffffff" />
-                <pointLight position={[-10, 0, -10]} intensity={1.5} color="#3b82f6" />
-                <spotLight position={[0, 5, -5]} intensity={2} color="#06b6d4" />
+                <pointLight position={[-10, 0, -10]} intensity={1.8} color="#0284c7" />
+                <spotLight position={[0, 5, -5]} intensity={2.2} color="#06b6d4" />
 
                 <CameraSetup resetCameraFlag={resetCameraFlag} orbitRef={orbitRef} />
                 <SceneRotator>
@@ -1939,8 +1966,16 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                     opacity={0.4 + (maxIntensity * 0.4)}
                     color={maxIntensity > 0.7 ? "#fca5a5" : maxIntensity > 0.4 ? "#fde047" : "#bae6fd"}
                 />
+                {/* Holographic Chamber Floor */}
+                <HolographicChamberFloor />
+
                 <Environment preset="city" blur={1} />
                 <ContactShadows resolution={512} scale={20} blur={2} opacity={0.4} far={10} color="#082f49" />
+
+                {/* Cyber Bloom Post-Processing */}
+                <EffectComposer multisampling={0}>
+                    <Bloom luminanceThreshold={0.45} luminanceSmoothing={0.85} intensity={0.4} />
+                </EffectComposer>
 
                 <OrbitControls
                     ref={orbitRef}
