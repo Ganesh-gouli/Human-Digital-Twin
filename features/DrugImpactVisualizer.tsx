@@ -14,6 +14,7 @@ import { ExperimentDossier, OrganToxicityScore } from '../types';
 import ChemicalSynthesisConsole from '../components/ChemicalSynthesisConsole';
 import { PRESET_MOLECULAR_CARDS, PRESET_SYNTHESIS_DB, applyMolecularEnhancement } from '../services/synthesisDatabase';
 import SimulationExplainerModal from '../components/SimulationExplainerModal';
+import FuturisticBiomolecularPod from '../components/FuturisticBiomolecularPod';
 
 // ─── Heatmap color legend ──────────────────────────────────────────────────────
 const HeatmapLegend: React.FC = () => (
