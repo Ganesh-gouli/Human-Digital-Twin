@@ -425,7 +425,7 @@ const checkIsOrganInfected = (organName: string, activeSet: Set<string> | string
 
 // ─── Main component ─────────────────────────────────────────────────────────────
 export const DrugImpactVisualizer = () => {
-    const { navigateTo, user, savedExperiments, saveExperiment, deleteExperiment, activeDossier, clearActiveDossier, openGuide } = useAppContext();
+    const { navigateTo, user, savedExperiments, saveExperiment, deleteExperiment, activeDossier, clearActiveDossier, openGuide, activeScientificModal, openScientificModal } = useAppContext();
 
     // ─── Virtual Experiment Dossier States ───────────────────────────
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -445,6 +445,18 @@ export const DrugImpactVisualizer = () => {
     const [isQuantumModalOpen, setIsQuantumModalOpen] = useState(false);
     const [isRweModalOpen, setIsRweModalOpen] = useState(false);
     const [patientGenomeProfile, setPatientGenomeProfile] = useState<PharmacogenomicProfile>(DEFAULT_PHARMACOGENOMIC_PROFILE);
+
+    // Auto-open scientific suite modal if navigated from Dashboard
+    useEffect(() => {
+        if (activeScientificModal) {
+            if (activeScientificModal === 'MOLECULAR') setIsMolecularModalOpen(true);
+            else if (activeScientificModal === 'TELEMETRY') setIsTelemetryModalOpen(true);
+            else if (activeScientificModal === 'GENOME') setIsGenomeModalOpen(true);
+            else if (activeScientificModal === 'QUANTUM') setIsQuantumModalOpen(true);
+            else if (activeScientificModal === 'RWE') setIsRweModalOpen(true);
+            openScientificModal(null);
+        }
+    }, [activeScientificModal, openScientificModal]);
 
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
