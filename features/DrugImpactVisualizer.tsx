@@ -1505,30 +1505,40 @@ This document is a simulated educational clinical report.
 
             <div className="relative z-10 flex flex-col h-full">
                 {/* ── Top Command Bar ──────────────────────────────────────────────── */}
-                <div className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-4
-                    border-b border-white/10 bg-slate-950/40 backdrop-blur-xl shadow-2xl relative">
-                    {/* Glowing bottom edge line */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                <div className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3
+                    border-b border-cyan-500/10 bg-[#020a14]/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.3)] relative">
+                    {/* Glowing bottom edge line — cyan themed */}
+                    <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+                    {/* Top edge glow */}
+                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent" />
 
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <button onClick={() => navigateTo('DASHBOARD')}
-                            className="p-2 sm:p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 hover:scale-105 active:scale-95
-                                transition-all group flex items-center justify-center shadow-lg flex-shrink-0">
-                            <span className="group-hover:-translate-x-0.5 block transition-transform text-white/80 group-hover:text-white">
+                            className="p-2 sm:p-2.5 rounded-xl bg-cyan-500/[0.04] hover:bg-cyan-500/[0.1] border border-cyan-500/20 hover:border-cyan-400/40 hover:scale-105 active:scale-95
+                                transition-all group flex items-center justify-center shadow-lg flex-shrink-0 hover:shadow-cyan-500/10">
+                            <span className="group-hover:-translate-x-0.5 block transition-transform text-cyan-300/70 group-hover:text-cyan-200">
                                 {ICONS.arrowLeft}
                             </span>
                         </button>
                         <div className="min-w-0">
-                            <h1 className="text-sm sm:text-xl font-black tracking-tight flex items-center gap-1.5 sm:gap-2 truncate">
-                                <Brain className="text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)] animate-pulse flex-shrink-0" size={18} />
-                                <span className="truncate">{activeTab === 'drug' ? 'Pharmacological Twin' : 'Emerging Pathogen'}</span>{' '}
-                                <span className="hidden sm:inline text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-blue-400 font-extrabold">
-                                    {activeTab === 'drug' ? 'In-Silico Visualizer' : 'Computational Lab'}
+                            <h1 className="text-sm sm:text-lg font-black tracking-tight flex items-center gap-1.5 sm:gap-2 truncate">
+                                <Brain className="text-cyan-400 drop-shadow-[0_0_12px_rgba(6,182,212,0.6)] flex-shrink-0" size={18} />
+                                <span className="text-white/90 truncate">Human Digital Twin</span>
+                                <span className="hidden sm:inline text-[10px] font-mono font-bold text-cyan-500/60 bg-cyan-500/[0.06] px-2 py-0.5 rounded-md border border-cyan-500/10">
+                                    {activeTab === 'drug' ? 'DRUG IMPACT' : 'PATHOGEN'}
                                 </span>
                             </h1>
-                            <p className="text-[9px] sm:text-[10px] text-teal-300/60 uppercase tracking-widest font-mono font-bold mt-0.5 truncate hidden xs:block">
-                                {activeTab === 'drug' ? 'Virtual Human 3D ADME & Multi-Organ Toxicity Model' : 'Safe Emerging Disease & Antiviral/Vaccine Screening Model'}
+                            <p className="text-[8px] sm:text-[9px] text-cyan-400/40 uppercase tracking-[0.2em] font-mono font-bold mt-0.5 truncate hidden sm:block">
+                                {activeTab === 'drug' ? 'In-Silico Pharmacological Simulation Laboratory' : 'Computational Pathogen Spread Dynamics Lab'}
                             </p>
+                        </div>
+                        {/* Simulation Active Badge */}
+                        <div className="hidden md:flex items-center gap-2 ml-2 px-3 py-1.5 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                            </span>
+                            <span className="text-[9px] font-mono font-bold text-emerald-300/80 uppercase tracking-wider">Simulation Active</span>
                         </div>
                     </div>
 
