@@ -3421,7 +3421,10 @@ This document is a simulated educational clinical report.
                                     {/* Separate 3D Biomolecular Pod Toggle */}
                                     <div className="w-[1px] h-4 bg-white/20 my-auto mx-1" />
                                     <button
-                                        onClick={() => setShowBiomolecularPod(v => !v)}
+                                        onClick={() => {
+                                            setShowBiomolecularPod(v => !v);
+                                            sfx.playCyberBeep(850, 0.04);
+                                        }}
                                         className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1.5 cursor-pointer
                                             ${showBiomolecularPod
                                                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
@@ -3430,6 +3433,73 @@ This document is a simulated educational clinical report.
                                     >
                                         <span>🧬 3D Pod</span>
                                         <span className={`w-1.5 h-1.5 rounded-full ${showBiomolecularPod ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
+                                    </button>
+
+                                    {/* Holographic Laser Scanner Toggle */}
+                                    <button
+                                        onClick={() => {
+                                            setIsHoloScannerActive(v => !v);
+                                            sfx.playCyberBeep(1020, 0.04);
+                                        }}
+                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
+                                            ${isHoloScannerActive
+                                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
+                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
+                                        title="Toggle Ambient Holographic Laser Bio-Scanner Sweep"
+                                    >
+                                        <span>⚡ Scanner</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${isHoloScannerActive ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
+                                    </button>
+
+                                    {/* Live Bio-Telemetry HUD Toggle */}
+                                    <button
+                                        onClick={() => {
+                                            setShowBioTelemetry(v => !v);
+                                            sfx.playCyberBeep(920, 0.04);
+                                        }}
+                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
+                                            ${showBioTelemetry
+                                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-lg shadow-rose-500/20'
+                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
+                                        title="Toggle Live Quantum Bio-Telemetry (ECG/EEG Canvas & Vitals)"
+                                    >
+                                        <span>📡 Vitals</span>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${showBioTelemetry ? 'bg-rose-400 animate-pulse' : 'bg-white/20'}`} />
+                                    </button>
+
+                                    {/* Sci-Fi Sound FX Toggle */}
+                                    <button
+                                        onClick={() => {
+                                            const muted = sfx.toggleMute();
+                                            setIsSfxMuted(muted);
+                                        }}
+                                        className={`px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1 cursor-pointer
+                                            ${!isSfxMuted
+                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/20'
+                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
+                                        title={!isSfxMuted ? "Mute Sci-Fi Sound FX" : "Unmute Sci-Fi Sound FX"}
+                                    >
+                                        <span>{!isSfxMuted ? '🔊 SFX' : '🔇 Muted'}</span>
+                                    </button>
+
+                                    {/* Cyberpunk Hologram Aura Color Switcher */}
+                                    <button
+                                        onClick={() => {
+                                            const auras: Array<'cyan' | 'purple' | 'emerald' | 'amber'> = ['cyan', 'purple', 'emerald', 'amber'];
+                                            const nextIdx = (auras.indexOf(cyberAura) + 1) % auras.length;
+                                            setCyberAura(auras[nextIdx]);
+                                            sfx.playCyberBeep(1200, 0.05);
+                                        }}
+                                        className="px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all duration-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400 text-white/70 hover:text-white flex items-center gap-1 cursor-pointer"
+                                        title={`Cycle Hologram Aura (Current: ${cyberAura.toUpperCase()})`}
+                                    >
+                                        <span className={`w-2 h-2 rounded-full ${
+                                            cyberAura === 'cyan' ? 'bg-cyan-400 shadow-[0_0_8px_#06b6d4]' :
+                                            cyberAura === 'purple' ? 'bg-purple-400 shadow-[0_0_8px_#c084fc]' :
+                                            cyberAura === 'emerald' ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' :
+                                            'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
+                                        }`} />
+                                        <span className="hidden sm:inline">{cyberAura.toUpperCase()}</span>
                                     </button>
                                 </div>
                             </div>
