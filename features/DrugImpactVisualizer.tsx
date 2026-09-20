@@ -3620,6 +3620,32 @@ This document is a simulated educational clinical report.
                                         />
                                     )}
 
+                                    {/* Holographic Laser Bio-Scanner Overlay */}
+                                    <FuturisticHoloScanner
+                                        auraColor={cyberAura}
+                                        isScanningActive={isHoloScannerActive}
+                                        onToggleScan={() => {
+                                            setIsHoloScannerActive(v => !v);
+                                            sfx.playCyberBeep(980, 0.05);
+                                        }}
+                                    />
+
+                                    {/* Live Quantum Bio-Telemetry HUD Card (ECG/EEG waves & vitals) */}
+                                    {showBioTelemetry && (
+                                        <FuturisticBioTelemetry
+                                            auraColor={cyberAura}
+                                            heartRate={72}
+                                            toxicityLevel={uniqueEffects.some(e => e.severity === 'high') ? 'HIGH' : uniqueEffects.some(e => e.severity === 'moderate') ? 'MODERATE' : 'LOW'}
+                                        />
+                                    )}
+
+                                    {/* Holographic Fast Target Reticles */}
+                                    <HoloTargetReticles
+                                        selectedOrgan={selectedOrgan}
+                                        onSelectOrgan={setSelectedOrgan}
+                                        auraColor={cyberAura}
+                                    />
+
                                     {/* Floating Deconstruction & Understanding Pill — positioned to keep feet fully visible */}
                                     <div className="absolute top-12 sm:top-auto sm:bottom-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto no-print">
                                         <button
