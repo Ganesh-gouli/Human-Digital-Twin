@@ -1482,16 +1482,25 @@ This document is a simulated educational clinical report.
 
     return (
         <div className="drug-impact-container fixed inset-0 z-[100] flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
-            {/* Holographic Glowing Background Layer */}
-            <div className="absolute inset-0 z-0">
-                {/* Space Grid Overlay */}
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,_transparent_1px),_linear-gradient(90deg,_rgba(255,255,255,0.02)_1px,_transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] opacity-30" />
-                {/* Noise texture overlay */}
-                <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none" />
-                {/* Glow Spheres */}
-                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-r from-rose-500/10 to-transparent rounded-full blur-[140px] -translate-x-1/2 -translate-y-1/2 animate-[pulse_6s_ease-in-out_infinite]" />
-                <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-gradient-to-l from-purple-500/10 to-transparent rounded-full blur-[140px] translate-x-1/2 -translate-y-1/2 animate-[pulse_8s_ease-in-out_infinite_1s]" />
-                <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-gradient-to-t from-blue-500/5 to-transparent rounded-full blur-[160px] translate-y-1/2" />
+            {/* ═══ FUTURISTIC LAB BACKGROUND ═══ */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                {/* Deep space base gradient */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#020810] via-[#030d1a] to-[#010612]" />
+                {/* Primary holographic grid — fine lines */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,_transparent_1px),_linear-gradient(90deg,_rgba(6,182,212,0.03)_1px,_transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
+                {/* Secondary larger grid — structural lines */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.015)_1px,_transparent_1px),_linear-gradient(90deg,_rgba(6,182,212,0.015)_1px,_transparent_1px)] bg-[size:128px_128px]" />
+                {/* Hex dot matrix */}
+                <div className="absolute inset-0 bg-[radial-gradient(rgba(6,182,212,0.06)_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
+                {/* Animated vertical scanline */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent animate-scanline-sweep opacity-40" />
+                {/* Ambient glow spheres — cyan bio-tech theme */}
+                <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] bg-cyan-500/[0.04] rounded-full blur-[180px] animate-[pulse_8s_ease-in-out_infinite]" />
+                <div className="absolute -top-32 right-1/4 w-[500px] h-[500px] bg-blue-500/[0.03] rounded-full blur-[160px] animate-[pulse_10s_ease-in-out_infinite_2s]" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-teal-500/[0.025] rounded-full blur-[200px] animate-[pulse_12s_ease-in-out_infinite_1s]" />
+                <div className="absolute top-1/2 right-0 w-[300px] h-[500px] bg-purple-500/[0.02] rounded-full blur-[150px]" />
+                {/* Corner vignette */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.4)_100%)]" />
             </div>
 
             <div className="relative z-10 flex flex-col h-full">
