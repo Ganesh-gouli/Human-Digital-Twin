@@ -233,13 +233,13 @@ const DrugOrganPanel: React.FC<DrugOrganPanelProps> = ({
                                         onClick={() => onOrganSelect(e.structure_name)}
                                         className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden group
                                             ${isSelected
-                                                ? 'bg-gradient-to-br from-white/[0.08] to-white/[0.02] border-white/30 shadow-2xl scale-[1.02] translate-x-1'
-                                                : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/20 hover:scale-[1.01]'
+                                                ? 'bg-gradient-to-br from-cyan-950/40 via-[#041020] to-[#020a14] border-cyan-400/50 shadow-[0_0_20px_rgba(6,182,212,0.25)] scale-[1.02] translate-x-1 ring-1 ring-cyan-400/30'
+                                                : 'bg-black/40 border-cyan-500/15 hover:bg-cyan-500/[0.04] hover:border-cyan-400/30 hover:scale-[1.01]'
                                             }`}
                                     >
                                         {/* Dynamic glowing strip for selection */}
                                         {isSelected && (
-                                            <div className="absolute top-0 bottom-0 left-0 w-[4px] bg-gradient-to-b from-blue-400 to-purple-500 shadow-[0_0_10px_#3b82f6]" />
+                                            <div className="absolute top-0 bottom-0 left-0 w-[4px] bg-gradient-to-b from-cyan-400 to-blue-500 shadow-[0_0_12px_#22d3ee]" />
                                         )}
                                         
                                         <div className="flex items-center gap-3 mb-2.5">
@@ -298,11 +298,13 @@ const DrugOrganPanel: React.FC<DrugOrganPanelProps> = ({
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="h-2 bg-white/5 rounded-full overflow-hidden p-[1px]">
+                                            <div className="h-2.5 bg-black/60 rounded-full overflow-hidden p-[1px] border border-cyan-500/20 shadow-inner relative">
                                                 <div
-                                                    className={`h-full rounded-full bg-gradient-to-r ${intensityGradient(e.intensity)} shadow-[0_0_8px_rgba(251,191,36,0.2)] transition-all duration-1000`}
+                                                    className={`h-full rounded-full bg-gradient-to-r ${intensityGradient(e.intensity)} shadow-[0_0_10px_rgba(6,182,212,0.3)] transition-all duration-1000 relative overflow-hidden`}
                                                     style={{ width: `${e.intensity * 100}%` }}
-                                                />
+                                                >
+                                                    <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)] animate-[scanline-sweep_2.5s_linear_infinite]" />
+                                                </div>
                                             </div>
                                         </div>
 
