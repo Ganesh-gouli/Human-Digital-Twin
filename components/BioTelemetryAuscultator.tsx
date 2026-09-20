@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Heart, Activity, Volume2, VolumeX, Play, Pause, AlertCircle, X, ShieldAlert, Zap } from 'lucide-react';
+import { Heart, Activity, Volume2, VolumeX, Play, Pause, AlertCircle, X, ShieldAlert, Zap, Info } from 'lucide-react';
 
 export type RhythmType = 'NORMAL' | 'TACHYCARDIA' | 'BRADYCARDIA' | 'QT_PROLONGED' | 'ARRHYTHMIA';
 
