@@ -1884,26 +1884,6 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
                 <CameraSetup resetCameraFlag={resetCameraFlag} orbitRef={orbitRef} />
 
-                {/* ── Flanking 3D Companion Models Beside the Human Twin ── */}
-                {showDnaHelix && (
-                    <DnaHelix3D
-                        position={[-2.4, 0, 0]}
-                        scale={0.82}
-                        speed={1.0}
-                        onClick={onSelectDna}
-                    />
-                )}
-
-                {showMolecularModel && (
-                    <MolecularModel3D
-                        position={[2.4, 0, 0]}
-                        scale={0.82}
-                        mode={companionMode || (isCuring ? 'pathogen' : 'molecule')}
-                        speed={1.0}
-                        onClick={onSelectMolecule}
-                    />
-                )}
-
                 <SceneRotator>
                     <React.Suspense fallback={<CanvasLoaderFallback />}>
                         {(showBody || (!showOrgans && !showSkeleton && !showMuscles && !showNervousGLB)) && (
