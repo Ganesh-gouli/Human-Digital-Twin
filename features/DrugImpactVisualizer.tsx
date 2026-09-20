@@ -15,6 +15,10 @@ import ChemicalSynthesisConsole from '../components/ChemicalSynthesisConsole';
 import { PRESET_MOLECULAR_CARDS, PRESET_SYNTHESIS_DB, applyMolecularEnhancement } from '../services/synthesisDatabase';
 import SimulationExplainerModal from '../components/SimulationExplainerModal';
 import FuturisticBiomolecularPod from '../components/FuturisticBiomolecularPod';
+import FuturisticHoloScanner from '../components/FuturisticHoloScanner';
+import FuturisticBioTelemetry from '../components/FuturisticBioTelemetry';
+import HoloTargetReticles from '../components/HoloTargetReticles';
+import { sfx } from '../services/soundEffects';
 
 // ─── Heatmap color legend ──────────────────────────────────────────────────────
 const HeatmapLegend: React.FC = () => (
