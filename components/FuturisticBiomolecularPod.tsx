@@ -10,6 +10,7 @@ interface FuturisticBiomolecularPodProps {
     diseaseName?: string;
     cureProgress?: number;
     initialTab?: 'dna' | 'molecule';
+    onClose?: () => void;
 }
 
 export const FuturisticBiomolecularPod: React.FC<FuturisticBiomolecularPodProps> = ({
@@ -17,7 +18,8 @@ export const FuturisticBiomolecularPod: React.FC<FuturisticBiomolecularPodProps>
     drugName = 'Active Compound',
     diseaseName = 'Pathogen Virion',
     cureProgress = 0,
-    initialTab = 'dna'
+    initialTab = 'dna',
+    onClose
 }) => {
     const [activeModel, setActiveModel] = useState<'dna' | 'molecule'>(initialTab);
     const [isMinimized, setIsMinimized] = useState(false);
@@ -25,17 +27,28 @@ export const FuturisticBiomolecularPod: React.FC<FuturisticBiomolecularPodProps>
     const orbitRef = useRef<any>(null);
 
     return (
-        <div className="absolute top-20 sm:top-24 left-3 sm:left-6 z-30 pointer-events-auto no-print select-none transition-all duration-300">
+        <div className="absolute top-16 sm:top-24 left-2 sm:left-4 z-30 pointer-events-auto no-print select-none transition-all duration-300 max-w-[calc(100vw-1rem)]">
             {isMinimized ? (
                 /* ── Minimized Floating Cyber Pill ── */
-                <button
-                    onClick={() => setIsMinimized(false)}
-                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-slate-950/90 border border-cyan-500/40 text-cyan-300 hover:text-white backdrop-blur-2xl shadow-[0_0_24px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all text-xs font-bold cursor-pointer group"
-                >
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#06b6d4]" />
-                    <span>{activeModel === 'dna' ? '🧬 3D DNA Helix' : mode === 'disease' ? '🦠 3D Pathogen' : '⚛️ 3D Molecular Pod'}</span>
-                    <span className="text-[10px] text-cyan-400 group-hover:translate-y-[-1px] transition-transform">▲ Expand</span>
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => setIsMinimized(false)}
+                        className="flex items-center gap-2.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl bg-slate-950/90 border border-cyan-500/40 text-cyan-300 hover:text-white backdrop-blur-2xl shadow-[0_0_24px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all text-xs font-bold cursor-pointer group"
+                    >
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#06b6d4]" />
+                        <span>{activeModel === 'dna' ? '🧬 3D DNA' : mode === 'disease' ? '🦠 3D Pathogen' : '⚛️ 3D Molecule'}</span>
+                        <span className="text-[10px] text-cyan-400 group-hover:translate-y-[-1px] transition-transform">▲ Expand</span>
+                    </button>
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="p-2 rounded-xl bg-slate-950/80 border border-white/10 text-white/40 hover:text-white text-xs cursor-pointer"
+                            title="Close Pod"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
             ) : (
                 /* ── Futuristic Holographic 3D Space Card ── */
                 <div className="w-[270px] sm:w-[300px] rounded-3xl bg-slate-950/90 backdrop-blur-2xl border border-cyan-500/35 shadow-[0_0_40px_rgba(6,182,212,0.2)] overflow-hidden relative group">
