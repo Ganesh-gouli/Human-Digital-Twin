@@ -433,11 +433,6 @@ export const DrugImpactVisualizer = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
 
-    // ─── Flanking 3D Companion Models (DNA Double Helix & Molecular/Viral Core) ─
-    const [showDnaCompanion, setShowDnaCompanion] = useState(true);
-    const [showMolecularCompanion, setShowMolecularCompanion] = useState(true);
-    const [selectedCompanionModal, setSelectedCompanionModal] = useState<'dna' | 'molecule' | 'pathogen' | null>(null);
-
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
 
@@ -2009,72 +2004,8 @@ This document is a simulated educational clinical report.
                                                 : 'text-white/40 hover:text-white'}`}>
                                         🫀 Organs
                                     </button>
-
-                                    {/* Flanking Companion 3D Models Toggles */}
-                                    <div className="w-[1px] h-4 bg-white/20 my-auto mx-1" />
-                                    <button
-                                        onClick={() => setShowDnaCompanion(v => !v)}
-                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
-                                            ${showDnaCompanion
-                                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle 3D Genomic DNA Double Helix beside the Twin"
-                                    >
-                                        <span>🧬 DNA</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showDnaCompanion ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
-                                    <button
-                                        onClick={() => setShowMolecularCompanion(v => !v)}
-                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
-                                            ${showMolecularCompanion
-                                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-lg shadow-rose-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle 3D Pathogen Virion model beside the Twin"
-                                    >
-                                        <span>🦠 Pathogen</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showMolecularCompanion ? 'bg-rose-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
                                 </div>
                             </div>
-
-                            {/* 3D Companion Interactive Info Popups */}
-                            {selectedCompanionModal === 'dna' && (
-                                <div className="absolute top-16 left-4 sm:left-6 z-40 bg-slate-950/95 border border-cyan-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
-                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                                        <span className="font-black text-cyan-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
-                                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> 3D Genomic DNA Core
-                                        </span>
-                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
-                                    </div>
-                                    <p className="text-white/90 font-bold text-[11px]">Human Genome Assembly (GRCh38.p14)</p>
-                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-cyan-400 font-bold">A-T Pairs:</span> 58.2%</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">G-C Pairs:</span> 41.8%</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Alignment:</span> 99.8%</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Mutations:</span> 0 Active</div>
-                                    </div>
-                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive 3D double helix tracking chromosome 7q31 pharmacogenomic markers.</p>
-                                </div>
-                            )}
-
-                            {selectedCompanionModal === 'pathogen' && (
-                                <div className="absolute top-16 right-4 sm:right-6 z-40 bg-slate-950/95 border border-rose-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(244,63,94,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
-                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                                        <span className="font-black text-rose-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
-                                            <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" /> 3D Pathogen Virion Capsid
-                                        </span>
-                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
-                                    </div>
-                                    <p className="text-white/90 font-bold text-[11px]">{diseaseResult ? diseaseResult.disease_name : 'Simulated Pathogen Virion'}</p>
-                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Symmetry:</span> Icosahedral</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-amber-400 font-bold">Spikes:</span> 30 Glycoproteins</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">Envelope:</span> Lipid Bilayer</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Neutralized:</span> {cureProgress}%</div>
-                                    </div>
-                                    <p className="text-[9px] text-white/50 italic leading-snug">Spiked viral envelope with simulated receptor binding sites.</p>
-                                </div>
-                            )}
 
                             {/* Disease info card overlay (top-left) */}
                             {diseaseResult && (
@@ -2373,7 +2304,7 @@ This document is a simulated educational clinical report.
                                                             const isSelected = selectedMedsForCocktail.includes(med.name);
                                                             const isCurrentlyInjected = injectedDrugs.includes(med.name) && cureProgress > 0;
                                                             return (
-                                                                <div key={i} className="p-4 bg-blue-500/[0.02] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-blue-500/25 transition-all duration-300">
+                                                                <div key={i} className="p-4 bg-blue-500/[0.02] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-blue-500/20 transition-all duration-300">
                                                                     <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/5 rounded-full -translate-y-2 translate-x-2 group-hover:bg-blue-500/10 transition-colors" />
                                                                     <div className="flex items-start justify-between gap-3">
                                                                         <div className="flex-1 min-w-0">
@@ -3352,72 +3283,8 @@ This document is a simulated educational clinical report.
                                                 : 'text-white/40 hover:text-white'}`}>
                                         🫀 Organs
                                     </button>
-
-                                    {/* Flanking Companion 3D Models Toggles */}
-                                    <div className="w-[1px] h-4 bg-white/20 my-auto mx-1" />
-                                    <button
-                                        onClick={() => setShowDnaCompanion(v => !v)}
-                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
-                                            ${showDnaCompanion
-                                                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle 3D Genomic DNA Double Helix beside the Twin"
-                                    >
-                                        <span>🧬 DNA</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showDnaCompanion ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
-                                    <button
-                                        onClick={() => setShowMolecularCompanion(v => !v)}
-                                        className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-1
-                                            ${showMolecularCompanion
-                                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-lg shadow-purple-500/20'
-                                                : 'text-white/30 hover:text-white/60 border border-transparent'}`}
-                                        title="Toggle 3D Molecular Drug Ligand model beside the Twin"
-                                    >
-                                        <span>⚛️ Molecule</span>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${showMolecularCompanion ? 'bg-purple-400 animate-pulse' : 'bg-white/20'}`} />
-                                    </button>
                                 </div>
                             </div>
-
-                            {/* 3D Companion Interactive Info Popups */}
-                            {selectedCompanionModal === 'dna' && (
-                                <div className="absolute top-16 left-4 sm:left-6 z-40 bg-slate-950/95 border border-cyan-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
-                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                                        <span className="font-black text-cyan-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
-                                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> 3D Genomic DNA Core
-                                        </span>
-                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
-                                    </div>
-                                    <p className="text-white/90 font-bold text-[11px]">Human Genome Assembly (GRCh38.p14)</p>
-                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-cyan-400 font-bold">A-T Pairs:</span> 58.2%</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-purple-400 font-bold">G-C Pairs:</span> 41.8%</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-emerald-400 font-bold">Alignment:</span> 99.8%</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Mutations:</span> 0 Active</div>
-                                    </div>
-                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive 3D double helix tracking chromosome 7q31 pharmacogenomic markers.</p>
-                                </div>
-                            )}
-
-                            {selectedCompanionModal === 'molecule' && (
-                                <div className="absolute top-16 right-4 sm:right-6 z-40 bg-slate-950/95 border border-purple-500/50 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.25)] max-w-xs animate-fade-in text-xs space-y-2">
-                                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                                        <span className="font-black text-purple-400 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
-                                            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" /> 3D Quantum Molecular Ligand
-                                        </span>
-                                        <button onClick={() => setSelectedCompanionModal(null)} className="text-white/40 hover:text-white text-xs cursor-pointer">✕</button>
-                                    </div>
-                                    <p className="text-white/90 font-bold text-[11px]">{result ? result.drug_name : 'Active Pharmacophore Compound'}</p>
-                                    <div className="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-sky-400 font-bold">Bond Order:</span> Delocalized</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-rose-400 font-bold">Affinity:</span> 94.2 nM</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-amber-400 font-bold">Valence:</span> sp² Hybrid</div>
-                                        <div className="bg-white/5 p-1.5 rounded-lg border border-white/5"><span className="text-teal-400 font-bold">LogP:</span> 2.14</div>
-                                    </div>
-                                    <p className="text-[9px] text-white/50 italic leading-snug">Interactive ball-and-stick lattice with quantum electron probability orbitals.</p>
-                                </div>
-                            )}
 
                             {/* Temporal Scrubbing Control (anchored to bottom-right side) */}
                             {result && result.time_based_intensity && (
@@ -3510,11 +3377,6 @@ This document is a simulated educational clinical report.
                                             resetCameraFlag={cameraResetFlag}
                                             debugMode={debugRegions}
                                             calibrationMode={calibrationMode}
-                                            showDnaHelix={showDnaCompanion}
-                                            showMolecularModel={showMolecularCompanion}
-                                            companionMode="molecule"
-                                            onSelectDna={() => setSelectedCompanionModal('dna')}
-                                            onSelectMolecule={() => setSelectedCompanionModal('molecule')}
                                         />
                                     </ErrorBoundary>
 
