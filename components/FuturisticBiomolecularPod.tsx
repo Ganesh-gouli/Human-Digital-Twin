@@ -106,6 +106,15 @@ export const FuturisticBiomolecularPod: React.FC<FuturisticBiomolecularPodProps>
                             >
                                 —
                             </button>
+                            {onClose && (
+                                <button
+                                    onClick={onClose}
+                                    className="p-1 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white text-[10px] transition-all cursor-pointer"
+                                    title="Close 3D Pod"
+                                >
+                                    ✕
+                                </button>
+                            )}
                         </div>
                     </div>
 
