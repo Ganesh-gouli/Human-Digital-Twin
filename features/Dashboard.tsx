@@ -7,7 +7,7 @@ import { LiquidGlassCard } from './DashboardComponents';
 export { LiquidGlassCard };
 
 export const Dashboard: React.FC = () => {
-    const { user, navigateTo, savedExperiments, loadExperiment, language, openGuide } = useAppContext();
+    const { user, navigateTo, savedExperiments, loadExperiment, language, openGuide, openScientificModal } = useAppContext();
     const [researchInsight, setResearchInsight] = useState<string>('');
     const [isLoadingInsight, setIsLoadingInsight] = useState(false);
 
