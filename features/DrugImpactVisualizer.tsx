@@ -14,6 +14,11 @@ import { ExperimentDossier, OrganToxicityScore } from '../types';
 import ChemicalSynthesisConsole from '../components/ChemicalSynthesisConsole';
 import { PRESET_MOLECULAR_CARDS, PRESET_SYNTHESIS_DB, applyMolecularEnhancement } from '../services/synthesisDatabase';
 import SimulationExplainerModal from '../components/SimulationExplainerModal';
+import MolecularViewer3D from '../components/MolecularViewer3D';
+import BioTelemetryAuscultator from '../components/BioTelemetryAuscultator';
+import PharmacogenomicMutatorModal, { DEFAULT_PHARMACOGENOMIC_PROFILE, PharmacogenomicProfile } from '../components/PharmacogenomicMutatorModal';
+import QuantumDockingSimulator from '../components/QuantumDockingSimulator';
+import RealWorldEvidenceBridge from '../components/RealWorldEvidenceBridge';
 
 // ─── Heatmap color legend ──────────────────────────────────────────────────────
 const HeatmapLegend: React.FC = () => (
@@ -433,6 +438,14 @@ export const DrugImpactVisualizer = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrubberCollapsed, setIsScrubberCollapsed] = useState(false);
 
+    // ─── BioTwin Advanced Scientific Suites States ───────────────────
+    const [isMolecularModalOpen, setIsMolecularModalOpen] = useState(false);
+    const [isTelemetryModalOpen, setIsTelemetryModalOpen] = useState(false);
+    const [isGenomeModalOpen, setIsGenomeModalOpen] = useState(false);
+    const [isQuantumModalOpen, setIsQuantumModalOpen] = useState(false);
+    const [isRweModalOpen, setIsRweModalOpen] = useState(false);
+    const [patientGenomeProfile, setPatientGenomeProfile] = useState<PharmacogenomicProfile>(DEFAULT_PHARMACOGENOMIC_PROFILE);
+
     // ─── Top-level tab ────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<'drug' | 'disease'>('drug');
 
@@ -766,12 +779,14 @@ export const DrugImpactVisualizer = () => {
         if (Array.isArray(result.heatmap_effects)) effects = result.heatmap_effects;
         else if (Array.isArray(result.effects)) effects = result.effects as unknown as HeatmapEffect[];
 
+        const genomeMult = patientGenomeProfile.toxicityMultiplier;
+
         if (result.time_based_intensity && result.time_based_intensity[timePhase] !== undefined) {
-            const multiplier = result.time_based_intensity[timePhase];
-            return effects.map(e => ({ ...e, intensity: e.intensity * multiplier }));
+            const multiplier = result.time_based_intensity[timePhase] * genomeMult;
+            return effects.map(e => ({ ...e, intensity: Math.min(1.0, e.intensity * multiplier) }));
         }
-        return effects;
-    }, [result, timePhase]);
+        return effects.map(e => ({ ...e, intensity: Math.min(1.0, e.intensity * genomeMult) }));
+    }, [result, timePhase, patientGenomeProfile.toxicityMultiplier]);
 
     const uniqueEffects2 = useMemo((): HeatmapEffect[] => {
         if (!result2) return [];
@@ -1635,8 +1650,48 @@ This document is a simulated educational clinical report.
                             )}
 
                             <button
+                                onClick={() => { setIsMobileMenuOpen(false); setIsMolecularModalOpen(true); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-teal-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>⚛️</span>
+                                <span>3D Molecule Inspector</span>
+                            </button>
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); setIsTelemetryModalOpen(true); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>💓</span>
+                                <span>Bio-Telemetry & Auscultator</span>
+                            </button>
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); setIsGenomeModalOpen(true); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>🧬</span>
+                                <span>Patient Genome Mutator</span>
+                            </button>
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); setIsQuantumModalOpen(true); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-indigo-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>⚡</span>
+                                <span>Quantum Docking Simulator</span>
+                            </button>
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); setIsRweModalOpen(true); }}
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <span>🌐</span>
+                                <span>Real-World Evidence Bridge</span>
+                            </button>
+
+                            <button
                                 onClick={() => { setIsMobileMenuOpen(false); setIsSaveModalOpen(true); }}
-                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-teal-300 hover:bg-teal-500/15 flex items-center gap-2 transition-colors cursor-pointer"
+                                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-teal-300 hover:bg-teal-500/15 flex items-center gap-2 transition-colors cursor-pointer border-t border-white/10 pt-2"
                             >
                                 <span>💾</span>
                                 <span>Save Experiment Dossier</span>
@@ -1659,6 +1714,65 @@ This document is a simulated educational clinical report.
                             </button>
                         </div>
                     )}
+                </div>
+
+                {/* ── BioTwin Advanced Scientific Suites Quick Toolbar ──────────────── */}
+                <div className="bg-[#040d1a]/95 border-b border-teal-500/20 px-3 sm:px-6 py-1.5 flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar no-print backdrop-blur-md">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                        <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-teal-400/80 mr-1 hidden sm:inline-flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                            Suites:
+                        </span>
+                        <button
+                            onClick={() => setIsMolecularModalOpen(true)}
+                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                            title="Open 3D Molecular Ball-and-Stick Structure Viewer"
+                        >
+                            <span>⚛️</span>
+                            <span>3D Molecule</span>
+                        </button>
+                        <button
+                            onClick={() => setIsTelemetryModalOpen(true)}
+                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                            title="Open Acoustic Stethoscope & Live ECG Auscultator"
+                        >
+                            <span>💓</span>
+                            <span>ECG & Audio</span>
+                        </button>
+                        <button
+                            onClick={() => setIsGenomeModalOpen(true)}
+                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                            title="Mutate Virtual Patient CYP450 Genotype & Renal Clearance"
+                        >
+                            <span>🧬</span>
+                            <span>Genome Mutator {patientGenomeProfile.toxicityMultiplier !== 1.0 && `(${patientGenomeProfile.toxicityMultiplier}x)`}</span>
+                        </button>
+                        <button
+                            onClick={() => setIsQuantumModalOpen(true)}
+                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                            title="Calculate Hamiltonian Ground State Energy & Receptor Specificity"
+                        >
+                            <span>⚡</span>
+                            <span>Quantum Docking</span>
+                        </button>
+                        <button
+                            onClick={() => setIsRweModalOpen(true)}
+                            className="px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                            title="Cross-reference FDA MedWatch Adverse Events & Clinical Trials"
+                        >
+                            <span>🌐</span>
+                            <span>RWE Bridge</span>
+                        </button>
+                    </div>
+
+                    {/* Current Cohort Badge */}
+                    <div className="hidden lg:flex items-center gap-2 text-[10px] font-mono text-gray-400">
+                        <span>CYP2D6: <strong className="text-purple-300">{patientGenomeProfile.cyp2d6}</strong></span>
+                        <span>•</span>
+                        <span>eGFR: <strong className="text-cyan-300">{patientGenomeProfile.egfr}</strong></span>
+                        <span>•</span>
+                        <span>Cohort: <strong className="text-white">{patientGenomeProfile.ageCohort}</strong></span>
+                    </div>
                 </div>
 
                 {/* ── Main Layout ──────────────────────────────────────────── */}
@@ -3759,6 +3873,40 @@ This document is a simulated educational clinical report.
                     setIsExplainerOpen(false);
                     openGuide(tab);
                 }}
+            />
+
+            {/* ── BioTwin Advanced Scientific Enhancement Modals ── */}
+            <MolecularViewer3D
+                drugName={result?.drug_name || drugName || 'Aspirin'}
+                isOpen={isMolecularModalOpen}
+                onClose={() => setIsMolecularModalOpen(false)}
+            />
+
+            <BioTelemetryAuscultator
+                isOpen={isTelemetryModalOpen}
+                onClose={() => setIsTelemetryModalOpen(false)}
+                activeDrugName={result?.drug_name || drugName || 'Candidate Compound'}
+                cardiacStrainScore={result?.systemic_risk_score || 25}
+            />
+
+            <PharmacogenomicMutatorModal
+                isOpen={isGenomeModalOpen}
+                onClose={() => setIsGenomeModalOpen(false)}
+                currentProfile={patientGenomeProfile}
+                onApplyProfile={setPatientGenomeProfile}
+                activeDrugName={result?.drug_name || drugName || 'Candidate Compound'}
+            />
+
+            <QuantumDockingSimulator
+                isOpen={isQuantumModalOpen}
+                onClose={() => setIsQuantumModalOpen(false)}
+                drugName={result?.drug_name || drugName || 'Candidate Compound'}
+            />
+
+            <RealWorldEvidenceBridge
+                isOpen={isRweModalOpen}
+                onClose={() => setIsRweModalOpen(false)}
+                drugName={result?.drug_name || drugName || 'Candidate Compound'}
             />
         </div>
     );

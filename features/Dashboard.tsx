@@ -278,6 +278,91 @@ export const Dashboard: React.FC = () => {
                 </div>
             </div>
 
+            {/* ── Advanced Scientific Capabilities Grid ──────────────── */}
+            <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
+                        <span className="w-1.5 h-6 bg-gradient-to-b from-teal-400 via-cyan-400 to-indigo-500 rounded-full"></span>
+                        Advanced BioTwin Scientific Suites
+                    </h2>
+                    <span className="text-xs text-gray-400 font-mono">
+                        Integrated Quantum & Preclinical Toolset
+                    </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                    <div
+                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        className="p-4 rounded-2xl bg-teal-950/20 border border-teal-500/20 hover:border-teal-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
+                    >
+                        <div>
+                            <div className="text-2xl mb-2">⚛️</div>
+                            <h4 className="text-xs font-bold text-white group-hover:text-teal-300 transition-colors">3D Molecular Inspector</h4>
+                            <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                                Ball-and-Stick CPK viewer with SMILES, lipophilicity (LogP), and Lipinski oral druggability rules.
+                            </p>
+                        </div>
+                        <span className="text-[10px] font-mono text-teal-400 font-bold mt-3 block">Launch Viewer →</span>
+                    </div>
+
+                    <div
+                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 hover:border-cyan-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
+                    >
+                        <div>
+                            <div className="text-2xl mb-2">💓</div>
+                            <h4 className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">Bio-Telemetry & ECG</h4>
+                            <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                                Real-time Web Audio S1/S2 heart sound stethoscope & synchronized 60fps Lead-II ECG monitor.
+                            </p>
+                        </div>
+                        <span className="text-[10px] font-mono text-cyan-400 font-bold mt-3 block">Listen Auscultation →</span>
+                    </div>
+
+                    <div
+                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        className="p-4 rounded-2xl bg-purple-950/20 border border-purple-500/20 hover:border-purple-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
+                    >
+                        <div>
+                            <div className="text-2xl mb-2">🧬</div>
+                            <h4 className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">Patient Genome Mutator</h4>
+                            <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                                CYP2D6/CYP3A4 polymorphisms & renal eGFR sliders that dynamically alter 3D organ toxicity.
+                            </p>
+                        </div>
+                        <span className="text-[10px] font-mono text-purple-400 font-bold mt-3 block">Mutate Cohort →</span>
+                    </div>
+
+                    <div
+                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        className="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 hover:border-indigo-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
+                    >
+                        <div>
+                            <div className="text-2xl mb-2">⚡</div>
+                            <h4 className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors">Quantum Docking Engine</h4>
+                            <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                                Quantum-inspired Hamiltonian energy minimization, binding ΔG (kcal/mol), and target affinity radar.
+                            </p>
+                        </div>
+                        <span className="text-[10px] font-mono text-indigo-400 font-bold mt-3 block">Run Docking →</span>
+                    </div>
+
+                    <div
+                        onClick={() => navigateTo('DRUG_VISUALIZER')}
+                        className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 hover:border-emerald-400/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group shadow-sm"
+                    >
+                        <div>
+                            <div className="text-2xl mb-2">🌐</div>
+                            <h4 className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">Real-World Evidence</h4>
+                            <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                                Cross-references in-silico simulation results against FDA MedWatch adverse events and clinical trials.
+                            </p>
+                        </div>
+                        <span className="text-[10px] font-mono text-emerald-400 font-bold mt-3 block">Open Evidence →</span>
+                    </div>
+                </div>
+            </div>
+
             {/* Saved Preclinical Virtual Experiment Dossiers */}
             <div className="relative z-10 space-y-4">
                 <div className="flex items-center justify-between">
