@@ -34,6 +34,8 @@ interface AppContextType {
     deleteExperiment: (id: string) => void;
     loadExperiment: (dossier: ExperimentDossier) => void;
     clearActiveDossier: () => void;
+    activeScientificModal: 'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null;
+    openScientificModal: (modal: 'MOLECULAR' | 'TELEMETRY' | 'GENOME' | 'QUANTUM' | 'RWE' | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
