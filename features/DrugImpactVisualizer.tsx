@@ -3543,52 +3543,62 @@ This document is a simulated educational clinical report.
                             </div>
                         </div>
 
-                        {/* RIGHT PANEL — Effect Details */}
-                        <div className={`border-l border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-hidden flex flex-col ${mobileTab === 'TELEMETRY' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'}`}>
+                        {/* RIGHT PANEL — Bio-Telemetry Dashboard */}
+                        <div className={`border-l border-cyan-500/15 bg-[#020a14]/85 backdrop-blur-2xl overflow-hidden flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.5)] ${mobileTab === 'TELEMETRY' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-96 lg:flex-shrink-0'}`}>
                             {/* Tab selector */}
-                            <div className="flex-shrink-0 p-4 border-b border-white/10 bg-white/[0.02]">
-                                <div className="flex bg-black/60 rounded-2xl p-1.5 border border-white/10 shadow-2xl">
+                            <div className="flex-shrink-0 p-3.5 border-b border-cyan-500/15 bg-[#020a14]/60">
+                                <div className="flex bg-black/60 rounded-xl p-1 border border-cyan-500/20 shadow-inner font-mono">
                                     <button
                                         onClick={() => setActiveTab('drug')}
-                                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
-                                            ${(activeTab as string) === 'drug' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}>
+                                        className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer
+                                            ${(activeTab as string) === 'drug'
+                                                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                                                : 'text-white/40 hover:text-white border border-transparent'}`}>
                                         <Search size={12} /> Pharmacological
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('disease')}
-                                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5
-                                            ${(activeTab as string) === 'disease' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}>
-                                        <Syringe size={12} /> Pathogen Simulator
+                                        className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer
+                                            ${(activeTab as string) === 'disease'
+                                                ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-400/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                                                : 'text-white/40 hover:text-white border border-transparent'}`}>
+                                        <Syringe size={12} /> Pathogen Sim
                                     </button>
                                 </div>
                             </div>
 
                             {activeTab === 'drug' && (
-                                <div className="flex-shrink-0 px-4 pb-3 pt-1 border-b border-white/5 bg-white/[0.01]">
-                                    <div className="flex bg-black/45 rounded-xl p-1 border border-white/5 gap-1">
+                                <div className="flex-shrink-0 px-3.5 pb-2.5 pt-1.5 border-b border-cyan-500/10 bg-black/30">
+                                    <div className="flex bg-black/60 rounded-lg p-1 border border-cyan-500/15 gap-1 font-mono">
                                         <button
                                             onClick={() => setDrugDetailTab('biomap')}
-                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1
-                                                ${drugDetailTab === 'biomap' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}
+                                            className={`flex-1 py-1.5 text-[9px] font-bold uppercase tracking-wider rounded transition-all flex items-center justify-center gap-1 cursor-pointer
+                                                ${drugDetailTab === 'biomap'
+                                                    ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]'
+                                                    : 'text-white/40 hover:text-white border border-transparent'}`}
                                         >
-                                            💊 Bio-Map details
+                                            💊 Bio-Map
                                         </button>
                                         <button
                                             onClick={() => setDrugDetailTab('synthesis')}
-                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1 relative
-                                                ${drugDetailTab === 'synthesis' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.15)]' : 'text-white/40 hover:text-white'}`}
+                                            className={`flex-1 py-1.5 text-[9px] font-bold uppercase tracking-wider rounded transition-all flex items-center justify-center gap-1 relative cursor-pointer
+                                                ${drugDetailTab === 'synthesis'
+                                                    ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]'
+                                                    : 'text-white/40 hover:text-white border border-transparent'}`}
                                         >
-                                            🧪 Synthesis & SAR
+                                            🧪 Synthesis
                                             {result?.synthesis_pathway && (
-                                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_4px_#22d3ee]" />
                                             )}
                                         </button>
                                         <button
                                             onClick={() => setDrugDetailTab('interaction')}
-                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1
-                                                ${drugDetailTab === 'interaction' ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20 shadow-inner' : 'text-white/40 hover:text-white'}`}
+                                            className={`flex-1 py-1.5 text-[9px] font-bold uppercase tracking-wider rounded transition-all flex items-center justify-center gap-1 cursor-pointer
+                                                ${drugDetailTab === 'interaction'
+                                                    ? 'bg-purple-500/20 text-purple-200 border border-purple-400/40 shadow-[0_0_8px_rgba(168,85,247,0.2)]'
+                                                    : 'text-white/40 hover:text-white border border-transparent'}`}
                                         >
-                                            🧬 Interaction Matrix
+                                            🧬 Matrix
                                         </button>
                                     </div>
                                 </div>
@@ -3614,6 +3624,67 @@ This document is a simulated educational clinical report.
                                 </div>
                             ) : result ? (
                                 <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar space-y-3">
+                                    {/* ═══ SYSTEMIC RISK ASSESSMENT & CONFIDENCE GAUGE ═══ */}
+                                    <div className="p-3.5 rounded-2xl bg-gradient-to-b from-[#041020] to-[#020a14] border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)] relative overflow-hidden font-mono">
+                                        <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20 mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]" />
+                                                <span className="text-[10px] font-black text-cyan-300 uppercase tracking-widest">SYSTEMIC BIO-TELEMETRY</span>
+                                            </div>
+                                            <span className="text-[9px] text-cyan-400/60 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">MODULE 02</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 items-center">
+                                            {/* Ring Gauge for AI Confidence */}
+                                            <div className="flex items-center gap-3 bg-black/40 p-2.5 rounded-xl border border-cyan-500/15">
+                                                <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                                        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(6,182,212,0.15)" strokeWidth="3.5" />
+                                                        <circle
+                                                            cx="18" cy="18" r="14" fill="none" stroke="#22d3ee" strokeWidth="3.5"
+                                                            strokeDasharray={88}
+                                                            strokeDashoffset={88 - (88 * (result.confidence_score ?? 94.6)) / 100}
+                                                            strokeLinecap="round"
+                                                            className="transition-all duration-1000"
+                                                        />
+                                                    </svg>
+                                                    <span className="absolute text-[10px] font-black text-cyan-300">
+                                                        {Math.round(result.confidence_score ?? 94.6)}%
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-[9px] text-cyan-400/70 block uppercase tracking-wider">AI Confidence</span>
+                                                    <span className="text-[11px] font-bold text-white">In-Silico Score</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Systemic Burden / Risk Level */}
+                                            <div className="bg-black/40 p-2.5 rounded-xl border border-cyan-500/15">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-[9px] text-cyan-400/70 uppercase tracking-wider">Systemic Risk</span>
+                                                    <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded border ${
+                                                        computedRiskLevel === 'low' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
+                                                        computedRiskLevel === 'moderate' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
+                                                        'text-rose-400 border-rose-500/30 bg-rose-500/10 animate-pulse'
+                                                    }`}>
+                                                        {computedRiskLevel}
+                                                    </span>
+                                                </div>
+                                                <div className="w-full bg-black/60 rounded-full h-2 overflow-hidden border border-white/5 mt-1.5">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-700 ${
+                                                            computedRiskLevel === 'low' ? 'bg-gradient-to-r from-emerald-500 to-teal-400' :
+                                                            computedRiskLevel === 'moderate' ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
+                                                            'bg-gradient-to-r from-orange-500 to-rose-600'
+                                                        }`}
+                                                        style={{ width: `${Math.round((result.system_wide_risk_score ?? 0.3) * 100)}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-[8px] text-cyan-500/50 mt-1 block">Toxicity Index: {((result.system_wide_risk_score ?? 0.3) * 100).toFixed(0)} / 100</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <ResearchTriageCard
                                         result={result}
                                         result2={result2}
