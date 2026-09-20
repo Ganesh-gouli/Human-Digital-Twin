@@ -1708,12 +1708,21 @@ This document is a simulated educational clinical report.
                        DISEASE INJECTION SIMULATOR
                     ═══════════════════════════════════════════════════════════ */
                     <div className="flex flex-1 overflow-hidden relative">
-                        {/* LEFT PANEL — Disease Inputs */}
-                        <div className={`flex-col border-r border-white/10 bg-slate-950/20 backdrop-blur-sm overflow-y-auto no-print ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-76 lg:flex-shrink-0'}`}>
-                            <div className="p-5 space-y-6">
+                        {/* LEFT PANEL — Disease Inputs (Pathogen Console) */}
+                        <div className={`flex-col border-r border-emerald-500/20 bg-[#020a14]/85 backdrop-blur-2xl overflow-y-auto no-print shadow-[4px_0_24px_rgba(0,0,0,0.5)] ${mobileTab === 'CONTROLS' ? 'flex flex-1 w-full h-full' : 'hidden lg:flex lg:w-80 lg:flex-shrink-0'}`}>
+                            <div className="p-5 space-y-5">
+                                {/* ═══ LAB CONSOLE HEADER ═══ */}
+                                <div className="flex items-center justify-between pb-3 border-b border-emerald-500/20">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                                        <span className="text-[10px] font-mono font-black text-emerald-300 uppercase tracking-[0.18em]">PATHOGEN CONFIGURATION</span>
+                                    </div>
+                                    <span className="text-[9px] font-mono font-bold text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">MODULE 01</span>
+                                </div>
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Select Target Disease</label>
+                                        <label className="block text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest">Select Target Pathogen</label>
+                                        <span className="text-[8px] font-mono text-emerald-500/50">BIO-HAZARD L0</span>
                                     </div>
                                     <input
                                         type="text"
@@ -3243,21 +3252,24 @@ This document is a simulated educational clinical report.
                                         </button>
                                     </div>
 
-                                    {/* Primary Run Button */}
+                                    {/* Primary Run Button — Pulsing Neon Lab Action */}
                                     <button
                                         onClick={() => handleAnalyze()}
                                         disabled={isLoading || (analysisMode === 'text' ? !drugName.trim() : !imagePreview)}
-                                        className="w-full py-3.5 bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 hover:from-rose-500 hover:to-pink-400 disabled:opacity-40 disabled:cursor-not-allowed rounded-2xl font-black uppercase tracking-widest text-white shadow-lg shadow-rose-500/20 transition-all text-xs flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-98"
+                                        className="w-full py-3.5 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-mono font-black uppercase tracking-widest text-white shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] transition-all text-xs flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-98 relative overflow-hidden group cursor-pointer"
                                     >
+                                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%)] bg-[length:250%_250%] animate-[scanline-sweep_3s_linear_infinite]" />
                                         {isLoading ? (
-                                            <span className="flex items-center gap-2 animate-pulse">
+                                            <span className="flex items-center gap-2 animate-pulse relative z-10">
                                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                {analysisMode === 'image' ? 'Synthesizing & Mapping...' : 'Sequencing...'}
+                                                {analysisMode === 'image' ? 'Synthesizing Scaffold...' : 'Sequencing Twin Dynamics...'}
                                             </span>
                                         ) : analysisMode === 'image' ? (
-                                            <>⚡ Scan Molecular Structure & Synthesize</>
+                                            <span className="relative z-10 flex items-center gap-1.5">⚡ Scan Molecular Structure</span>
                                         ) : (
-                                            <>🧬 Run In-Silico Trial</>
+                                            <span className="relative z-10 flex items-center gap-2">
+                                                <span className="text-sm">🧬</span> RUN IN-SILICO TRIAL
+                                            </span>
                                         )}
                                     </button>
 
