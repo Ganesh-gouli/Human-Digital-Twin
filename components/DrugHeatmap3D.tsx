@@ -952,8 +952,8 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
         return new THREE.ShaderMaterial({
             uniforms: {
                 uIsGlassMode: { value: isGlassMode ? 1.0 : 0.0 },
-                uGlowColor: { value: new THREE.Color(0.2, 0.5, 0.95) },
-                uBaseColor: { value: new THREE.Color(0xdce7ef) },
+                uGlowColor: { value: new THREE.Color(0.15, 0.45, 0.9) },
+                uBaseColor: { value: new THREE.Color('#7ab5c4') },
                 uTime: { value: 0.0 },
                 uPulse: { value: 1.0 },
 
@@ -1076,15 +1076,15 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                     float maxHeat = max(max(max(brainHeat, heartHeat), max(lungsHeat, liverHeat)),
                                         max(max(stomachHeat, kidneyHeat), max(intestinesHeat, nervousHeat)));
 
-                    // Lighting
+                    // Lighting — tuned for visible anatomical contrast on dark background
                     vec3 lightDir1 = normalize(vec3(1.2, 1.8, 2.2));
                     vec3 lightDir2 = normalize(vec3(-1.2, 0.6, -1.2));
                     float diff1 = max(dot(N, lightDir1), 0.0);
-                    float diff2 = max(dot(N, lightDir2), 0.0) * 0.35;
-                    float ambient = 0.45;
-                    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 2.2);
+                    float diff2 = max(dot(N, lightDir2), 0.0) * 0.3;
+                    float ambient = 0.18;
+                    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
 
-                    vec3 baseColor = uBaseColor * (ambient + diff1 * 0.55 + diff2) + vec3(1.0) * fresnel * 0.25;
+                    vec3 baseColor = uBaseColor * (ambient + diff1 * 0.65 + diff2) + vec3(0.4, 0.7, 0.85) * fresnel * 0.15;
 
                     if (uIsGlassMode > 0.5) {
                         vec3 holoGlow = uGlowColor * fresnel * 1.8;
@@ -1265,13 +1265,14 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
 
     const mat = useMemo(() => {
         return new THREE.MeshStandardMaterial({
-            color: new THREE.Color('#e8ecf0'),
-            roughness: 0.6,
-            metalness: 0.1,
+            color: new THREE.Color('#c8b89a'),
+            roughness: 0.7,
+            metalness: 0.05,
             wireframe: false,
             transparent: true,
             opacity: isGlassMode ? 0.35 : 1.0,
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide,
+            envMapIntensity: 0.3,
         });
     }, [isGlassMode]);
 
@@ -1919,12 +1920,12 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
                 {/* Enhanced Holographic Simulation Lighting */}
-                <ambientLight intensity={0.8} color="#ffffff" />
-                <spotLight position={[0, 7, 0]} angle={0.45} penumbra={0.9} intensity={2.4} color="#22d3ee" />
+                <ambientLight intensity={0.25} color="#87ceeb" />
+                <spotLight position={[0, 7, 0]} angle={0.45} penumbra={0.9} intensity={1.6} color="#22d3ee" />
                 <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1}
-                    intensity={1.2} castShadow shadow-mapSize={[780, 780]} color="#ffffff" />
-                <pointLight position={[-10, 0, -10]} intensity={1.8} color="#0284c7" />
-                <spotLight position={[0, 5, -5]} intensity={2.2} color="#06b6d4" />
+                    intensity={0.8} castShadow shadow-mapSize={[780, 780]} color="#e0f0ff" />
+                <pointLight position={[-10, 0, -10]} intensity={1.2} color="#0284c7" />
+                <spotLight position={[0, 5, -5]} intensity={1.4} color="#06b6d4" />
 
                 <CameraSetup resetCameraFlag={resetCameraFlag} orbitRef={orbitRef} />
                 <SceneRotator>
@@ -2003,7 +2004,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 {/* Holographic Chamber Floor */}
                 <HolographicChamberFloor />
 
-                <Environment preset="city" blur={1} />
+                <Environment preset="night" blur={1} />
                 <ContactShadows resolution={512} scale={20} blur={2} opacity={0.4} far={10} color="#082f49" />
 
                 {/* Cyber Bloom Post-Processing */}
