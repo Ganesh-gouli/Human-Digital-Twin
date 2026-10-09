@@ -8,8 +8,17 @@ import { HeatmapEffect } from '../types';
 import gsap from 'gsap';
 import { LandmarkIndicators, CalibrationMode } from './LandmarkIndicator';
 
-// On-demand GLB loading: GLB models are loaded only when their specific layer view is activated.
-// This prevents downloading ~140MB of unused 3D models on initial page load.
+// Configure local Draco decoder for ultra-fast WASM decompression
+try {
+    useGLTF.setDecoderPath('/draco/gltf/');
+    useGLTF.preload('/Human.glb');
+    useGLTF.preload('/skeleton.glb');
+    useGLTF.preload('/inner_organs.glb');
+    useGLTF.preload('/nervous.glb');
+    useGLTF.preload('/human_anatomy_by_tripo.glb');
+} catch (e) {
+    console.warn("GLTF preloading warning:", e);
+}
 
 const CanvasLoaderFallback: React.FC<{ label?: string }> = ({ label = '3D Anatomy' }) => {
     const { progress } = useProgress();
@@ -934,9 +943,10 @@ const SceneRotator: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, isExploded, outerBodyGroupRef }) => {
-    const obj = useLoader(OBJLoader, '/Human.obj');
+    const { scene } = useGLTF('/Human.glb');
+    const obj = useMemo(() => SkeletonUtils.clone(scene), [scene]);
     const groupRef = useRef<THREE.Group>(null);
-    const { camera, gl, raycaster, scene } = useThree();
+    const { camera, gl, raycaster } = useThree();
 
     const mat = useMemo(() => {
         return new THREE.ShaderMaterial({
