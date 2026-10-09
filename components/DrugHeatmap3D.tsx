@@ -8,28 +8,44 @@ import { HeatmapEffect } from '../types';
 import gsap from 'gsap';
 import { LandmarkIndicators, CalibrationMode } from './LandmarkIndicator';
 
-// Preload GLB models globally to prevent reloading on component re-mount
-try {
-    useGLTF.preload('/skeleton.glb');
-    useGLTF.preload('/inner_organs.glb');
-    useGLTF.preload('/Inner organs.glb');
-    useGLTF.preload('/human_anatomy_by_tripo.glb');
-    useGLTF.preload('/nervous.glb');
-} catch (e) {
-    console.warn("GLTF preloading warning:", e);
-}
+// On-demand GLB loading: GLB models are loaded only when their specific layer view is activated.
+// This prevents downloading ~140MB of unused 3D models on initial page load.
 
-const CanvasLoaderFallback: React.FC = () => {
+const CanvasLoaderFallback: React.FC<{ label?: string }> = ({ label = '3D Anatomy' }) => {
     const { progress } = useProgress();
+    const [smoothProgress, setSmoothProgress] = useState(25);
+
+    useEffect(() => {
+        let current = 25;
+        const interval = setInterval(() => {
+            current += (94 - current) * 0.12;
+            setSmoothProgress(prev => Math.max(prev, Math.round(current)));
+        }, 120);
+        return () => clearInterval(interval);
+    }, []);
+
+    const displayProgress = Math.max(smoothProgress, Math.round(progress));
+
     return (
         <Html center>
-            <div className="flex flex-col items-center justify-center p-5 bg-slate-950/85 backdrop-blur-xl rounded-2xl border border-white/15 text-center shadow-2xl min-w-[220px] pointer-events-none select-none">
-                <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin mb-3" />
-                <span className="text-xs font-black text-emerald-300 uppercase tracking-widest">
-                    Loading 3D Anatomy... {Math.round(progress)}%
+            <div className="flex flex-col items-center justify-center p-6 bg-slate-950/90 backdrop-blur-2xl rounded-2xl border border-cyan-500/30 text-center shadow-[0_0_50px_rgba(6,182,212,0.25)] min-w-[260px] pointer-events-none select-none">
+                <div className="relative mb-3 flex items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin" />
+                    <span className="absolute text-[10px] font-mono font-bold text-cyan-300">
+                        {displayProgress}%
+                    </span>
+                </div>
+                <span className="text-xs font-black text-cyan-300 uppercase tracking-widest mb-1">
+                    Loading {label}
                 </span>
-                <div className="w-full bg-white/10 rounded-full h-1.5 mt-3 overflow-hidden">
-                    <div className="bg-gradient-to-r from-emerald-400 to-cyan-400 h-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                <span className="text-[10px] text-gray-400 font-mono mb-3">
+                    {displayProgress < 50 ? 'Streaming 3D Geometry...' : displayProgress < 85 ? 'Compiling Hologram Shaders...' : 'Finalizing Digital Twin...'}
+                </span>
+                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden border border-cyan-500/20">
+                    <div
+                        className="bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500 h-full transition-all duration-300 shadow-[0_0_12px_#22d3ee]"
+                        style={{ width: `${displayProgress}%` }}
+                    />
                 </div>
             </div>
         </Html>
@@ -1902,8 +1918,8 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
                 <CameraSetup resetCameraFlag={resetCameraFlag} orbitRef={orbitRef} />
                 <SceneRotator>
-                    <React.Suspense fallback={<CanvasLoaderFallback />}>
-                        {(showBody || (!showOrgans && !showSkeleton && !showMuscles && !showNervousGLB)) && (
+                    {(showBody || (!showOrgans && !showSkeleton && !showMuscles && !showNervousGLB)) && (
+                        <React.Suspense fallback={<CanvasLoaderFallback label="Digital Twin Hologram" />}>
                             <HumanModel
                                 effects={organEffects}
                                 isGlassMode={showOrgans ? true : isGlassMode}
@@ -1911,8 +1927,10 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                                 onOrganClick={onOrganSelect}
                                 outerBodyGroupRef={outerBodyGroupRef}
                             />
-                        )}
-                        {showOrgans && (
+                        </React.Suspense>
+                    )}
+                    {showOrgans && (
+                        <React.Suspense fallback={<CanvasLoaderFallback label="Internal Organs" />}>
                             <InnerOrgansModel
                                 effects={organEffects}
                                 isGlassMode={false}
@@ -1920,8 +1938,10 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                                 onOrganClick={onOrganSelect}
                                 visible={showOrgans}
                             />
-                        )}
-                        {showSkeleton && (
+                        </React.Suspense>
+                    )}
+                    {showSkeleton && (
+                        <React.Suspense fallback={<CanvasLoaderFallback label="Skeletal Anatomy" />}>
                             <SkeletonModel
                                 effects={skeletonEffects}
                                 isGlassMode={isGlassMode}
@@ -1929,24 +1949,28 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                                 onOrganClick={onOrganSelect}
                                 visible={showSkeleton}
                             />
-                        )}
-                        {showMuscles && (
+                        </React.Suspense>
+                    )}
+                    {showMuscles && (
+                        <React.Suspense fallback={<CanvasLoaderFallback label="Musculoskeletal Model" />}>
                             <MusclesModel
                                 effects={organEffects}
                                 isGlassMode={isGlassMode}
                                 onOrganHover={setHoveredOrgan}
                                 onOrganClick={onOrganSelect}
                             />
-                        )}
-                        {showNervousGLB && (
+                        </React.Suspense>
+                    )}
+                    {showNervousGLB && (
+                        <React.Suspense fallback={<CanvasLoaderFallback label="Nervous System" />}>
                             <NervousGLBModel
                                 effects={organEffects}
                                 isGlassMode={isGlassMode}
                                 onOrganHover={setHoveredOrgan}
                                 onOrganClick={onOrganSelect}
                             />
-                        )}
-                    </React.Suspense>
+                        </React.Suspense>
+                    )}
 
                     {/* Calibration tool: active only when calibrationMode is enabled */}
                     {calibrationMode && (
