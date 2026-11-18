@@ -1,4 +1,4 @@
-﻿/**
+/**
  * LandmarkIndicator.tsx
  * ─────────────────────────────────────────────────────────────────────────────
  * Medical Anatomical Landmark Engine – Outer Body Damage Indicator
@@ -64,89 +64,115 @@ interface LandmarkDotProps {
 
 const LandmarkDot: React.FC<LandmarkDotProps> = ({ intensity, radius, active, debugLabel }) => {
     const groupRef = useRef<THREE.Group>(null);
-    const dotRef = useRef<THREE.Mesh>(null);
-    const ringRef = useRef<THREE.Mesh>(null);
-    const ring2Ref = useRef<THREE.Mesh>(null);
 
-    const dotRadius = radius * (0.6 + intensity * 0.4);       // 0.6–1.0× base
-    const ringRadius = dotRadius * 1.5;
-    const ring2Radius = dotRadius * 2.2;
+    // Dynamic aura size proportional to landmark organ radius
+    const auraRadius = Math.max(radius * 3.4, 0.22) * (0.85 + intensity * 0.35);
+
+    // Glowing cyan/lime radial beacon shader matching medical scan visual
+    const glowMaterial = useMemo(() => {
+        return new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uIntensity: { value: intensity },
+                uActive: { value: active ? 1.0 : 0.0 },
+                uCoreColor: { value: new THREE.Color('#d4ffea') },   // Luminous bright yellow-minty white core
+                uMidColor: { value: new THREE.Color('#34d399') },    // Mint-emerald luminescence
+                uCyanGlow: { value: new THREE.Color('#00f0ff') },    // Vibrant electric cyan
+                uOuterCyan: { value: new THREE.Color('#0284c7') },   // Deep turquoise halo
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float uTime;
+                uniform float uIntensity;
+                uniform float uActive;
+                uniform vec3 uCoreColor;
+                uniform vec3 uMidColor;
+                uniform vec3 uCyanGlow;
+                uniform vec3 uOuterCyan;
+                varying vec2 vUv;
+
+                void main() {
+                    vec2 center = vec2(0.5);
+                    float dist = length(vUv - center) * 2.0;
+                    if (dist > 1.0) discard;
+
+                    // Dynamic rhythmic blinking pulse (frequency scales slightly with intensity)
+                    float speed = 2.8 + uIntensity * 1.4;
+                    float t = uTime * speed;
+                    
+                    // Smooth breathing blink curve between 0.35 (ambient glow) and 1.0 (bright flare)
+                    float pulse1 = sin(t);
+                    float pulse2 = sin(t * 2.0 + 0.3) * 0.15;
+                    float blink = 0.65 + 0.35 * pulse1 + pulse2;
+                    blink = clamp(blink, 0.25, 1.25);
+
+                    // Radial light falloff profile matching the medical scan beacon:
+                    // 1. Hot core (0.0 to 0.30): intense luminous mint/pale yellow
+                    float core = smoothstep(0.32, 0.0, dist);
+                    // 2. Mid gradient (0.20 to 0.70): radiant electric cyan
+                    float mid = smoothstep(0.70, 0.18, dist);
+                    // 3. Outer aura: smooth optical exponential falloff
+                    float falloff = pow(clamp(1.0 - dist, 0.0, 1.0), 1.9);
+
+                    // Blend colors: Core -> Mid Emerald -> Cyan -> Outer
+                    vec3 col = mix(uOuterCyan, uCyanGlow, smoothstep(0.95, 0.35, dist));
+                    col = mix(col, uMidColor, smoothstep(0.52, 0.16, dist));
+                    col = mix(col, uCoreColor, core * 0.95);
+
+                    // Core luminous boost during peak of the blink
+                    col += uCoreColor * (core * 0.65 * blink);
+
+                    float alpha = falloff * blink * (0.85 + uIntensity * 0.20) * uActive;
+
+                    gl_FragColor = vec4(col, alpha);
+                }
+            `,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+        });
+    }, [intensity, active]);
 
     useFrame((state) => {
-        if (!groupRef.current) return;
+        if (!glowMaterial) return;
         const t = state.clock.elapsedTime;
-        const speed = 1.0 + intensity * 1.2;                   // faster for severe damage
+        glowMaterial.uniforms.uTime.value = t;
+        glowMaterial.uniforms.uIntensity.value = intensity;
+        glowMaterial.uniforms.uActive.value = active ? 1.0 : 0.0;
 
-        // Scale pulse: 1.0 → 1.08 → 1.0
-        const pulse = 1.0 + Math.sin(t * speed * Math.PI * 2) * 0.05;
-
-        if (dotRef.current) {
-            const targetOp = active ? (0.80 + Math.sin(t * speed * Math.PI * 2) * 0.15) : 0;
-            (dotRef.current.material as THREE.MeshBasicMaterial).opacity +=
-                (targetOp - (dotRef.current.material as THREE.MeshBasicMaterial).opacity) * 0.08;
-            dotRef.current.scale.setScalar(pulse);
-        }
-        if (ringRef.current) {
-            const ringOp = active ? (0.35 + Math.sin(t * speed * Math.PI * 2 + 0.5) * 0.12) : 0;
-            (ringRef.current.material as THREE.MeshBasicMaterial).opacity +=
-                (ringOp - (ringRef.current.material as THREE.MeshBasicMaterial).opacity) * 0.06;
-            ringRef.current.scale.setScalar(1.0 + Math.sin(t * speed * Math.PI * 2 + 0.8) * 0.08);
-        }
-        if (ring2Ref.current) {
-            const r2Op = active ? (0.15 + Math.sin(t * speed * Math.PI * 2 + 1.2) * 0.08) : 0;
-            (ring2Ref.current.material as THREE.MeshBasicMaterial).opacity +=
-                (r2Op - (ring2Ref.current.material as THREE.MeshBasicMaterial).opacity) * 0.05;
-            ring2Ref.current.scale.setScalar(1.0 + Math.sin(t * speed * Math.PI * 2 + 1.6) * 0.12);
+        if (groupRef.current) {
+            const speed = 2.8 + intensity * 1.4;
+            // Gentle scale breathing pulse in sync with blink
+            const scalePulse = 1.0 + Math.sin(t * speed) * 0.07;
+            groupRef.current.scale.setScalar(scalePulse);
         }
     });
 
     return (
         <group ref={groupRef}>
-            {/* Core dot */}
-            <mesh ref={dotRef}>
-                <circleGeometry args={[dotRadius, 32]} />
-                <meshBasicMaterial
-                    color="#FF1A1A"
-                    transparent
-                    opacity={0.9}
-                    depthWrite={false}
-                    side={THREE.DoubleSide}
-                />
-            </mesh>
-            {/* Inner glow ring */}
-            <mesh ref={ringRef}>
-                <ringGeometry args={[dotRadius * 0.9, ringRadius, 48]} />
-                <meshBasicMaterial
-                    color="#FF3030"
-                    transparent
-                    opacity={0.35}
-                    depthWrite={false}
-                    side={THREE.DoubleSide}
-                />
-            </mesh>
-            {/* Outer soft halo */}
-            <mesh ref={ring2Ref}>
-                <ringGeometry args={[ringRadius, ring2Radius, 48]} />
-                <meshBasicMaterial
-                    color="#FF0000"
-                    transparent
-                    opacity={0.12}
-                    depthWrite={false}
-                    side={THREE.DoubleSide}
-                />
+            {/* Luminous Glowing Radial Beacon Plane */}
+            <mesh material={glowMaterial}>
+                <planeGeometry args={[auraRadius * 2, auraRadius * 2]} />
             </mesh>
             {/* Debug label */}
             {debugLabel && (
                 <Html distanceFactor={5} style={{ pointerEvents: 'none' }}>
                     <div style={{
-                        background: 'rgba(220,38,38,0.85)',
+                        background: 'rgba(6,182,212,0.85)',
                         color: 'white',
                         fontSize: '8px',
                         fontFamily: 'monospace',
                         padding: '2px 6px',
                         borderRadius: '4px',
                         whiteSpace: 'nowrap',
-                        border: '1px solid rgba(255,80,80,0.5)',
+                        border: '1px solid rgba(34,211,238,0.5)',
                         userSelect: 'none',
                     }}>
                         📍 {debugLabel}
@@ -169,15 +195,11 @@ const BillboardGroup: React.FC<{
 
     useFrame(() => {
         if (!groupRef.current) return;
-        groupRef.current.position.copy(position);
+        const offset = normal.clone().multiplyScalar(0.015);
+        groupRef.current.position.copy(position).add(offset);
 
-        // Orient so the indicator faces the camera but lies on the surface
-        const up = new THREE.Vector3(0, 1, 0);
-        const lookDir = camera.position.clone().sub(position).normalize();
-        // Blend between normal and camera direction for stable orientation
-        const faceDir = normal.clone().lerp(lookDir, 0.3).normalize();
-        const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), faceDir);
-        groupRef.current.quaternion.copy(quat);
+        // Billboarded facing camera
+        groupRef.current.quaternion.copy(camera.quaternion);
     });
 
     return <group ref={groupRef}>{children}</group>;
@@ -257,31 +279,9 @@ interface LandmarkIndicatorsProps {
     debugMode?: boolean;
 }
 
-export const LandmarkIndicators: React.FC<LandmarkIndicatorsProps> = ({
-    effects,
-    outerBodyRef,
-    debugMode,
-}) => {
-    const activeEffects = useMemo(() =>
-        effects.filter(e => {
-            const v = typeof e.intensity === 'number' ? e.intensity : 0.8;
-            return v > 0.05 && getLandmark(e.structure_name) !== null;
-        }),
-        [effects]
-    );
-
-    return (
-        <group>
-            {activeEffects.map((effect, i) => (
-                <SingleLandmarkIndicator
-                    key={`${effect.structure_name}-${i}`}
-                    effect={effect}
-                    outerBodyRef={outerBodyRef}
-                    debugMode={debugMode}
-                />
-            ))}
-        </group>
-    );
+export const LandmarkIndicators: React.FC<LandmarkIndicatorsProps> = () => {
+    // Outer damage indicators removed as requested
+    return null;
 };
 
 // ── Calibration Mode ──────────────────────────────────────────────────────────

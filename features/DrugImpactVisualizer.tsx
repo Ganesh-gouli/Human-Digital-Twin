@@ -18,16 +18,17 @@ import SimulationExplainerModal from '../components/SimulationExplainerModal';
 // ─── Heatmap color legend ──────────────────────────────────────────────────────
 const HeatmapLegend: React.FC = () => (
     <div className="flex items-center gap-3 px-4 py-2 bg-black/30 rounded-xl border border-white/10 backdrop-blur-md">
-        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Intensity</span>
+        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Severity</span>
         <div className="flex items-center h-3 flex-1 rounded-full overflow-hidden">
             <div className="h-full w-full" style={{
-                background: 'linear-gradient(to right, #3b82f6, #06b6d4, #22c55e, #eab308, #f97316, #ef4444)'
+                background: 'linear-gradient(to right, #facc15, #f97316, #ef4444, #991b1b)'
             }} />
         </div>
         <div className="flex gap-3 text-[10px] font-semibold">
-            <span className="text-blue-400">Low</span>
-            <span className="text-yellow-400">Mod</span>
-            <span className="text-red-400">High</span>
+            <span className="text-[#facc15]">Low</span>
+            <span className="text-[#f97316]">Moderate</span>
+            <span className="text-[#ef4444]">High</span>
+            <span className="text-[#991b1b]">Critical</span>
         </div>
     </div>
 );
@@ -3742,25 +3743,6 @@ This document is a simulated educational clinical report.
                         </div>
                     </div>
                 )}
-
-                {/* Subtle Scientific Disclaimer & Telemetry Bar (Desktop) */}
-                <div className="hidden lg:flex flex-shrink-0 items-center justify-between px-6 py-1.5 border-t border-cyan-500/10 bg-[#020a14]/80 backdrop-blur-md text-[10px] font-mono text-cyan-400/50 relative z-20">
-                    <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1.5 text-cyan-300/70">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                            COMPUTATIONAL ENGINE: BIO-TWIN V2.4 [GPU ACCELERATED]
-                        </span>
-                        <span className="text-cyan-500/30">•</span>
-                        <span>RESOLUTION: MOLECULAR DOCKING + ORGAN KINETICS</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className="text-amber-400/80 font-semibold flex items-center gap-1.5">
-                            <span>⚠</span> RESEARCH ONLY: IN-SILICO COMPUTATIONAL MODEL — NOT FOR CLINICAL USE
-                        </span>
-                        <span className="text-cyan-500/30">•</span>
-                        <span className="text-cyan-500/60">SIMULATION HASH: #8F9A-401B</span>
-                    </div>
-                </div>
 
                 {/* Mobile Navigation Switcher Dock (Only visible on screens < lg) */}
                 <div className="lg:hidden flex-shrink-0 bg-slate-950/95 border-t border-white/10 backdrop-blur-xl px-2.5 py-2 z-30 flex items-center justify-around gap-1.5 no-print shadow-[0_-8px_20px_rgba(0,0,0,0.6)]">

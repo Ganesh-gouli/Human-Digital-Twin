@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ─────────────────────────────────────────────────────────────────────────────
  * Medical Anatomical Landmark Database
  * ─────────────────────────────────────────────────────────────────────────────
@@ -50,8 +50,8 @@ export interface AnatomicalLandmark {
 export const ANATOMICAL_LANDMARKS: AnatomicalLandmark[] = [
   {
     organ: 'brain', displayName: 'Brain', bodyRegion: 'HEAD',
-    frontPos: [0.0, 1.78, 0.18], backPos: [0.0, 1.76, -0.18],
-    normal: [0.0, 0.1, 1.0], radius: 0.06, preferBack: false,
+    frontPos: [0.17, 1.84, 0.04], backPos: [0.17, 1.84, -0.04],
+    normal: [0.8, 0.1, 0.5], radius: 0.08, preferBack: false,
     forbiddenRegions: ['LOWER_ABDOMEN','PELVIS','LEFT_THIGH','RIGHT_THIGH','LEFT_CALF','RIGHT_CALF','LEFT_FOOT','RIGHT_FOOT','LEFT_UPPER_ARM','RIGHT_UPPER_ARM'],
   },
   {

@@ -8,16 +8,16 @@ import { HeatmapEffect } from '../types';
 import gsap from 'gsap';
 import { LandmarkIndicators, CalibrationMode } from './LandmarkIndicator';
 
-// Configure local Draco decoder for ultra-fast WASM decompression
+// Configure loaders and preload assets
 try {
     useGLTF.setDecoderPath('/draco/gltf/');
-    useGLTF.preload('/Human.glb');
+    useLoader.preload(OBJLoader, '/Human.obj');
     useGLTF.preload('/skeleton.glb');
     useGLTF.preload('/inner_organs.glb');
     useGLTF.preload('/nervous.glb');
     useGLTF.preload('/human_anatomy_by_tripo.glb');
 } catch (e) {
-    console.warn("GLTF preloading warning:", e);
+    console.warn("Model preloading warning:", e);
 }
 
 const CanvasLoaderFallback: React.FC<{ label?: string }> = ({ label = '3D Anatomy' }) => {
@@ -120,29 +120,35 @@ function matchOrganName(structureName: string, organKey: string): boolean {
     return sn === ok || sn.includes(ok) || ok.includes(sn);
 }
 
-// ─── Heatmap color: intensity → yellow (low) → orange → red (high) ───────────
+// ─── Surface Heatmap 4-Tier Color Ramp: ───────────────────────────────────────
+// Low (< 0.33): vec3(0.0, 0.85, 1.0) (#00d9ff Cyan/Blue)
+// Moderate (0.33 - 0.66): vec3(0.08, 0.92, 0.45) (#14eb73 Emerald Green)
+// Significant (0.66 - 0.85): vec3(0.98, 0.78, 0.05) (#fac70d Amber Yellow)
+// High (> 0.85): vec3(0.98, 0.15, 0.20) (#fa2633 Crimson Red)
 function heatColor(t: number): THREE.Color {
     t = Math.max(0, Math.min(1, t));
     const c = new THREE.Color();
-    if (t < 0.4) {
-        // light yellow → orange
-        c.setRGB(1.0, 1.0 - t * 0.5, 0.2 - t * 0.2);
-    } else if (t < 0.75) {
-        // orange → deep orange
-        const s = (t - 0.4) / 0.35;
-        c.setRGB(1.0, 0.8 - s * 0.45, 0.05);
+    if (t < 0.33) {
+        return c.set('#00d9ff');
+    } else if (t < 0.66) {
+        const s = (t - 0.33) / 0.33;
+        return c.lerpColors(new THREE.Color('#00d9ff'), new THREE.Color('#14eb73'), s);
+    } else if (t < 0.85) {
+        const s = (t - 0.66) / 0.19;
+        return c.lerpColors(new THREE.Color('#14eb73'), new THREE.Color('#fac70d'), s);
     } else {
-        // deep orange → red
-        const s = (t - 0.75) / 0.25;
-        c.setRGB(1.0, 0.35 - s * 0.35, 0.0);
+        const s = Math.min(1, (t - 0.85) / 0.15);
+        return c.lerpColors(new THREE.Color('#fac70d'), new THREE.Color('#fa2633'), s);
     }
-    return c;
 }
 
+// ─── UI Severity Legend Colors: ──────────────────────────────────────────────
+// Low: #facc15 (Yellow), Moderate: #f97316 (Orange), High: #ef4444 (Bright Red), Critical: #991b1b (Deep Red)
 function heatLabelColor(v: number) {
-    if (v < 0.35) return { text: 'Low', hex: '#facc15' };
-    if (v < 0.65) return { text: 'Moderate', hex: '#f97316' };
-    return { text: 'High', hex: '#ef4444' };
+    if (v < 0.33) return { text: 'Low Impact', hex: '#facc15' };
+    if (v < 0.66) return { text: 'Moderate Impact', hex: '#f97316' };
+    if (v < 0.85) return { text: 'High Impact', hex: '#ef4444' };
+    return { text: 'Critical Impact', hex: '#991b1b' };
 }
 
 // ─── Organ bounding-box zones (Y = bottom→top fraction of model) ──────────────
@@ -423,7 +429,11 @@ function useAnatomyHighlighter(
                          if (uDamageIntensity > 0.01) {
                              float dist = distance(vLocalPosition, uDamagePos);
                              float glow = smoothstep(uDamageRadius, 0.0, dist);
-                             totalEmissiveRadiance += vec3(1.0, 0.18, 0.18) * glow * uDamageIntensity * 3.0;
+                             vec3 dmgCore = mix(vec3(1.0, 0.86, 0.0), vec3(0.96, 0.08, 0.10), smoothstep(0.25, 0.70, uDamageIntensity));
+                             vec3 outerWhite = vec3(0.96, 0.98, 1.0);
+                             float coreTransition = smoothstep(0.20, 0.65, glow);
+                             vec3 finalDmgColor = mix(outerWhite, dmgCore, coreTransition);
+                             totalEmissiveRadiance += finalDmgColor * glow * uDamageIntensity * 2.2;
                          }`
                     );
                     
@@ -546,357 +556,13 @@ function useAnatomyHighlighter(
     return registryRef;
 }
 
-const IndicatorMarker = ({ normal, active, onFadeEnd, isOuterBody }: { normal: THREE.Vector3; active: boolean; onFadeEnd?: () => void; isOuterBody?: boolean }) => {
-    const dotRef = useRef<THREE.Mesh>(null);
-    const ringRef = useRef<THREE.Mesh>(null);
-    const groupRef = useRef<THREE.Group>(null);
-    const scaleVal = useRef(0);
-    const opacityVal = useRef(0);
+const IndicatorMarker = () => null;
 
-    const q = useMemo(() => {
-        const up = new THREE.Vector3(0, 0, 1);
-        return new THREE.Quaternion().setFromUnitVectors(up, normal);
-    }, [normal]);
+// DamageIndicator disabled - outer damage indicators removed
+const DamageIndicator = () => null;
 
-    useFrame((state, delta) => {
-        if (!groupRef.current) return;
-
-        const target = active ? 1 : 0;
-        const prevOpacity = opacityVal.current;
-        scaleVal.current = THREE.MathUtils.lerp(scaleVal.current, target, delta * 5);
-        opacityVal.current = THREE.MathUtils.lerp(opacityVal.current, target, delta * 5);
-
-        if (!active && prevOpacity > 0.01 && opacityVal.current <= 0.01) {
-            onFadeEnd?.();
-        }
-
-        const worldPos = new THREE.Vector3();
-        groupRef.current.getWorldPosition(worldPos);
-        const dist = state.camera.position.distanceTo(worldPos);
-        
-        if (isOuterBody) {
-            // Smooth opacity animation (40% to 100% to 40%)
-            const time = state.clock.elapsedTime;
-            const pulseCycle = (Math.sin(time * 3.0) + 1.0) / 2.0; // 0.0 to 1.0
-            const opacity = (0.4 + pulseCycle * 0.6) * opacityVal.current;
-            const scalePulse = 1.0 + pulseCycle * 0.05; // 1.0 to 1.05
-
-            // Standard basic scale without screen distance compensation so it zooms naturally
-            groupRef.current.scale.setScalar(scaleVal.current * scalePulse);
-
-            if (dotRef.current) {
-                const mat = dotRef.current.material as THREE.MeshBasicMaterial;
-                if (mat) mat.opacity = opacity * 0.9;
-            }
-            if (ringRef.current) {
-                const mat = ringRef.current.material as THREE.MeshBasicMaterial;
-                if (mat) mat.opacity = opacity * 0.3; // subtle outer halo
-            }
-        } else {
-            // Keep the previous distance-based scaling & ring pulsing for internal views
-            const baseScale = dist * 0.012; 
-            groupRef.current.scale.setScalar(scaleVal.current * baseScale);
-
-            const time = state.clock.elapsedTime;
-            const blinkCycle = (Math.sin(time * (2 * Math.PI / 0.7)) + 1) / 2; // 0.0 to 1.0
-            const dotOpacity = (0.4 + blinkCycle * 0.6) * opacityVal.current;
-            
-            if (dotRef.current) {
-                const mat = dotRef.current.material as THREE.MeshBasicMaterial;
-                if (mat) mat.opacity = dotOpacity;
-            }
-
-            const ringCycle = (time % 1.0) / 1.0; // 0.0 to 1.0
-            const ringScale = 1.0 + ringCycle * 0.8; // 1.0 to 1.8
-            const ringOpacity = (0.6 * (1.0 - ringCycle)) * opacityVal.current; // 0.6 to 0.0
-
-            if (ringRef.current) {
-                ringRef.current.scale.setScalar(ringScale);
-                const mat = ringRef.current.material as THREE.MeshBasicMaterial;
-                if (mat) mat.opacity = ringOpacity;
-            }
-        }
-    });
-
-    const offset = useMemo(() => normal.clone().multiplyScalar(0.015), [normal]);
-
-    return (
-        <group ref={groupRef} quaternion={q} position={offset}>
-            {isOuterBody ? (
-                <>
-                    {/* Medical Pulsing Heat Dot */}
-                    <mesh ref={dotRef}>
-                        <circleGeometry args={[0.04, 32]} />
-                        <meshBasicMaterial
-                            color="#FF1E1E"
-                            transparent
-                            depthWrite={false}
-                            opacity={0.8}
-                        />
-                    </mesh>
-                    {/* Subtle outer heat halo */}
-                    <mesh ref={ringRef}>
-                        <circleGeometry args={[0.08, 32]} />
-                        <meshBasicMaterial
-                            color="#FF1E1E"
-                            transparent
-                            depthWrite={false}
-                            opacity={0.25}
-                        />
-                    </mesh>
-                </>
-            ) : (
-                <>
-                    {/* Original concentric visual indicators */}
-                    <mesh ref={dotRef}>
-                        <circleGeometry args={[0.3, 32]} />
-                        <meshBasicMaterial
-                            color="#FF3030"
-                            transparent
-                            depthWrite={false}
-                            blending={THREE.AdditiveBlending}
-                        />
-                    </mesh>
-                    <mesh ref={ringRef}>
-                        <ringGeometry args={[0.35, 0.4, 32]} />
-                        <meshBasicMaterial
-                            color="#FF3030"
-                            transparent
-                            depthWrite={false}
-                            blending={THREE.AdditiveBlending}
-                            side={THREE.DoubleSide}
-                        />
-                    </mesh>
-                </>
-            )}
-        </group>
-    );
-};
-
-// DamageIndicator is now used only for the INTERNAL anatomy view.
-// Outer body indicators are handled by LandmarkIndicators (see LandmarkIndicator.tsx).
-const DamageIndicator = ({ effect, active, onFadeEnd, debugMode }: { effect: HeatmapEffect; active: boolean; onFadeEnd?: () => void; debugMode?: boolean }) => {
-    const result = useMemo(() => getEffectPos(effect), [effect]);
-    const { scene } = useThree();
-    const [projected, setProjected] = useState<{ pos: THREE.Vector3; normal: THREE.Vector3 } | null>(null);
-    const projectedRef = useRef<boolean>(false);
-
-    useEffect(() => {
-        projectedRef.current = false;
-        setProjected(null);
-    }, [result]);
-
-    useFrame(() => {
-        if (projectedRef.current || !result) return;
-
-
-        // Collect all non-indicator meshes for internal organ raycasting
-        const targetMeshes: THREE.Mesh[] = [];
-        scene.traverse(child => {
-            if ((child as THREE.Mesh).isMesh && child.visible) {
-                const n = (child.name || '').toLowerCase();
-                const isVisual = n.includes('ring') || n.includes('hud') || n.includes('indicator') || n.includes('sparkles') || n.includes('line');
-                // DamageIndicator is now internal-only: use all non-outer-body meshes
-                if (!isVisual && !child.userData.isOuterBody) {
-                    targetMeshes.push(child as THREE.Mesh);
-                }
-            }
-        });
-
-        if (targetMeshes.length === 0) return; // Wait for meshes to load
-
-        let rotator: THREE.Object3D | null = null;
-        scene.traverse(child => {
-            if (child.name === 'scene-rotator-group') {
-                rotator = child;
-            }
-        });
-
-        // Traverse and locate the actual organ mesh in the scene matching our target organ
-        let organMesh: THREE.Mesh | null = null;
-        scene.traverse(child => {
-            if (!organMesh && (child as THREE.Mesh).isMesh) {
-                const n = child.name || '';
-                const isSkinOrMuscle = n.toLowerCase().includes('human') || n.toLowerCase().includes('body') || n.toLowerCase().includes('skin');
-                if (!isSkinOrMuscle && matchOrganName(n, effect.structure_name)) {
-                    organMesh = child as THREE.Mesh;
-                }
-            }
-        });
-
-        // Compute dynamic geometry center of the organ mesh in rotator's local coordinate system
-        const localOrganCenter = new THREE.Vector3();
-        if (organMesh) {
-            if (!organMesh.geometry.boundingBox) {
-                organMesh.geometry.computeBoundingBox();
-            }
-            const localBBoxCenter = organMesh.geometry.boundingBox!.getCenter(new THREE.Vector3());
-            const worldOrganCenter = localBBoxCenter.clone().applyMatrix4(organMesh.matrixWorld);
-            localOrganCenter.copy(worldOrganCenter);
-            if (rotator) {
-                const inv = new THREE.Matrix4().copy(rotator.matrixWorld).invert();
-                localOrganCenter.applyMatrix4(inv);
-            }
-        } else {
-            localOrganCenter.copy(result.pos);
-        }
-
-        const isPosterior = result.normal.z < 0;
-        const localRayOrigin = new THREE.Vector3(
-            localOrganCenter.x,
-            localOrganCenter.y,
-            isPosterior ? -3.0 : 3.0
-        );
-        const localRayDir = new THREE.Vector3(0, 0, isPosterior ? 1 : -1);
-
-        const worldRayOrigin = localRayOrigin.clone();
-        const worldRayDir = localRayDir.clone();
-
-        if (rotator) {
-            rotator.updateMatrixWorld(true);
-            worldRayOrigin.applyMatrix4(rotator.matrixWorld);
-            const normalMatrix = new THREE.Matrix3().getNormalMatrix(rotator.matrixWorld);
-            worldRayDir.applyMatrix3(normalMatrix).normalize();
-        }
-
-        // Temporarily set all target materials to DoubleSide to ensure we intersect front- and back-faces (posterior/anterior)
-        const originalSides = new Map<THREE.Material, THREE.Side>();
-        targetMeshes.forEach(mesh => {
-            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-            mats.forEach(mat => {
-                originalSides.set(mat, mat.side);
-                mat.side = THREE.DoubleSide;
-            });
-        });
-
-        const raycaster = new THREE.Raycaster();
-        raycaster.set(worldRayOrigin, worldRayDir);
-        const intersects = raycaster.intersectObjects(targetMeshes, true);
-
-        // Restore original material side configurations
-        targetMeshes.forEach(mesh => {
-            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-            mats.forEach(mat => {
-                const orig = originalSides.get(mat);
-                if (orig !== undefined) mat.side = orig;
-            });
-        });
-
-        if (intersects.length > 0) {
-            const hit = intersects[0];
-            const hitPoint = hit.point.clone();
-            
-            const normalMatrix = new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld);
-            const worldNormal = hit.face ? hit.face.normal.clone().applyMatrix3(normalMatrix).normalize() : result.normal;
-            
-            const localPos = hitPoint.clone();
-            const localNormal = worldNormal.clone();
-            
-            if (rotator) {
-                const inv = new THREE.Matrix4().copy(rotator.matrixWorld).invert();
-                localPos.applyMatrix4(inv);
-                const invNormalMatrix = new THREE.Matrix3().getNormalMatrix(inv);
-                localNormal.applyMatrix3(invNormalMatrix).normalize();
-            }
-            
-            setProjected({ pos: localPos, normal: localNormal });
-            projectedRef.current = true;
-        } else {
-            setProjected({ pos: result.pos, normal: result.normal });
-            projectedRef.current = true;
-        }
-    });
-
-    if (!result || !projected) return null;
-
-    const { pos, normal } = projected;
-
-    return (
-        <group>
-            {/* Actual Damage Indicator Spot */}
-            <group position={pos}>
-                <IndicatorMarker normal={normal} active={active} onFadeEnd={onFadeEnd} isOuterBody={false} />
-            </group>
-
-            {/* Debug Mode Overlays: Projection Ray Line + Surface Normal Line */}
-            {debugMode && (
-                <group>
-                    {/* Orange projection ray path */}
-                    <line>
-                        <bufferGeometry attach="geometry" onUpdate={self => self.setFromPoints([result.pos, pos])} />
-                        <lineBasicMaterial color="#f59e0b" depthTest={false} transparent opacity={0.7} />
-                    </line>
-                    {/* Green normal vector line */}
-                    <line>
-                        <bufferGeometry attach="geometry" onUpdate={self => self.setFromPoints([pos, pos.clone().add(normal.clone().multiplyScalar(0.25))])} />
-                        <lineBasicMaterial color="#10b981" depthTest={false} />
-                    </line>
-                    {/* Yellow organ anchor marker */}
-                    <mesh position={result.pos}>
-                        <sphereGeometry args={[0.015, 8, 8]} />
-                        <meshBasicMaterial color="#fbbf24" depthTest={false} />
-                    </mesh>
-                </group>
-            )}
-        </group>
-    );
-};
-
-// DamageIndicators is only used for INTERNAL anatomy views.
-const DamageIndicators = ({ effects = [], debugMode }: { effects?: HeatmapEffect[]; debugMode?: boolean }) => {
-    const [activeList, setActiveList] = useState<{ effect: HeatmapEffect; isFadingOut: boolean }[]>([]);
-
-    useEffect(() => {
-        setActiveList(prev => {
-            const nextActive = effects.filter(e => {
-                const val = (e.intensity !== undefined && e.intensity !== null) ? Number(e.intensity) : 0.8;
-                return val > 0.05;
-            });
-
-            const newList = [...prev];
-
-            newList.forEach(item => {
-                const exists = nextActive.some(e => e.structure_name === item.effect.structure_name);
-                if (!exists) {
-                    item.isFadingOut = true;
-                } else {
-                    const matching = nextActive.find(e => e.structure_name === item.effect.structure_name);
-                    if (matching) {
-                        item.effect = matching;
-                        item.isFadingOut = false;
-                    }
-                }
-            });
-
-            nextActive.forEach(e => {
-                const exists = newList.some(item => item.effect.structure_name === e.structure_name);
-                if (!exists) {
-                    newList.push({ effect: e, isFadingOut: false });
-                }
-            });
-
-            return newList;
-        });
-    }, [effects]);
-
-    const handleFadeEnd = useCallback((structureName: string) => {
-        setActiveList(prev => prev.filter(item => !(item.effect.structure_name === structureName && item.isFadingOut)));
-    }, []);
-
-    return (
-        <group>
-            {activeList.map((item, idx) => (
-                <DamageIndicator
-                    key={`${item.effect.structure_name}-${idx}`}
-                    effect={item.effect}
-                    active={!item.isFadingOut}
-                    onFadeEnd={() => handleFadeEnd(item.effect.structure_name)}
-                    debugMode={debugMode}
-                />
-            ))}
-        </group>
-    );
-};
+// DamageIndicators disabled - outer and extra damage indicators removed
+const DamageIndicators = () => null;
 
 // ─── Inner model — MeshPhysicalMaterial + per-vertex heatmap color ────────────
 interface HumanModelProps {
@@ -943,8 +609,8 @@ const SceneRotator: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, isExploded, outerBodyGroupRef }) => {
-    const { scene } = useGLTF('/Human.glb');
-    const obj = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+    const rawObj = useLoader(OBJLoader, '/Human.obj');
+    const obj = useMemo(() => rawObj.clone(true), [rawObj]);
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
 
@@ -952,8 +618,9 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
         return new THREE.ShaderMaterial({
             uniforms: {
                 uIsGlassMode: { value: isGlassMode ? 1.0 : 0.0 },
-                uGlowColor: { value: new THREE.Color(0.15, 0.45, 0.9) },
-                uBaseColor: { value: new THREE.Color('#7ab5c4') },
+                uGlowColor: { value: new THREE.Color(0.2, 0.5, 0.95) }, // #3380f2
+                // Solid Mode: #dce7ef (slate pearl ceramic), Glass Mode: #00ffff
+                uBaseColor: { value: new THREE.Color(isGlassMode ? '#00ffff' : '#dce7ef') },
                 uTime: { value: 0.0 },
                 uPulse: { value: 1.0 },
 
@@ -961,11 +628,10 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 uModelCenter: { value: new THREE.Vector3(0, 0, 0) },
                 uModelScale: { value: 1.0 },
 
-                // Anatomical targets in normalized model space (-2.0 to +2.0)
-                // Brain / Cranium: Top cranial hemisphere strictly above eyebrows
-                uBrainPos: { value: new THREE.Vector3(0.0, 1.76, -0.02) },
+                // Brain: Bilateral temples / both sides of head (not forehead)
+                uBrainPos: { value: new THREE.Vector3(0.17, 1.84, 0.03) },
                 uBrainIntensity: { value: 0.0 },
-                uBrainRadius: { value: 0.26 },
+                uBrainRadius: { value: 0.17 },
 
                 // Heart: Left mid-thorax anterior
                 uHeartPos: { value: new THREE.Vector3(-0.14, 0.94, 0.16) },
@@ -1038,18 +704,24 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 varying vec3 vNormal;
                 varying vec3 vViewDir;
 
+                // Damage Indicator Color Ramp:
+                // Less effect -> Pure vibrant Yellow (#facc15)
+                // Moderate effect -> Warm Orange (#f97316)
+                // More effect -> Pure vibrant Red (#ef4444) to Deep Crimson (#991b1b)
                 vec3 calculateHeatMapColor(float heat) {
-                    vec3 colLow = vec3(0.0, 0.85, 1.0);    // 🔵 Low impact (<0.33)
-                    vec3 colMod = vec3(0.08, 0.92, 0.45);  // 🟢 Moderate (0.33 - 0.66)
-                    vec3 colSig = vec3(0.98, 0.78, 0.05);  // 🟡 Significant (0.66 - 0.85)
-                    vec3 colHigh = vec3(0.98, 0.15, 0.20); // 🔴 High impact (>0.85)
+                    vec3 colYellow = vec3(1.0, 0.86, 0.0);   // 🟡 Less effect: Yellow
+                    vec3 colOrange = vec3(1.0, 0.45, 0.0);   // 🟠 Moderate effect: Orange
+                    vec3 colRed    = vec3(0.96, 0.08, 0.10); // 🔴 More effect: Red
+                    vec3 colDarkRed= vec3(0.80, 0.02, 0.04); // 🔴 Critical effect: Deep Red
 
-                    if (heat < 0.33) {
-                        return mix(colLow, colMod, heat / 0.33);
-                    } else if (heat < 0.66) {
-                        return mix(colMod, colSig, (heat - 0.33) / 0.33);
+                    if (heat < 0.32) {
+                        return colYellow;
+                    } else if (heat < 0.55) {
+                        return mix(colYellow, colOrange, (heat - 0.32) / 0.23);
+                    } else if (heat < 0.80) {
+                        return mix(colOrange, colRed, (heat - 0.55) / 0.25);
                     } else {
-                        return mix(colSig, colHigh, clamp((heat - 0.66) / 0.34, 0.0, 1.0));
+                        return mix(colRed, colDarkRed, clamp((heat - 0.80) / 0.20, 0.0, 1.0));
                     }
                 }
 
@@ -1058,60 +730,124 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                     vec3 V = normalize(vViewDir);
 
                     // Accurate Anatomical Heat Calculations in model local space
-                    float brainHeat = smoothstep(uBrainRadius, 0.0, distance(vNormalizedPos, uBrainPos)) * uBrainIntensity;
-                    float heartHeat = smoothstep(uHeartRadius, 0.0, distance(vNormalizedPos, uHeartPos)) * uHeartIntensity;
-                    float lungsHeat = max(
+                    // Brain: Bilateral on both sides of head (temples / lateral cranium, not forehead)
+                    float dBrain = max(
+                        smoothstep(uBrainRadius, 0.04, distance(vNormalizedPos, uBrainPos)),
+                        smoothstep(uBrainRadius, 0.04, distance(vNormalizedPos, vec3(-uBrainPos.x, uBrainPos.y, uBrainPos.z)))
+                    );
+                    float dHeart = smoothstep(uHeartRadius, 0.0, distance(vNormalizedPos, uHeartPos));
+                    float dLungs = max(
                         smoothstep(uLungsRadius, 0.0, distance(vNormalizedPos, uLungsPos)),
                         smoothstep(uLungsRadius, 0.0, distance(vNormalizedPos, vec3(-uLungsPos.x, uLungsPos.y, uLungsPos.z)))
-                    ) * uLungsIntensity;
-                    float liverHeat = smoothstep(uLiverRadius, 0.0, distance(vNormalizedPos, uLiverPos)) * uLiverIntensity;
-                    float stomachHeat = smoothstep(uStomachRadius, 0.0, distance(vNormalizedPos, uStomachPos)) * uStomachIntensity;
-                    float kidneyHeat = max(
+                    );
+                    float dLiver = smoothstep(uLiverRadius, 0.0, distance(vNormalizedPos, uLiverPos));
+                    float dStomach = smoothstep(uStomachRadius, 0.0, distance(vNormalizedPos, uStomachPos));
+                    float dKidney = max(
                         smoothstep(uKidneyRadius, 0.0, distance(vNormalizedPos, uKidneyPos)),
                         smoothstep(uKidneyRadius, 0.0, distance(vNormalizedPos, vec3(-uKidneyPos.x, uKidneyPos.y, uKidneyPos.z)))
-                    ) * uKidneyIntensity;
-                    float intestinesHeat = smoothstep(uIntestinesRadius, 0.0, distance(vNormalizedPos, uIntestinesPos)) * uIntestinesIntensity;
-                    float nervousHeat = smoothstep(uNervousRadius, 0.0, distance(vNormalizedPos, uNervousPos)) * uNervousIntensity;
+                    );
+                    float dIntestines = smoothstep(uIntestinesRadius, 0.0, distance(vNormalizedPos, uIntestinesPos));
+                    float dNervous = smoothstep(uNervousRadius, 0.0, distance(vNormalizedPos, uNervousPos));
+
+                    float brainHeat = dBrain * uBrainIntensity;
+                    float heartHeat = dHeart * uHeartIntensity;
+                    float lungsHeat = dLungs * uLungsIntensity;
+                    float liverHeat = dLiver * uLiverIntensity;
+                    float stomachHeat = dStomach * uStomachIntensity;
+                    float kidneyHeat = dKidney * uKidneyIntensity;
+                    float intestinesHeat = dIntestines * uIntestinesIntensity;
+                    float nervousHeat = dNervous * uNervousIntensity;
 
                     float maxHeat = max(max(max(brainHeat, heartHeat), max(lungsHeat, liverHeat)),
                                         max(max(stomachHeat, kidneyHeat), max(intestinesHeat, nervousHeat)));
 
-                    // Lighting — tuned for visible anatomical contrast on dark background
-                    vec3 lightDir1 = normalize(vec3(1.2, 1.8, 2.2));
-                    vec3 lightDir2 = normalize(vec3(-1.2, 0.6, -1.2));
-                    float diff1 = max(dot(N, lightDir1), 0.0);
-                    float diff2 = max(dot(N, lightDir2), 0.0) * 0.3;
-                    float ambient = 0.18;
-                    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+                    // Normalized radial factor (1.0 at center, 0.0 at outer boundary of active organ):
+                    float maxRadial = max(max(max(dBrain * step(0.01, uBrainIntensity), dHeart * step(0.01, uHeartIntensity)),
+                                              max(dLungs * step(0.01, uLungsIntensity), dLiver * step(0.01, uLiverIntensity))),
+                                          max(max(dStomach * step(0.01, uStomachIntensity), dKidney * step(0.01, uKidneyIntensity)),
+                                              max(dIntestines * step(0.01, uIntestinesIntensity), dNervous * step(0.01, uNervousIntensity))));
 
-                    vec3 baseColor = uBaseColor * (ambient + diff1 * 0.65 + diff2) + vec3(0.4, 0.7, 0.85) * fresnel * 0.15;
+                    // ── Dual Directional Light Shading & Base Skin Material ───────
+                    vec3 lightDir1 = normalize(vec3(0.60, 1.20, 1.00));
+                    vec3 lightDir2 = normalize(vec3(-0.80, 0.40, 0.60));
+                    float diff1 = max(dot(N, lightDir1), 0.0);
+                    float diff2 = max(dot(N, lightDir2), 0.0);
+
+                    // Fresnel rim reflection: pow(1.0 - dot(N, V), 2.2) * 0.25
+                    float NdotV = clamp(dot(N, V), 0.0, 1.0);
+                    float fresnel = pow(1.0 - NdotV, 2.2);
+                    float rim = fresnel * 0.25;
+
+                    // Solid Mode: Base color #dce7ef (slate pearl ceramic), ambient light 0.45, dual directional light shading, and Fresnel rim reflection
+                    vec3 baseLighting = vec3(0.45) + (diff1 * 0.45 + diff2 * 0.20) * vec3(0.92, 0.95, 1.0);
+                    vec3 finalColor = uBaseColor * baseLighting + vec3(rim);
+
+                    // Blend damage indicator: middle yellow or red based on damage severity, surrounded by a soft whitish transition:
+                    if (maxHeat > 0.01) {
+                        // Middle core color based on damage level: Yellow for less damage, Red for high damage
+                        vec3 middleColor = calculateHeatMapColor(maxHeat);
+                        // Outer surrounding color: soft luminous whitish transition
+                        vec3 outerWhite = vec3(0.96, 0.98, 1.0);
+
+                        // Radial transition from outer whitish rim to middle yellow/red core:
+                        float coreTransition = smoothstep(0.20, 0.68, maxRadial);
+                        vec3 indicatorColor = mix(outerWhite, middleColor, coreTransition);
+
+                        // Smooth blend onto model surface
+                        float blendWeight = smoothstep(0.01, 0.28, maxHeat);
+                        vec3 litIndicator = indicatorColor * (0.85 + 0.35 * diff1);
+                        finalColor = mix(finalColor, litIndicator, blendWeight * 0.95);
+
+                        // Emissive radiance: gentle glow in middle, soft white aura at outer rim
+                        vec3 glow = indicatorColor * (maxHeat * 0.70 + pow(maxHeat, 2.0) * 0.35);
+                        finalColor += glow;
+
+                        // In the middle core, cap blue channel to preserve rich yellow/red chroma;
+                        // on the outer rim, allow full blue to keep the white halo luminous and clean:
+                        float maxBlue = mix(1.0, min(finalColor.r, finalColor.g) * 0.15, coreTransition);
+                        finalColor.b = min(finalColor.b, maxBlue);
+                    }
 
                     if (uIsGlassMode > 0.5) {
-                        vec3 holoGlow = uGlowColor * fresnel * 1.8;
-                        if (maxHeat > 0.005) {
-                            vec3 heatColor = calculateHeatMapColor(maxHeat);
-                            holoGlow = mix(holoGlow, heatColor * 2.5, smoothstep(0.005, 0.5, maxHeat));
+                        // Glass/Holo Mode: Base color #00ffff, glow color vec3(0.2, 0.5, 0.95) (#3380f2)
+                        float holoFresnel = fresnel * 1.8;
+                        vec3 holoColor = uBaseColor * 0.35 + uGlowColor * holoFresnel;
+                        if (maxHeat > 0.01) {
+                            vec3 middleColor = calculateHeatMapColor(maxHeat);
+                            vec3 outerWhite = vec3(0.96, 0.98, 1.0);
+                            float coreTransition = smoothstep(0.20, 0.68, maxRadial);
+                            vec3 indicatorColor = mix(outerWhite, middleColor, coreTransition);
+
+                            float blendWeight = smoothstep(0.01, 0.35, maxHeat);
+                            holoColor = mix(holoColor, indicatorColor * 1.25, blendWeight * 0.95);
+
+                            float maxBlue = mix(1.0, min(holoColor.r, holoColor.g) * 0.15, coreTransition);
+                            holoColor.b = min(holoColor.b, maxBlue);
                         }
-                        float alpha = clamp(fresnel * 0.75 + 0.15 + maxHeat * 0.5, 0.0, 1.0);
-                        gl_FragColor = vec4(holoGlow, alpha);
+                        float alpha = clamp(holoFresnel * 0.65 + 0.15 + maxHeat * 0.45, 0.0, 1.0);
+                        gl_FragColor = vec4(holoColor, alpha);
                     } else {
-                        vec3 finalColor = baseColor;
-                        if (maxHeat > 0.005) {
-                            vec3 heatColor = calculateHeatMapColor(maxHeat);
-                            float blendWeight = smoothstep(0.005, 0.45, maxHeat);
-                            finalColor = mix(finalColor, heatColor * (0.85 + 0.35 * diff1), blendWeight * 0.95);
-                            finalColor += heatColor * (maxHeat * 2.2 + pow(maxHeat, 2.0) * 1.8);
-                        }
+                        // Solid Mode
                         gl_FragColor = vec4(finalColor, 1.0);
                     }
                 }
             `,
             side: THREE.DoubleSide,
             transparent: isGlassMode,
-            depthWrite: true,
+            depthWrite: !isGlassMode,
             depthTest: true
         });
     }, [isGlassMode]);
+
+    useEffect(() => {
+        if (mat && mat.uniforms) {
+            mat.uniforms.uIsGlassMode.value = isGlassMode ? 1.0 : 0.0;
+            mat.uniforms.uBaseColor.value.set(isGlassMode ? '#00ffff' : '#dce7ef');
+            mat.transparent = isGlassMode;
+            mat.depthWrite = !isGlassMode;
+            mat.needsUpdate = true;
+        }
+    }, [isGlassMode, mat]);
 
     useMemo(() => {
         obj.traverse(child => {
@@ -1119,6 +855,9 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
             if (!mesh.isMesh) return;
             mesh.name = "outer-body-skin";
             mesh.userData.isOuterBody = true;
+            if (mesh.geometry) {
+                mesh.geometry.computeVertexNormals();
+            }
             mesh.material = mat;
             mesh.material.needsUpdate = true;
             mesh.castShadow = true;
@@ -1156,17 +895,47 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
 
     useFrame((state) => {
         const time = state.clock.elapsedTime;
-        const pulse = 0.85 + 0.15 * Math.sin(time * (2 * Math.PI / 0.8));
+        // Rhythmic organic blinking pulse matching the medical scan image (breathing curve 0.72 - 1.0)
+        const blink = 0.86 + 0.14 * Math.sin(time * 3.2);
 
         const intensities: Record<string, number> = {
             Brain: 0, Heart: 0, Lungs: 0, Liver: 0, Stomach: 0, Kidney: 0, Intestines: 0, Nervous: 0
         };
 
         effects.forEach(e => {
-            const name = (e.structure_name || '').toLowerCase();
+            const name = (e.structure_name || (e as any).organ || (e as any).target || (e as any).name || '').toLowerCase();
+            const effectType = ((e as any).effect_type || '').toLowerCase();
+            const mechanism = ((e as any).mechanism || '').toLowerCase();
+            const combined = `${name} ${effectType} ${mechanism}`;
             const intensity = e.intensity !== undefined && e.intensity !== null ? Number(e.intensity) : 0.8;
             if (intensity > 0.01) {
-                if (name.includes('brain') || name.includes('cns') || name.includes('skull') || name.includes('head') || name.includes('neuro') || name.includes('synap') || name.includes('central nervous') || name.includes('cerebr')) {
+                if (
+                    combined.includes('brain') ||
+                    combined.includes('cns') ||
+                    combined.includes('head') ||
+                    combined.includes('skull') ||
+                    combined.includes('cranial') ||
+                    combined.includes('neuro') ||
+                    combined.includes('synap') ||
+                    combined.includes('central nervous') ||
+                    combined.includes('cerebr') ||
+                    combined.includes('cerebell') ||
+                    combined.includes('cortex') ||
+                    combined.includes('mening') ||
+                    combined.includes('hypothalam') ||
+                    combined.includes('mental') ||
+                    combined.includes('psych') ||
+                    combined.includes('cognit') ||
+                    combined.includes('memory') ||
+                    combined.includes('headache') ||
+                    combined.includes('migraine') ||
+                    combined.includes('dizz') ||
+                    combined.includes('sedat') ||
+                    combined.includes('sleep') ||
+                    combined.includes('alert') ||
+                    combined.includes('drows') ||
+                    (name.includes('nervous') && !name.includes('spine'))
+                ) {
                     intensities.Brain = Math.max(intensities.Brain, intensity);
                 }
                 if (name.includes('heart') || name.includes('cardiac') || name.includes('cardio') || name.includes('vascular') || name.includes('arter') || name.includes('blood pressure') || name.includes('circulat')) {
@@ -1178,13 +947,13 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 if (name.includes('liver') || name.includes('hepatic') || name.includes('metabol') || name.includes('first-pass') || name.includes('clearance') || name.includes('cyp') || name.includes('bile')) {
                     intensities.Liver = Math.max(intensities.Liver, intensity);
                 }
-                if (name.includes('stomach') || name.includes('gastric') || name.includes('digest') || name.includes('acid') || name.includes('ulcer') || name.includes('peptic') || name.includes('mucosa') || name.includes('gi')) {
+                if (name.includes('stomach') || name.includes('gastric') || name.includes('digest') || name.includes('acid') || name.includes('ulcer') || name.includes('peptic') || name.includes('mucosa') || name.includes('gi') || name.includes('gastro')) {
                     intensities.Stomach = Math.max(intensities.Stomach, intensity);
                 }
                 if (name.includes('kidney') || name.includes('renal') || name.includes('nephr') || name.includes('filtration') || name.includes('glomerul') || name.includes('urinar') || name.includes('excret')) {
                     intensities.Kidney = Math.max(intensities.Kidney, intensity);
                 }
-                if (name.includes('intestine') || name.includes('colon') || name.includes('gut') || name.includes('bowel') || name.includes('enteric') || name.includes('absorp') || name.includes('microbio')) {
+                if (name.includes('intestine') || name.includes('colon') || name.includes('gut') || name.includes('bowel') || name.includes('enteric') || name.includes('absorp') || name.includes('microbio') || name.includes('abdom') || name.includes('belly')) {
                     intensities.Intestines = Math.max(intensities.Intestines, intensity);
                 }
                 if (name.includes('spine') || name.includes('nervous') || name.includes('spinal') || name.includes('vertebra') || name.includes('back') || name.includes('cord')) {
@@ -1194,16 +963,16 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
         });
 
         if (mat && mat.uniforms) {
-            mat.uniforms.uTime.value = time;
-            mat.uniforms.uPulse.value = pulse;
-            mat.uniforms.uBrainIntensity.value = intensities.Brain * pulse;
-            mat.uniforms.uHeartIntensity.value = intensities.Heart * pulse;
-            mat.uniforms.uLungsIntensity.value = intensities.Lungs * pulse;
-            mat.uniforms.uLiverIntensity.value = intensities.Liver * pulse;
-            mat.uniforms.uStomachIntensity.value = intensities.Stomach * pulse;
-            mat.uniforms.uKidneyIntensity.value = intensities.Kidney * pulse;
-            mat.uniforms.uIntestinesIntensity.value = intensities.Intestines * pulse;
-            mat.uniforms.uNervousIntensity.value = intensities.Nervous * pulse;
+            if (mat.uniforms.uTime) mat.uniforms.uTime.value = time;
+            if (mat.uniforms.uPulse) mat.uniforms.uPulse.value = blink;
+            if (mat.uniforms.uBrainIntensity) mat.uniforms.uBrainIntensity.value = intensities.Brain * blink;
+            if (mat.uniforms.uHeartIntensity) mat.uniforms.uHeartIntensity.value = intensities.Heart * blink;
+            if (mat.uniforms.uLungsIntensity) mat.uniforms.uLungsIntensity.value = intensities.Lungs * blink;
+            if (mat.uniforms.uLiverIntensity) mat.uniforms.uLiverIntensity.value = intensities.Liver * blink;
+            if (mat.uniforms.uStomachIntensity) mat.uniforms.uStomachIntensity.value = intensities.Stomach * blink;
+            if (mat.uniforms.uKidneyIntensity) mat.uniforms.uKidneyIntensity.value = intensities.Kidney * blink;
+            if (mat.uniforms.uIntestinesIntensity) mat.uniforms.uIntestinesIntensity.value = intensities.Intestines * blink;
+            if (mat.uniforms.uNervousIntensity) mat.uniforms.uNervousIntensity.value = intensities.Nervous * blink;
         }
     });
 
@@ -1265,14 +1034,13 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
 
     const mat = useMemo(() => {
         return new THREE.MeshStandardMaterial({
-            color: new THREE.Color('#c8b89a'),
-            roughness: 0.7,
-            metalness: 0.05,
+            color: new THREE.Color('#e8ecf0'),
+            roughness: 0.6,
+            metalness: 0.1,
             wireframe: false,
             transparent: true,
             opacity: isGlassMode ? 0.35 : 1.0,
-            side: THREE.DoubleSide,
-            envMapIntensity: 0.3,
+            side: THREE.DoubleSide
         });
     }, [isGlassMode]);
 
@@ -1910,6 +1678,19 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
         return effects.length > 0 ? Math.max(...effects.map(e => e.intensity)) : 0;
     }, [effects]);
 
+    // Background Sparkles: Color transitions from #bae6fd (low) -> #fde047 (mid) -> #fca5a5 (high)
+    const sparkleColor = useMemo(() => {
+        if (maxIntensity > 0.66) {
+            const t = Math.min(1, (maxIntensity - 0.66) / 0.34);
+            return '#' + new THREE.Color('#fde047').lerp(new THREE.Color('#fca5a5'), t).getHexString();
+        } else if (maxIntensity > 0.33) {
+            const t = (maxIntensity - 0.33) / 0.33;
+            return '#' + new THREE.Color('#bae6fd').lerp(new THREE.Color('#fde047'), t).getHexString();
+        } else {
+            return '#bae6fd';
+        }
+    }, [maxIntensity]);
+
     const organEffects = useMemo(() => effects.filter(e => e.layer !== 'SKELETON_VIEW'), [effects]);
     const skeletonEffects = useMemo(() => effects.filter(e => e.layer === 'SKELETON_VIEW'), [effects]);
 
@@ -1919,13 +1700,15 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
             <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.2, 6.6], fov: 45 }}>
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
-                {/* Enhanced Holographic Simulation Lighting */}
-                <ambientLight intensity={0.25} color="#87ceeb" />
-                <spotLight position={[0, 7, 0]} angle={0.45} penumbra={0.9} intensity={1.6} color="#22d3ee" />
-                <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1}
-                    intensity={0.8} castShadow shadow-mapSize={[780, 780]} color="#e0f0ff" />
-                <pointLight position={[-10, 0, -10]} intensity={1.2} color="#0284c7" />
-                <spotLight position={[0, 5, -5]} intensity={1.4} color="#06b6d4" />
+                {/* ── Scene Lighting ── */}
+                {/* Ambient light: #ffffff (intensity 0.7) */}
+                <ambientLight intensity={0.7} color="#ffffff" />
+                {/* SpotLight: position [10, 10, 10], color #ffffff (intensity 1.2) */}
+                <spotLight position={[10, 10, 10]} intensity={1.2} color="#ffffff" castShadow angle={0.6} penumbra={0.5} />
+                {/* PointLight: position [-10, 0, -10], color #3b82f6 (intensity 1.5) */}
+                <pointLight position={[-10, 0, -10]} intensity={1.5} color="#3b82f6" />
+                {/* Accent SpotLight: position [0, 5, -5], color #06b6d4 (intensity 2.0) */}
+                <spotLight position={[0, 5, -5]} intensity={2.0} color="#06b6d4" angle={0.8} penumbra={0.5} />
 
                 <CameraSetup resetCameraFlag={resetCameraFlag} orbitRef={orbitRef} />
                 <SceneRotator>
@@ -1940,6 +1723,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                             />
                         </React.Suspense>
                     )}
+
                     {showOrgans && (
                         <React.Suspense fallback={<CanvasLoaderFallback label="Internal Organs" />}>
                             <InnerOrgansModel
@@ -1992,24 +1776,25 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 {/* Simulated Pharmacokinetics Drug Flow Particles */}
                 <PharmacokineticsFlow active={organEffects.length > 0 || skeletonEffects.length > 0} />
 
-                {/* Reactive sparkles: more intense drugs mean faster, denser, and sharper colored sparkles */}
+                {/* Reactive sparkles: Color transitions from #bae6fd (low) -> #fde047 (mid) -> #fca5a5 (high) */}
                 <Sparkles
-                    count={maxIntensity > 0 ? 30 + Math.floor(maxIntensity * 70) : 30}
+                    count={maxIntensity > 0 ? 35 + Math.floor(maxIntensity * 65) : 30}
                     scale={8}
                     size={maxIntensity > 0 ? 2 + maxIntensity * 3 : 2}
                     speed={maxIntensity > 0 ? 0.5 + maxIntensity * 1.5 : 0.5}
                     opacity={0.4 + (maxIntensity * 0.4)}
-                    color={maxIntensity > 0.7 ? "#fca5a5" : maxIntensity > 0.4 ? "#fde047" : "#bae6fd"}
+                    color={sparkleColor}
                 />
                 {/* Holographic Chamber Floor */}
                 <HolographicChamberFloor />
 
-                <Environment preset="night" blur={1} />
+                <Environment preset="city" blur={1} />
+                {/* ContactShadows: color #082f49, opacity 0.4, blur 2 */}
                 <ContactShadows resolution={512} scale={20} blur={2} opacity={0.4} far={10} color="#082f49" />
 
-                {/* Cyber Bloom Post-Processing */}
+                {/* Controlled Scientific Bloom (avoids body overexposure, allows heat glow) */}
                 <EffectComposer multisampling={0}>
-                    <Bloom luminanceThreshold={0.45} luminanceSmoothing={0.85} intensity={0.4} />
+                    <Bloom luminanceThreshold={0.75} luminanceSmoothing={0.65} intensity={0.25} />
                 </EffectComposer>
 
                 <OrbitControls
@@ -2026,29 +1811,29 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>
 
-            {/* ── 4-Tier Surface Heat-Map Impact Legend ───────────────────── */}
+            {/* ── UI Severity Legend ───────────────────── */}
             {effects.length > 0 && (
                 <div className="absolute top-4 left-4 z-20 bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs space-y-2 select-none min-w-[210px] hidden lg:block">
                     <div className="flex items-center gap-2 font-bold text-white/90 text-[11px] uppercase tracking-wider border-b border-white/10 pb-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        Surface Impact Heat-Map
+                        <span className="w-2 h-2 rounded-full bg-[#facc15] animate-pulse" />
+                        Damage Severity Legend
                     </div>
                     <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
                         <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#00d2ff] shadow-[0_0_8px_#00d2ff]" />
-                            <span className="text-slate-300">🔵 Low Impact</span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#facc15] shadow-[0_0_8px_#facc15]" />
+                            <span className="text-slate-300">Low</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
-                            <span className="text-slate-300">🟢 Moderate</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]" />
-                            <span className="text-slate-300">🟡 Significant</span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#f97316] shadow-[0_0_8px_#f97316]" />
+                            <span className="text-slate-300">Moderate</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] shadow-[0_0_8px_#ef4444]" />
-                            <span className="text-slate-300">🔴 High Impact</span>
+                            <span className="text-slate-300">High</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#991b1b] shadow-[0_0_8px_#991b1b]" />
+                            <span className="text-slate-300">Critical</span>
                         </div>
                     </div>
                 </div>
