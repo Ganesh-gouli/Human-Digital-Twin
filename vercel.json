@@ -4,7 +4,16 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/(.*\\.(?:glb|gltf|obj|mtl|bin|png|jpg|jpeg|svg|webp))",
+      "source": "/(.*\\.(?:glb|gltf|obj|mtl|bin|wasm|png|jpg|jpeg|svg|webp))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/draco/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

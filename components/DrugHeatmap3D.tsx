@@ -1,23 +1,19 @@
 import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, Sparkles, ContactShadows, useGLTF, Html, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
-import { OBJLoader, SkeletonUtils } from 'three-stdlib';
+import { SkeletonUtils } from 'three-stdlib';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { HeatmapEffect } from '../types';
 import gsap from 'gsap';
 import { LandmarkIndicators, CalibrationMode } from './LandmarkIndicator';
 
-// Configure loaders and preload assets
+// Configure local Draco decoder and preload only the primary Digital Twin model
 try {
     useGLTF.setDecoderPath('/draco/gltf/');
-    useLoader.preload(OBJLoader, '/Human.obj');
-    useGLTF.preload('/skeleton.glb');
-    useGLTF.preload('/inner_organs.glb');
-    useGLTF.preload('/nervous.glb');
-    useGLTF.preload('/human_anatomy_by_tripo.glb');
+    useGLTF.preload('/Human.glb');
 } catch (e) {
-    console.warn("Model preloading warning:", e);
+    console.warn("GLTF preloading warning:", e);
 }
 
 const CanvasLoaderFallback: React.FC<{ label?: string }> = ({ label = '3D Anatomy' }) => {
@@ -25,15 +21,21 @@ const CanvasLoaderFallback: React.FC<{ label?: string }> = ({ label = '3D Anatom
     const [smoothProgress, setSmoothProgress] = useState(25);
 
     useEffect(() => {
-        let current = 25;
         const interval = setInterval(() => {
-            current += (94 - current) * 0.12;
-            setSmoothProgress(prev => Math.max(prev, Math.round(current)));
-        }, 120);
+            setSmoothProgress(prev => {
+                const target = Math.max(prev, Math.round(progress));
+                if (target > prev) {
+                    return Math.min(100, prev + Math.max(1, Math.ceil((target - prev) * 0.35)));
+                }
+                if (prev < 90) return prev + 2;
+                if (prev < 98) return prev + 1;
+                return prev;
+            });
+        }, 60);
         return () => clearInterval(interval);
-    }, []);
+    }, [progress]);
 
-    const displayProgress = Math.max(smoothProgress, Math.round(progress));
+    const displayProgress = Math.min(100, Math.max(smoothProgress, Math.round(progress)));
 
     return (
         <Html center>
@@ -609,8 +611,8 @@ const SceneRotator: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, isExploded, outerBodyGroupRef }) => {
-    const rawObj = useLoader(OBJLoader, '/Human.obj');
-    const obj = useMemo(() => rawObj.clone(true), [rawObj]);
+    const { scene } = useGLTF('/Human.glb');
+    const obj = useMemo(() => SkeletonUtils.clone(scene), [scene]);
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
 
@@ -1694,6 +1696,17 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     const organEffects = useMemo(() => effects.filter(e => e.layer !== 'SKELETON_VIEW'), [effects]);
     const skeletonEffects = useMemo(() => effects.filter(e => e.layer === 'SKELETON_VIEW'), [effects]);
 
+    // Idle-preload common secondary layers in background after initial digital twin is interactive
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            try {
+                useGLTF.preload('/skeleton.glb');
+                useGLTF.preload('/inner_organs.glb');
+            } catch {}
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <div className="relative w-full h-full select-none">
             {/* ── Three.js Canvas ── */}
@@ -1788,7 +1801,9 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                 {/* Holographic Chamber Floor */}
                 <HolographicChamberFloor />
 
-                <Environment preset="city" blur={1} />
+                <React.Suspense fallback={null}>
+                    <Environment preset="city" blur={1} />
+                </React.Suspense>
                 {/* ContactShadows: color #082f49, opacity 0.4, blur 2 */}
                 <ContactShadows resolution={512} scale={20} blur={2} opacity={0.4} far={10} color="#082f49" />
 
