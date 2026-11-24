@@ -612,7 +612,19 @@ const SceneRotator: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlassMode, onOrganHover, onOrganClick, isExploded, outerBodyGroupRef }) => {
     const { scene } = useGLTF('/Human.glb');
-    const obj = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+    const obj = useMemo(() => {
+        const cloned = SkeletonUtils.clone(scene);
+        cloned.traverse(child => {
+            const mesh = child as THREE.Mesh;
+            if (mesh.isMesh && mesh.geometry) {
+                mesh.geometry.computeVertexNormals();
+                if (mesh.geometry.attributes.normal) {
+                    mesh.geometry.attributes.normal.needsUpdate = true;
+                }
+            }
+        });
+        return cloned;
+    }, [scene]);
     const groupRef = useRef<THREE.Group>(null);
     const { camera, gl, raycaster } = useThree();
 
@@ -621,8 +633,8 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
             uniforms: {
                 uIsGlassMode: { value: isGlassMode ? 1.0 : 0.0 },
                 uGlowColor: { value: new THREE.Color(0.2, 0.5, 0.95) }, // #3380f2
-                // Solid Mode: #dce7ef (slate pearl ceramic), Glass Mode: #00ffff
-                uBaseColor: { value: new THREE.Color(isGlassMode ? '#00ffff' : '#dce7ef') },
+                // Solid Mode: #8ec5d6 (vibrant medical slate cyan with high contrast on dark grids), Glass Mode: #00ffff
+                uBaseColor: { value: new THREE.Color(isGlassMode ? '#00ffff' : '#8ec5d6') },
                 uTime: { value: 0.0 },
                 uPulse: { value: 1.0 },
 
@@ -671,6 +683,10 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 uNervousRadius: { value: 0.20 },
             },
             vertexShader: `
+                #ifdef GL_ES
+                precision highp float;
+                #endif
+
                 uniform vec3 uModelCenter;
                 uniform float uModelScale;
 
@@ -680,13 +696,29 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
 
                 void main() {
                     vNormalizedPos = (position - uModelCenter) * uModelScale;
-                    vNormal = normalize(normalMatrix * normal);
+
+                    // Robust normal handling: if normal buffer attribute is missing or degenerate, fallback to radial position direction
+                    vec3 n = normal;
+                    if (dot(n, n) < 0.0001) {
+                        n = normalize(position - uModelCenter + vec3(0.0001));
+                    }
+                    vec3 transformedNormal = normalMatrix * n;
+                    float nLen = length(transformedNormal);
+                    vNormal = nLen > 0.0001 ? (transformedNormal / nLen) : vec3(0.0, 1.0, 0.0);
+
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    vViewDir = normalize(-mvPosition.xyz);
+                    vec3 vdir = -mvPosition.xyz;
+                    float vLen = length(vdir);
+                    vViewDir = vLen > 0.0001 ? (vdir / vLen) : vec3(0.0, 0.0, 1.0);
+
                     gl_Position = projectionMatrix * mvPosition;
                 }
             `,
             fragmentShader: `
+                #ifdef GL_ES
+                precision highp float;
+                #endif
+
                 uniform float uIsGlassMode;
                 uniform vec3 uGlowColor;
                 uniform vec3 uBaseColor;
@@ -705,6 +737,12 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 varying vec3 vNormalizedPos;
                 varying vec3 vNormal;
                 varying vec3 vViewDir;
+
+                // Safe normalization guaranteed never to return NaN or divide by zero
+                vec3 safeNormalize(vec3 v, vec3 fallback) {
+                    float d = dot(v, v);
+                    return d > 0.00001 ? v * inversesqrt(d) : fallback;
+                }
 
                 // Damage Indicator Color Ramp:
                 // Less effect -> Pure vibrant Yellow (#facc15)
@@ -728,8 +766,15 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                 }
 
                 void main() {
-                    vec3 N = normalize(vNormal);
-                    vec3 V = normalize(vViewDir);
+                    vec3 N = safeNormalize(vNormal, vec3(0.0, 0.0, 1.0));
+                    #if defined(GL_OES_standard_derivatives) || __VERSION__ >= 300
+                    if (dot(vNormal, vNormal) < 0.01) {
+                        N = safeNormalize(cross(dFdx(vNormalizedPos), dFdy(vNormalizedPos)), vec3(0.0, 0.0, 1.0));
+                    }
+                    #endif
+                    if (!gl_FrontFacing) N = -N;
+
+                    vec3 V = safeNormalize(vViewDir, vec3(0.0, 0.0, 1.0));
 
                     // Accurate Anatomical Heat Calculations in model local space
                     // Brain: Bilateral on both sides of head (temples / lateral cranium, not forehead)
@@ -775,13 +820,13 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                     float diff1 = max(dot(N, lightDir1), 0.0);
                     float diff2 = max(dot(N, lightDir2), 0.0);
 
-                    // Fresnel rim reflection: pow(1.0 - dot(N, V), 2.2) * 0.25
+                    // Fresnel rim reflection: clamp prevents NaN from pow(0, x) or pow(<0, x)
                     float NdotV = clamp(dot(N, V), 0.0, 1.0);
-                    float fresnel = pow(1.0 - NdotV, 2.2);
+                    float fresnel = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.2);
                     float rim = fresnel * 0.25;
 
-                    // Solid Mode: Base color #dce7ef (slate pearl ceramic), ambient light 0.45, dual directional light shading, and Fresnel rim reflection
-                    vec3 baseLighting = vec3(0.45) + (diff1 * 0.45 + diff2 * 0.20) * vec3(0.92, 0.95, 1.0);
+                    // Solid Mode: Base color + ambient floor (0.50) + dual directional lights + Fresnel rim
+                    vec3 baseLighting = vec3(0.50) + (diff1 * 0.50 + diff2 * 0.25) * vec3(0.92, 0.95, 1.0);
                     vec3 finalColor = uBaseColor * baseLighting + vec3(rim);
 
                     // Blend damage indicator: middle yellow or red based on damage severity, surrounded by a soft whitish transition:
@@ -811,7 +856,7 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                     }
 
                     if (uIsGlassMode > 0.5) {
-                        // Glass/Holo Mode: Base color #00ffff, glow color vec3(0.2, 0.5, 0.95) (#3380f2)
+                        // Glass/Holo Mode: Base color, glow color vec3(0.2, 0.5, 0.95)
                         float holoFresnel = fresnel * 1.8;
                         vec3 holoColor = uBaseColor * 0.35 + uGlowColor * holoFresnel;
                         if (maxHeat > 0.01) {
@@ -829,7 +874,7 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
                         float alpha = clamp(holoFresnel * 0.65 + 0.15 + maxHeat * 0.45, 0.0, 1.0);
                         gl_FragColor = vec4(holoColor, alpha);
                     } else {
-                        // Solid Mode
+                        // Solid Mode: Clean, bright anatomical model
                         gl_FragColor = vec4(finalColor, 1.0);
                     }
                 }
@@ -844,7 +889,7 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
     useEffect(() => {
         if (mat && mat.uniforms) {
             mat.uniforms.uIsGlassMode.value = isGlassMode ? 1.0 : 0.0;
-            mat.uniforms.uBaseColor.value.set(isGlassMode ? '#00ffff' : '#dce7ef');
+            mat.uniforms.uBaseColor.value.set(isGlassMode ? '#00ffff' : '#8ec5d6');
             mat.transparent = isGlassMode;
             mat.depthWrite = !isGlassMode;
             mat.needsUpdate = true;
@@ -858,7 +903,12 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
             mesh.name = "outer-body-skin";
             mesh.userData.isOuterBody = true;
             if (mesh.geometry) {
-                mesh.geometry.computeVertexNormals();
+                if (!mesh.geometry.attributes.normal) {
+                    mesh.geometry.computeVertexNormals();
+                }
+                if (mesh.geometry.attributes.normal) {
+                    mesh.geometry.attributes.normal.needsUpdate = true;
+                }
             }
             mesh.material = mat;
             mesh.material.needsUpdate = true;
@@ -1003,7 +1053,13 @@ const HumanModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGlas
     useEffect(() => {
         const el = gl.domElement;
         let last: string | null = null;
+        let lastTime = 0;
         const onMove = (e: PointerEvent) => {
+            // NEVER raycast during touch drags on mobile (touch screens have no hover)
+            if (e.pointerType === 'touch') return;
+            const now = performance.now();
+            if (now - lastTime < 50) return; // throttle mouse move to 20fps
+            lastTime = now;
             const o = getOrgan(e);
             if (o !== last) { last = o; onOrganHover(o); }
         };
@@ -1097,7 +1153,13 @@ const SkeletonModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isG
     useEffect(() => {
         const el = gl.domElement;
         let last: string | null = null;
+        let lastTime = 0;
         const onMove = (e: PointerEvent) => {
+            // NEVER raycast during touch drags on mobile (touch screens have no hover)
+            if (e.pointerType === 'touch') return;
+            const now = performance.now();
+            if (now - lastTime < 50) return; // throttle mouse move to 20fps
+            lastTime = now;
             const o = getOrgan(e);
             if (o !== last) { last = o; onOrganHover(o); }
         };
@@ -1164,7 +1226,13 @@ const InnerOrgansModel: React.FC<HumanModelProps> = React.memo(({ effects = [], 
     useEffect(() => {
         const el = gl.domElement;
         let last: string | null = null;
+        let lastTime = 0;
         const onMove = (e: PointerEvent) => {
+            // NEVER raycast during touch drags on mobile (touch screens have no hover)
+            if (e.pointerType === 'touch') return;
+            const now = performance.now();
+            if (now - lastTime < 50) return; // throttle mouse move to 20fps
+            lastTime = now;
             const o = getOrgan(e);
             if (o !== last) { last = o; onOrganHover(o); }
         };
@@ -1311,7 +1379,13 @@ const MusclesModel: React.FC<HumanModelProps> = React.memo(({ effects = [], isGl
     useEffect(() => {
         const el = gl.domElement;
         let last: string | null = null;
+        let lastTime = 0;
         const onMove = (e: PointerEvent) => {
+            // NEVER raycast during touch drags on mobile (touch screens have no hover)
+            if (e.pointerType === 'touch') return;
+            const now = performance.now();
+            if (now - lastTime < 50) return; // throttle mouse move to 20fps
+            lastTime = now;
             const o = getOrgan(e);
             if (o !== last) { last = o; onOrganHover(o); }
         };
@@ -1381,7 +1455,12 @@ const NervousGLBModel: React.FC<HumanModelProps> = React.memo(({ effects = [], i
     useEffect(() => {
         const el = gl.domElement;
         let last: string | null = null;
+        let lastTime = 0;
         const onMove = (e: PointerEvent) => {
+            if (e.pointerType === 'touch') return;
+            const now = performance.now();
+            if (now - lastTime < 50) return;
+            lastTime = now;
             const o = getOrgan(e);
             if (o !== last) { last = o; onOrganHover?.(o); }
         };
@@ -1696,6 +1775,11 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     const organEffects = useMemo(() => effects.filter(e => e.layer !== 'SKELETON_VIEW'), [effects]);
     const skeletonEffects = useMemo(() => effects.filter(e => e.layer === 'SKELETON_VIEW'), [effects]);
 
+    const isMobile = useMemo(() => {
+        if (typeof window === 'undefined') return false;
+        return window.innerWidth < 768 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    }, []);
+
     // Idle-preload common secondary layers in background after initial digital twin is interactive
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -1710,7 +1794,12 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
     return (
         <div className="relative w-full h-full select-none">
             {/* ── Three.js Canvas ── */}
-            <Canvas shadows dpr={[1, 2]} camera={{ position: [0, -0.2, 6.6], fov: 45 }}>
+            <Canvas
+                shadows={!isMobile}
+                dpr={isMobile ? 1 : [1, 2]}
+                camera={{ position: [0, -0.2, 6.6], fov: 45 }}
+                gl={{ powerPreference: 'high-performance', antialias: !isMobile }}
+            >
                 <fog attach="fog" args={['#000000', 10, 25]} />
 
                 {/* ── Scene Lighting ── */}
@@ -1791,7 +1880,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
 
                 {/* Reactive sparkles: Color transitions from #bae6fd (low) -> #fde047 (mid) -> #fca5a5 (high) */}
                 <Sparkles
-                    count={maxIntensity > 0 ? 35 + Math.floor(maxIntensity * 65) : 30}
+                    count={isMobile ? 15 : (maxIntensity > 0 ? 35 + Math.floor(maxIntensity * 65) : 30)}
                     scale={8}
                     size={maxIntensity > 0 ? 2 + maxIntensity * 3 : 2}
                     speed={maxIntensity > 0 ? 0.5 + maxIntensity * 1.5 : 0.5}
@@ -1805,12 +1894,14 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                     <Environment preset="city" blur={1} />
                 </React.Suspense>
                 {/* ContactShadows: color #082f49, opacity 0.4, blur 2 */}
-                <ContactShadows resolution={512} scale={20} blur={2} opacity={0.4} far={10} color="#082f49" />
+                <ContactShadows resolution={isMobile ? 256 : 512} scale={20} blur={2} opacity={0.4} far={10} color="#082f49" />
 
-                {/* Controlled Scientific Bloom (avoids body overexposure, allows heat glow) */}
-                <EffectComposer multisampling={0}>
-                    <Bloom luminanceThreshold={0.75} luminanceSmoothing={0.65} intensity={0.25} />
-                </EffectComposer>
+                {/* Controlled Scientific Bloom on desktop (bypassed on mobile to prevent GPU thermal throttling and lag) */}
+                {!isMobile && (
+                    <EffectComposer multisampling={0}>
+                        <Bloom luminanceThreshold={0.75} luminanceSmoothing={0.65} intensity={0.25} />
+                    </EffectComposer>
+                )}
 
                 <OrbitControls
                     ref={orbitRef}
@@ -1822,6 +1913,7 @@ const DrugHeatmap3D: React.FC<DrugHeatmap3DProps> = ({
                     enableDamping
                     dampingFactor={0.08}
                     target={[0, -0.2, 0]}
+                    touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
                 />
                 <GestureController orbitRef={orbitRef} rotationDelta={handRotationDelta} dragDelta={handDragDelta} zoomDelta={handZoomDelta} resetFlag={resetCameraFlag} />
             </Canvas>
